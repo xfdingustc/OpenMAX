@@ -1029,9 +1029,99 @@ ComponentConfigStructure)
 ```
 
 The parameters are as follows.
+
 | Parameter | Description |
+|
 | hComponent [in] |The handle of the component that executes the call.|
 | nIndex[in] | The index of the structure that is to be sent. This value is from the OMX_INDEXTYPE enumeration.|
 | ComponentConfigStructure[in] |A pointer to the IL client-allocated structure that the component uses for initialization.|
 
 Section 3.3.10 describes of the corresponding function that each component implements.
+
+#####3.2.2.11.1  Prerequisites for This Method
+The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
+
+#####3.2.2.11.2  Sample Code Showing Calling Sequence
+The following sample code shows the calling sequence.
+
+```C
+/* Change the time scale of the clock component*/
+oScale.xScale = 0x00020000; /*2x*/
+OMX_SetConfig(hClockComp, OMX_IndexConfigTimeScale, (OMX_PTR)&oScale);
+```
+
+####3.2.2.12  OMX_GetExtensionIndex
+The OMX_GetExtensionIndex macro will invoke a component to translate from a standardized OpenMAX or vendor-specific extension string for a configuration or a parameter into an OpenMAX structure index. The vendor is not required to support this command for the indexes already found in the OMX_INDEXTYPE enumeration, which reduces the memory footprint. The component may support any standardized OpenMAX or vendor-specific extension indexes that are not found in the master OMX_INDEXTYPE enumeration.
+
+This call is a blocking call. The component should return from this call within five msec. The OMX_GetExtensionIndex macro is defined as follows.
+
+```C
+#define OMX_GetExtensionIndex (
+hComponent,
+cParameterName,
+pIndexType )
+((OMX_COMPONENTTYPE*)hComponent)->GetExtensionIndex( \
+hComponent, \
+cParameterName, \
+pIndexType)
+```
+
+The parameters are as follows.
+
+| Parameter | Description|
+|
+| hComponent [in] |The handle of the component that executes the call.|
+| cParameterName[in] |An OMX_STRING value that shall be less than 128 characters long including the trailing null byte. The component will translate this string into a configuration index.|
+| pIndexType [out] | A pointer to the OMX_INDEXTYPE structure that is to receive the index value.|
+
+Section 3.3.11 describes the corresponding function that each component implements.
+#####3.2.2.12.1  Prerequisites for This Method
+The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
+
+#####3.2.2.12.2  Sample Code Showing Calling Sequence
+The following sample code shows the calling sequence.
+```C
+/* Set the vendor-specific filename parameter on a reader */
+OMX_GetExtensionIndex(
+hFileReaderComp,
+"OMX.CompanyXYZ.index.param.filename",
+&eIndexParamFilename);
+OMX_SetParameter(hComp, eIndexParamFilename, &oFileName);
+```
+####3.2.2.13  OMX_GetState
+The OMX_GetState macro will invoke the component to get the current state of the component and place the state value into the location pointed to by pState. The component should return from this call within five msec. 
+
+The OMX_GetState macro is defined as follows.
+
+```C
+#define OMX_GetState (
+hComponent,
+pState )
+((OMX_COMPONENTTYPE*)hComponent)->GetState( \
+hComponent, \
+pState)
+```
+The parameters are as follows.
+
+| Parameter | Definition |
+|
+| hComponent [in] | The handle of the component that executes the call.|
+| pState[out]|A pointer to the location that receives the state. The value returned is one of the OMX_STATETYPE members.|
+
+Section 3.3.12 describes the corresponding function that each component implements.
+
+#####3.2.2.13.1  Prerequisites for This Method
+This method has no prerequisites.
+
+#####3.2.2.13.2  Sample Code Showing Calling Sequence
+The following sample code shows the calling sequence.
+
+```C
+OMX_SendCommand(hComp, OMX_CommandStateSet, OMX_StateIdle, 0);
+do {
+OMX_GetState(hComp, &eState);
+} while (OMX_StateIdle != eState);
+```
+
+####3.2.2.14  OMX_UseBuffer
+The OMX_UseBuffer macro requests the component to use a buffer already allocated by the IL client or a buffer already supplied by a tunneled component. The
