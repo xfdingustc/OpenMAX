@@ -708,3 +708,330 @@ This section describes the OpenMAX core macros.
 Table 3-10 defines which macros may be called on a component in each component state.
 
 ![](img/t3_10.png)
+
+Table 3-10. Valid Component Calls
+####3.2.2.1  OMX_GetComponentVersion
+The GetComponentVersion macro will query the component and returns information about it. This is a blocking call. The component should return from this call within five msec.
+
+The macro is defined as follows.
+``` C
+#define OMX_GetComponentVersion (
+hComponent,
+pComponentName,
+pComponentVersion,
+pSpecVersion,
+pComponentUUID )
+((OMX_COMPONENTTYPE*)hComponent)->GetComponentVersion( \
+hComponent, \
+pComponentName, \
+pComponentVersion, \
+pSpecVersion, \
+pComponentUUID)
+```
+
+The parameters are as follows.
+
+| Parameter | Description |
+| ------- |
+| *hComponent* [in] | The handle of the component that executes the command. |
+| *pComponentName* [out] |A pointer to a component name string. Component names are strings limited to a length of less than 127 bytes plus the trailing null for a maximum length of 128 bytes. An example of a valid component name is "OMX.<vendor_name>.AUDIO.DSP.MIXER\0". Names are assigned by the vendor, but shall start with "OMX." concatenated to the vendor specified string. | 
+| *pComponentVersion* [out] | A pointer to an OpenMAX version structure that the component will populate. The component will fill in a value that indicates the component version. Note that the component version is not the same as the OpenMAX specification version, which is found in all structures. The vendor of the component defines the component version and establishes its value.|
+| *pSpecVersion* [out] | A pointer to an OpenMAX version structure that the component will populate. SpecVersion is the version of the specification that the component was built against. Note that this value may or may not match the version of the structure. For example, if the component was built against the version 2.0 specification but the IL client, which creates the structure, was built against the version 1.0 specification, the versions would be different. |
+| *pComponentUUID* [out] |A pointer to the universal unique identifier (UUID) of the component, which the component will fill in. The UUID is a unique identifier that is set at run time for the component and is unique to each instance of the component.|
+
+#####3.2.2.1.1  Prerequisites for This Method
+This method has no prerequisites.
+
+#####3.2.2.1.2  Sample Code Showing Calling Sequence
+The following sample code shows a calling sequence.
+
+```C
+/* detect mismatch between IL client's and component's spec version */
+OMX_GetComponentVersion(
+hComp,
+&CompName,
+&CompVersion,
+&CompSpecVersion,
+&CompUUID);
+if (CompSpecVersion != IlClientVersion){
+printf("ERROR: version mismatch\n");
+}
+```
+
+####3.2.2.2  OMX_SendCommand
+The `OMX_SendCommand` macro will invoke a command on the component. This is a non-blocking call that should, at a minimum, validate command parameters but return within five msec. The component normally executes the command outside the context of the call, though a solution without threading may elect to execute it in context. In either case, the component uses an event callback to notify the IL client of the results of the command once completed. If the component executes the command successfully, the component generates an OMX_EventCmdComplete callback. If the component fails to
+execute the command, the component generates an OMX_EventError and passes the
+appropriate error as a parameter.
+
+The component may elect to queue commands for later execution. The only restriction is that the completion shall be done in the same order as the requests arrived. 
+
+The macro is defined as follows.
+
+``` C
+#define OMX_SendCommand (
+hComponent,
+Cmd,
+nParam,
+pCmdData)
+((OMX_COMPONENTTYPE*)hComponent)->SendCommand( \
+hComponent, \
+Cmd, \
+nParam,
+pCmdData)
+```
+
+The parameters are as follows.
+
+| Parameter | Description |
+| ------- |
+| *hComponent* [in] | The handle of the component that executes the command |
+| *Cmd* [in] | Command for the component to execute |
+| *nParam* [in] | Integer parameter for the command that is to be executed |
+| *pCmdData*[in] |A pointer that contains implementation-specific data that cannot be represented with the numeric parameter nParam |
+
+Section 3.3.6.describes the corresponding function that each component implements.
+
+####3.2.2.3  OMX_CommandStateSet
+The IL client calls this command to request that the component transition into the state given in nParam. The component shall make the transition between the old state and the new state successfully only if it is a legal transition and all prerequisites for this transition are met. For more information on component states, see section 3.1.1.2. 
+
+If the component successfully transitions to the new state, it notifies the IL client of the new state via the `OMX_EventCmdComplete` event, indicating `OMX_CommandStateSet` for nData1 and the new state for `nData2`. If a state transition fails, the component shallnotify the IL client of the error that prevented it via `OMX_EventError` event. Relevant errors include but are not limited to the following:
+
+- `OMX_ErrorSameState`: The component is already in the state requested.
+- `OMX_ErrorIncorrectStateTransition`: The transition requested is not legal.
+- `OMX_ErrorInsufficientResources`: The transition required the allocation of resources and the component failed to acquire the resources.
+
+####3.2.2.4  OMX_CommandFlush
+This IL client calls this command to flush one or more component ports. nParam specifies the index of the port to flush. If the value of nParam is -1, the component shall flush all ports.
+
+When the IL client flushes a non-supplier port, that port shall return all buffers it is holding to the supplier port. If the supplier port is the IL client, the flushed port uses `EmptyBufferDone` and `FillBufferDone` (appropriate for an input port or an output port, respectively) to return the buffers. If the supplier port is a tunneled port, the flushed port uses `EmptyThisBuffer` or `FillThisBuffer` (appropriate for an input port or an output port, respectively) to return the buffers.
+
+
+For each port that the component successfully flushes, the component shall send an `OMX_EventCmdComplete` event, indicating `OMX_CommandFlush` for nData1 and the individual port index for nData2, even if the flush resulted from using a value of -1 for nParam. If a flush fails, the component shall notify the IL client of the error via an `OMX_EventError` event.
+
+####3.2.2.5  OMX_CommandPortDisable
+The `OMX_CommandPortDisable` command disables a port. nParam specifies the index of the port to disable. If the value of nParam is -1, the component shall disable all ports. A disabled port has no buffers and is not connected to either the IL client or another port via a tunnel. A disabled port does not allocate buffers on a transition from `OMX_StateLoaded` or `OMX_StateWaitForResources` to `OMX_StateIdle`. An IL client can change the parameters via `OMX_SetParameter` of a disabled port or set up a tunnel on it regardless of the component state. Thus the `OMX_CommandPortDisable` command, in co-operation with `OMX_CommandPortEnable`, is useful for the dynamic reconfiguration or re-tunneling of a port.
+
+The port must immediately clear bEnabled in its port definition structure when it receives `OMX_CommandPortDisable`. If the port that the IL client is disabling is a non-supplier port, the IL client shall return any buffers it is holding to the supplier port via `OMX_EmptyThisBuffer`/`OMX_FillThisBuffer` if tunneling or `EmptyBufferDone`/`FillBufferDone` if not tunneling. Then, the IL client shall wait for the supplier port to free the buffers via `OMX_FreeBuffer` before completing
+the disable command. If the port that the IL client is disabling is a supplier port with buffers allocated, the IL client shall wait for the non-supplier port to return all buffers via `OMX_EmptyThisBuffer` or `OMX_FillThisBuffer`. Then, the IL client shall free the buffers via OMX_FreeBuffer before completing the disable command.
+
+For each port that the component successfully disables, the component shall send an `OMX_EventCmdComplete` event indicating `OMX_CommandPortDisable` for nData1 and the individual port index for nData2, even if using a value of -1 for nParam caused
+the port to be disabled. If the disable operation fails, the component shall notify the IL client of the error via the `OMX_EventError` event.
+
+####3.2.2.6  OMX_CommandPortEnable
+The `OMX_CommandPortEnable` command enables a port. nParam specifies the index of the port to be enabled. If the value of nParam is -1, the component shall enable all ports. An enabled port shall abide by all the requirements of the component’s state. Thus, the port shall:
+
+- Have no buffers allocated if the component is in the `OMX_StateLoaded` state or the `OMX_StateWaitForResources` state and all buffers are allocated otherwise.
+- Allocate buffers on a transition from either the `OMX_StateLoaded` state or the `OMX_WaitForResources` state to the `OMX_IdleState`.
+- Transfer a buffer to facilitate data flow in the `OMX_StateExecuting` state.
+- Disallow modification of its parameters via OMX_SetParameter in all states but `OMX_StateLoaded`.
+ 
+The `OMX_CommandPortEnable` command, in co-operation with `OMX_CommandPortDisable`, is useful for the dynamic reconfiguration or re-tunneling of a port.
+
+The port must immediately set bEnabled in its port definition structure when the port receives OMX_CommandPortEnable. If the IL client enables a port while the component is in any state other than OMX_StateLoaded or OMX_WaitForResources, then that port shall allocate its buffers via the same call sequence used on a transition from OMX_StateLoaded to OMX_StateIdle. If the IL client enables while the component is in the OMX_Executing state, then that port shall begin transferring buffers.
+
+For each port that the component successfully enables, the component shall send an OMX_EventCmdComplete event, indicating OMX_CommandPortEnable for nData1 and the individual port index for nData2, even if using the value of -1 for nParam caused the enable operation. If a port enablement operation fails, the component shall notify the IL client of the error via OMX_EventError event.
+
+####3.2.2.7  OMX_CommandMarkBuffer
+The OMX_CommandMarkBuffer command instructs the given port to mark a buffer. nParam holds the index of the port that will perform the mark. The pCmdData parameter of OMX_SendCommand points to an OMX_MARKTYPE structure. The pMarkTargetComponent field of this structure holds a pointer to the component that will send an event after processing the marked buffer. The pMarkData field of this structure holds a pointer to application-specific data associated with the mark to uniquely identify the mark to the application upon a mark event (denoted the mark data).
+
+When instructed to mark a buffer, the component will mark the next buffer that it receives as input after it receives the mark command. The exception is a source component, which will mark the next buffer it adds to its output buffer queue. For components other than source components, the port index value in nParam holds the index of the input port that will mark its next buffer. For source components, the port index value in nParam holds the index of the output port that will mark its next buffer.
+
+In the following cases, multiple marks may compete for a single buffer:
+
+- A component receives two or more mark commands with no intervening buffer(s).
+- Two or more input buffers, each with a mark, contribute to an output buffer (e.g., in a mixer).
+- A component receives a mark command and the next buffer is already marked.
+ 
+If multiple marks compete for application to the same buffer, the component uses the first mark received to mark the buffer and applies the remaining marks to subsequent buffers in the order that the component received them. If there are no subsequent buffers, the component may send the remaining marks on one or more empty buffers.
+
+For each port that the component successfully marks a buffer, the component shall send an OMX_EventCmdComplete event indicating OMX_CommandPortMarkBuffer for nData1 and the individual port index for nData2. If a mark operation fails, the component shall notify the IL client of the error via OMX_EventError event.
+
+A buffer header includes pMarkTargetComponent and the pMarkData fields, whose meaning is identical to those in OMX_MARKTYPE. A component marks a buffer by copying pMarkTargetComponent and the pMarkData fields from the mark command to the buffer headers. Both fields are NULL by default (i.e., before the buffer being marked). A component propagates the mark fields from an input buffer to an output buffer according to the buffer metadata rules established for buffer flags and timestamps. The target component does not propagate the mark but instead clears both fields to NULL.
+
+When a component receives a buffer, it shall compare its own pointer to the pMarkTargetComponent. If the pointers match, the component shall send a mark event, including pMarkData as a parameter, immediately after the buffer exits the component or has been completely processed in the case where it does not exit the component.
+
+#####3.2.2.7.1  Prerequisites for This Method
+This method has no prerequisites.
+
+#####3.2.2.7.2  Sample Code Showing Calling Sequence
+The following sample code shows the calling sequence.
+
+``` C
+/* disable every audio port of a component*/
+OMX_GetParameter(hComp, OMX_IndexParamAudioInit, &oParam);
+for (i=0;i<oParam.nPorts;i++) {
+OMX_SendCommand(
+hComp,
+OMX_CommandPortDisable,
+oParam.nStartPortNumber + i,
+0);
+}
+```
+
+####3.2.2.8  OMX_GetParameter
+The OMX_GetParameter macro will get a parameter setting from a component. The nParamIndex parameter indicates which structure is requested from the component. The caller shall provide memory for the structure and populate the nSize and
+nVersion fields before invoking this macro. If the parameter settings are for a port, the caller shall also provide a valid port number in the nPortIndex field before invoking this macro. All components shall support a set of defaults for each parameter so that the caller can obtain the structure populated with valid values.
+
+This call is a blocking call. The component should return from this call within 20 msec.
+
+The OMX_GetParameter macro is defined as follows.
+
+```C
+#define OMX_GetParameter (
+hComponent,
+nParamIndex,
+ComponentParameterStructure)
+((OMX_COMPONENTTYPE*)hComponent)->GetParameter( \
+hComponent, \
+nParamIndex, \
+ComponentParameterStructure)
+```
+
+The parameters are described as follows.
+
+| Parameter | Description |
+| ------- |
+| hComponent [in] |The handle of the component that executes the call |
+| nParamIndex [in] | The index of the structure to be filled. This value is from the OMX_INDEXTYPE enumeration. |
+| ComponentParameterStructure [in,out] |A pointer to the IL client-allocated structure that the component fills|
+
+Section 3.3.7 describes the corresponding function that each component implements.
+#####3.2.2.8.1  Prerequisites for This Method
+The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
+
+#####3.2.2.8.2  Sample Code Showing Calling Sequence
+The following sample code shows the calling sequence.
+
+```C
+/* disable every audio port of a component*/
+OMX_GetParameter(hComp, OMX_IndexParamAudioInit, &oParam);
+for (i=0;i<oParam.nPorts;i++) {
+OMX_SendCommand(
+hComp,
+OMX_CommandPortDisable,
+oParam.nStartPortNumber + i,
+0);
+}
+```
+
+####3.2.2.9  OMX_SetParameter
+The OMX_SetParameter macro will send a parameter structure to a component. ThenParamIndex parameter indicates which structure is passed to the component.
+
+The caller shall provide the memory for the correct structure and shall fill in the structure nSize and nVersion fields in addition to all other fields before invoking this macro. The caller is free to dispose of this structure after the call, as the component is required to copy any data it shall retain.
+
+Some parameter structures contain read-only fields. The OMX_SetParameter method will preserve read-only fields, and shall not generate an error when the caller attempts to change the value of a read-only field. 
+
+This call is a blocking call. The component should return from this call within 20 msec.
+
+The OMX_SetParameter macro is defined as follows.
+
+```C
+#define OMX_SetParameter (
+hComponent,
+nParamIndex,
+ComponentParameterStructure)
+((OMX_COMPONENTTYPE*)hComponent)->SetParameter( \
+hComponent, \
+nParamIndex, \
+ComponentParameterStructure)
+```
+
+The parameters are as follows.
+
+| Parameter | Description |
+| ------- |
+| hComponent[in] | The handle of the component that executes the call.|
+| nIndex [in] |The index of the structure that is to be sent. This value isfrom the OMX_INDEXTYPE enumeration. |
+| ComponentParameterStructure [in] |A pointer to the IL client-allocated structure that the component uses for initialization.|
+
+
+Section 3.3.8 describes the corresponding function that each component implements.
+
+#####3.2.2.9.1  Prerequisites for This Method
+The OMX_SetParameter macro can be invoked only when the component is in the OMX_StateLoaded state or on a port that is disabled.
+
+#####3.2.2.9.2  Sample Code Showing Calling Sequence
+The following sample code shows the calling sequence.
+
+```C
+/* force a port to be the supplier */
+OMX_GetParameter(hComp, OMX_IndexParamPortDefinition, &oPortDef);
+if (oPortDef.eDir == OMX_DirInput){
+oSupplier.eBufferSupplier = OMX_BufferSupplyInput;
+} else {
+oSupplier.eBufferSupplier = OMX_BufferSupplyOutput;
+}
+oSupplier.nPortIndex = nPortIndex;
+OMX_SetParameter(hComp, OMX_IndexParamCompBufferSupplier, &oSupplier);
+```
+####3.2.2.10  OMX_GetConfig
+The OMX_GetConfig macro will get a configuration structure from a component. This macro can be invoked at any time after the component has been loaded. The nParamIndex parameter indicates which structure is being requested from the component. The caller shall provide the memory for the structure and populate the nSize and nVersion fields before invoking this macro. If the configuration settings are for a port, the caller shall also provide a valid port number in the nPortIndex field before invoking this macro. All components shall support a set of defaults for each configuration so that the caller can obtain the structure populated with valid values.
+
+This call is a blocking call. The component should return from this call within five msec.
+
+The OMX_GetConfig macro is defined as follows.
+
+```C
+#define OMX_GetConfig (
+hComponent,
+nConfigIndex,
+ComponentConfigStructure)
+((OMX_COMPONENTTYPE*)hComponent)->GetConfig( \
+hComponent, \
+nConfigIndex, \
+ComponentConfigStructure)
+```
+
+The parameters are as follows.
+
+| Parameters | Description |
+| ------- |
+| hComponent[in] | he handle of the component that executes the call. |
+| nIndex[in] | The index of the structure to be filled. This value is from the OMX_INDEXTYPE enumeration. |
+| ComponentConfigStructure[in,out] |A pointer to the IL client-allocated structure that the component fills.|
+
+Section 3.3.9 describes the corresponding function that each component implements.
+
+
+#####3.2.2.10.1  Prerequisites for This Method
+The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
+
+#####3.2.2.10.2  Sample Code Showing Calling Sequence
+The following sample code shows the calling sequence.
+
+```C
+/* Wait until a certain playback position */
+do {
+OMX_GetConfig(hClockComp, OMX_IndexConfigTimeCurrentMediaTime,
+oMediaTime);
+} while (oMediaStamp.nTimestamp < nTargetTimeStamp);
+```
+####3.2.2.11  OMX_SetConfig
+The OMX_SetConfig macro will set a component configuration value. This macro can be invoked anytime after the component has been loaded.
+
+The caller shall provide the memory for the correct structure and fill in the structure nSize and nVersion fields in addition to all other fields before invoking this macro. The caller can dispose of this structure after the call, as the component is required to copy any data it shall retain.
+
+Some configuration structures contain read-only fields. The OMX_SetConfig method will preserve read-only fields in configuration structures that contain them, and shall not generate an error when the caller attempts to change the value of a read-only field. 
+
+This call is a blocking call. The component should return from this call within five msec.
+
+The OMX_SetConfig macro is defined as follows.
+
+```C
+#define OMX_SetConfig (
+hComponent,
+nConfigIndex,
+ComponentConfigStructure )
+((OMX_COMPONENTTYPE*)hComponent)->SetConfig( \
+hComponent, \
+nConfigIndex, \
+ComponentConfigStructure)
+```
+
+The parameters are as follows.
+| Parameter | Description |
+| hComponent [in] |The handle of the component that executes the call.|
+| nIndex[in] | The index of the structure that is to be sent. This value is from the OMX_INDEXTYPE enumeration.|
+| ComponentConfigStructure[in] |A pointer to the IL client-allocated structure that the component uses for initialization.|
+
+Section 3.3.10 describes of the corresponding function that each component implements.
