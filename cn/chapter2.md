@@ -1,50 +1,64 @@
-#OpenMAX IL Introduction and Architecture
+#OpenMAX IL 介绍和框架
 This section of the document describes the OpenMAX IL features and architecture.
+本章介绍了OpenMAX的特点和框架
 
-##2.1  OpenMAX IL Description
-The OpenMAX IL layer is an API that defines a software interface used to provide an access layer around software components in a system. The intent of the software interface is to take components with disparate initialization and command  methodologies and provide a software layer that has a standardized command set and a standardized methodology for construction and destruction of the components.
+##2.1  OpenMAX IL 简介
+OpenMAX IL层API定义了一个用于在系统提供的软件组件的接入层软件接口。目的是让拥有不同方法的组件提供一个标准化的接口和命令集， 来构建和销毁组件。
 
-###2.1.1 Architectural Overview
+###2.1.1 架构概述
 Consider a system that requires the implementation of four multimedia processing functions denoted as F1, F2, F3, and F4. Each of these functions may be from different vendors or may be developed in house but by different groups within the organization. Each may have different requirements for setup and teardown. Each may have different methods of facilitating configuration and data transfer. The OpenMAX IL API provides a means of encapsulating these functions, singly or in logical groups, into components.
 
-The API includes a standard protocol that enables compliant components that are
-potentially from different vendors/groups to exchange data with one another and be used
-interchangeably.
+如果一个系统，需要四种多媒体处理模块，记为F1，F2，F3和F4。这些模块可能来自不同的公司或部门。每一个处理模块可能都有不同的初始化/销毁，配置和数据传输接口。OpenMAX IL的API可以将这些不同的接口或模块封装为标准的组件。
+
+The API includes a standard protocol that enables compliant components that are potentially from different vendors/groups to exchange data with one another and be used interchangeably.
+
+该API包括一个标准协议，使兼容的组件可能来自不同的供应商/组彼此交换数据和使用互换。
 
 The OpenMAX IL API interfaces with a higher-level entity denoted as the IL client, which is typically a functional piece of a filter graph multimedia framework or an application. The IL client interacts with a centralized IL entity called the core. The IL client uses the OpenMAX core for loading and unloading components, setting up direct communication between two OpenMAX components, and accessing the component’s method functions.
 
+一个高级的实体表示为OpenMAX IL IL客户端API接口，这通常是一个过滤图多媒体框架或应用程序的一个功能块。IL客户端与一个称为核心的集中式IL实体交互。IL客户使用OpenMAX核心加载和卸载组件，建立直接的沟通两OpenMAX组件之间，以及访问组件功能的方法。
+
 An IL client always communicates with a component via the IL core. In most cases, this communication equates to calling one of the IL core’s macros, which translates directly to a call on one of the component methods. Exceptions (where the IL client calls an actual core function that works) include component creation and destruction and connection via tunneling of two components.
+
+IL客户端总是通过IL核心与组件进行通信。在大多数情况下，这种沟通等同于称一个IL核心的宏，可以直接调用一个组件的方法。异常（其中IL客户端调用实际的核心功能）包括组件创建和销毁和连接通过两个组件的隧道。
 
 Components embody the media processing function or functions. Although this specification clearly defines the functionality of the OpenMAX core, the component provider defines the functionality of a given component. Components operate on four types of data that are defined according to the parameter structures that they export: audio, video, image, and other (e.g., time data for synchronization).
 
+组件体现媒体处理功能或功能。虽然本规范明确规定了OpenMAX核心功能，组件供应商定义了组件的功能。组件操作的四种类型的数据，根据他们出口的参数结构定义：音频，视频，图像，和其他（例如，同步的时间数据）。
+
 An OpenMAX component provides access to a standard set of component functions via its component handle. These functions allow a client to get and set component and port configuration parameters, get and set the state of the component, send commands to the component, receive event notifications, allocate buffers, establish communications with a single component port, and establish communication between two component ports. 
+
+一个组件提供了一个通过OpenMAX组件处理组件的功能标准。这些函数允许客户端获取和设置组件和端口的配置参数，获取和设置组件的状态，发送命令到组件，接收事件通知，分配缓冲区，与一个单一的组件端口建立通信，并建立两个组件接口之间的通信。
 
 Every OpenMAX component shall have at least one port to claim OpenMAX conformance. Although a vendor may provide an OpenMAX-compatible component without ports, the bulk of conformance testing is dependent on at least one conformant port. The four types of ports defined in OpenMAX correspond to the types of data a port may transfer: audio, video, and image data ports, and other ports. Each port is defined as either an input or output depending on whether it consumes or produces buffers. In a system containing four multimedia processing functions F1, F2, F3, and F4, a system implementer might provide a standard OpenMAX interface for each of the functions. The implementer might just as easily choose any combination of functions. The delineation for the separation of this functionality is based on ports. Figure 2-1 shows a few possible
 partitions for an OpenMAX implementation that provides these functions.
+
+每个OpenMAX部件应至少有一个端口要求OpenMAX一致性。虽然供应商可以提供一个兼容的组件没有OpenMAX端口、协议一致性测试的大部分是依赖于至少一个符合港口。定义四种类型的OpenMAX端口对应一个端口可以传输数据的类型：音频、视频、图像数据的端口，其他端口。每个端口被定义为输入或输出取决于它是否消耗或产生缓冲区。在一个系统中含有四的多媒体处理功能，F1，F2，F3和F4，，系统的实现可以提供每一功能OpenMAX接口标准。实施者只能选择函数的任意组合。这个功能的分离是基于端口的划分。图2-1显示了几个可能的
+为实现这些功能分区提供了OpenMAX。
 
 ![](img/2_1.png)
 
 **Figure 2-1. Possible Partitions for an OpenMAX Implementation**
 
-###2.1.2 Key Vocabulary
-This section describes acronyms and definitions commonly used in describing the OpenMAX IL API.
+###2.1.2 名词解释
+本小节介绍了OpenMax IL 中所用的字母缩写和关键词定义
 
-####2.1.2.1  Acronyms
-Table 2-1 lists acronyms commonly used in describing the OpenMAX IL API.
+####2.1.2.1  字母缩写
+表2-1 列举了OpenMAX IL中首字母缩写的含义.
 
-| Acronym | Meaning |
-| ------------- |
-| IPC | Abbreviation of inter-processor communication.|
-| OMX | Used as a prefix in the names of OpenMAX functions and structures. For example, a component may be place in the OMX_StateExecuting state.|
+| 首字母缩写 | 含义 |
+| ------------- | ------------- |
+| IPC | 进程间通信 |
+| OMX | OpenMAX功能和结构的名称前缀。例如，一个组件可以处于OMX_StateExecuting状态。|
 
-**Table 2-1. Acronyms**
+**表 2-1. 首字母缩写**
 
-####2.1.2.2  Key Definitions
-Table 2-2 lists key definitions used in describing the OpenMAX IL API.
+####2.1.2.2  关键词定义
+表 2-2 列举了OpenMAX IL中关键词的定义.
 
-| Key word | Meaning |
-| ------------- |
-| Accelerated component | OpenMAX components that wrap a function with a portion running on an accelerator. Accelerated components have special characteristics such as being able to support some types of tunneling. |
+| 关键词 | 含义 |
+| ------------- | ------------- |
+| Accelerated component | OpenMAX组件封装了一部分在加速器中运行的功能。加速组件具有某些特殊的特性，如能够支持某些类型的管道(tunnel)。|
 | Accelerator | Hardware designed to speed up processing of some functions.This hardware may also be referred to as accelerated hardware.Note that the accelerator may actually be software running in adifferent processor and not be hardware at all. |
 | AMR | Abbreviation of adaptive multimedia retrieval, which is an adaptive multi-rate codec from the 3GGP consortium. |
 | Host processor | The processor in a multi-core system that controls media acceleration and typically runs a high-level operating system. |
@@ -58,8 +72,9 @@ Table 2-2 lists key definitions used in describing the OpenMAX IL API.
 | Tunnels/Tunneling | The establishment and use of a standard data path that is managed directly between two OpenMAX components. |
 
 
-**Table 2-2. Key Definitions**
-###2.1.3 System Components
+**表 2-2. 关键词定义**
+
+###2.1.3 系统组件
 Figure 2-2 depicts the various types of communication enabled with OpenMAX. Each component can have an arbitrary number of ports for data communication. Components with a single output port are referred to as source components. Components with a single input port are referred to as sink components. Components running entirely on the host processor are referred to as host components. Components running on a loosely coupled accelerator are referred to as accelerator components. OpenMAX may be integrated directly with an application or may be integrated with multimedia framework components enabling heterogeneous implementations.
 
 Three types of communication are described. Non-tunneled communications defines a mechanism for exchanging data buffers between the IL client and a component. Tunneling defines a standard mechanism for components to exchange data buffers
@@ -68,7 +83,8 @@ components are capable of doing so.
 ![](img/2_2.png)
 
 
-**Figure 2-2. OpenMAX IL API System Components**
+**表 2-2. OpenMAX IL 系统组件**
+
 ####2.1.3.1  Component Profiles
 OpenMAX component functionality is grouped into two profiles: base profile and interop profile.
 
