@@ -4,7 +4,7 @@
 This document details the Application Programming nterface (API) for the OpenMAX Integration Layer (IL). Developed as an open standard by The Khronos Group, the IL serves as a low-level interface for audio, video, and imaging codecs used in embedded and/or mobile devices. The principal goal of the IL is to give codecs a degree of system abstraction for the purpose of portability across operating systems and software stacks.
 
 ### 1.1.1 About the Khronos Group
-The Khronos Group is a member-funded industry consortium focused on the creation of open standard APIs to enable the authoring and playback of dynamic media on a wide variety of platforms and devices. All Khronos members may contribute to the development of Khronos API specifications, may vote at various stages before public deployment, and may accelerate the delivery of their multimedia platforms and applications through early access to specification drafts and conformance tests. The Khronos Group is responsible for open APIs such as OpenGL ES, OpenML, and OpenVG.
+The Khronos Group is a member-fundeds industry consortium focused on the creation of open standard APIs to enable the authoring and playback of dynamic media on a wide variety of platforms and devices. All Khronos members may contribute to the development of Khronos API specifications, may vote at various stages before public deployment, and may accelerate the delivery of their multimedia platforms and applications through early access to specification drafts and conformance tests. The Khronos Group is responsible for open APIs such as OpenGL ES, OpenML, and OpenVG.
 
 ### 1.1.2 A Brief History of OpenMAX
 The OpenMAX set of APIs was originally conceived as a method of enabling portability of codecs and media applications throughout the mobile device landscape. Brought into the Khronos Group in mid-2004 by a handful of key mobile hardware companies, OpenMAX has gained the contributions of companies and institutions stretching the breadth of the multimedia field. As such, OpenMAX stands to unify the industry in taking steps toward media codec portability. Stepping beyond mobile platforms, the general nature of the OpenMAX IL API makes it applicable to all media platforms.
@@ -31,6 +31,7 @@ be easily added to the IL structure outside of the standard. The design of the A
 In most systems, a user-level media framework already exists. The OpenMAX IL API is designed to easily fit below these frameworks with little to no overhead between the interfaces. In most cases, the media framework provided by the operating system can be replaced with a thin layer that simply translates the API. Figure 1-1 illustrates the software landscape for the OpenMAX IL API.
 
 ![](img/1_1.png)
+
 **Figure 1-1. OpenMAX IL API Software Landscape**
 
 To remove possible reader confusion, the OpenMAX standard also defines a set of Development Layer (DL) primitives on which codecs can be built. The DL primitives and their full relationship to the IL are specified in other OpenMAX specification
