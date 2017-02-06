@@ -1,16 +1,5 @@
-- [Chapter1 Overview](chapter1.md)
-- [Chapter2 OpenMAX IL Introduction and Architecture](chapter2.md)
-- [Chapter3 OpenMAX Integration Layer Control API](chapter3.md)
-
-
-
 #3 OpenMAX Integration Layer Control API
-The OpenMAX Integration Layer API allows integration layer clients to control
-multimedia components in the audio, video and image domains. An “other” domain is
-also included to provide for extra functionality, such as audio-video (A/V)
-synchronization. The user of the OpenMAX Integration Layer API is usually a
-multimedia framework. In the rest of this document, the user of the OpenMAX
-Integration Layer API will be referred to as the IL client.
+The OpenMAX Integration Layer API allows integration layer clients to control multimedia components in the audio, video and image domains. An “other” domain is also included to provide for extra functionality, such as audio-video (A/V) synchronization. The user of the OpenMAX Integration Layer API is usually a multimedia framework. In the rest of this document, the user of the OpenMAX Integration Layer API will be referred to as the IL client.
 
 The OpenMAX Integration Layer API is defined in a set of header files, namely:
 
@@ -23,57 +12,35 @@ The OpenMAX Integration Layer API is defined in a set of header files, namely:
 -  OMX_Image.h: OpenMAX image domain data structures
 -  OMX_Other.h: OpenMAX other domain data structures (includes A/V synchronization)
 -  OMX_Index.h: Index of all OpenMAX-defined data structures
--  
-This section describes how the OpenMAX core and OpenMAX components are
-configured for operation.
+  
+This section describes how the OpenMAX core and OpenMAX components are configured for operation.
 
-First, the OpenMAX data types are introduced. Next, the methods of the OpenMAX core
-are described. The methods that components implement are discussed in section 3.3.
-Finally, section 3.4 shows calling sequences for a few meaningful operations, including
-component initialization, normal data flow, data tunnel setup, and data flow in the
-presence of data tunneling. Such sequence diagrams aim at describing the dynamic
-interactions between the IL client, the IL core, and the OpenMAX components.
+First, the OpenMAX data types are introduced. Next, the methods of the OpenMAX core are described. The methods that components implement are discussed in section 3.3. Finally, section 3.4 shows calling sequences for a few meaningful operations, including component initialization, normal data flow, data tunnel setup, and data flow in the presence of data tunneling. Such sequence diagrams aim at describing the dynamic interactions between the IL client, the IL core, and the OpenMAX components.
 
 When documenting functions, the following convention is used for function parameters:
 
--  <param_name> [in] specifies an input parameter, which is set by the function caller
-and read by the function implementation.
--  <param_name> [out] specifies an output parameter, which is set by the function
-implementation and passed back to the caller. When the function returns, the caller
-can read the new value of the parameter, which is passed as a reference.
--  <param_name> [inout] specifies an input/output parameter, which the function caller
-can set. The function implementation can modify the parameter before returning it
-back to the function caller.
+-  <param_name> [in] specifies an input parameter, which is set by the function caller and read by the function implementation.
+-  <param_name> [out] specifies an output parameter, which is set by the function implementation and passed back to the caller. When the function returns, the caller can read the new value of the parameter, which is passed as a reference.
+-  <param_name> [inout] specifies an input/output parameter, which the function caller can set. The function implementation can modify the parameter before returning it back to the function caller.
 
-This parameter classification can also be found in the OpenMAX header files, where the
-null macros OMX_IN, OMX_OUT and OMX_INOUT are defined. OMX_IN corresponds to
-the function parameter <param_name> [in]. OMX_OUT corresponds to the function parameter <param_name> [out], and OMX_INOUT corresponds to the function
-parameter <param_name> [inout].
+This parameter classification can also be found in the OpenMAX header files, where the null macros OMX_IN, OMX_OUT and OMX_INOUT are defined. OMX_IN corresponds to the function parameter <param_name> [in]. OMX_OUT corresponds to the function parameter <param_name> [out], and OMX_INOUT corresponds to the function parameter <param_name> [inout].
+ 
 ##3.1  OpenMAX Types
 ###3.1.1 Enumerations
 Five 32-bit integer enumerations are defined in OMX_Core.h:
 
--  OMX_ERRORTYPE is returned by each function defined in the OpenMAX Integration
-Layer API (see section 3.1.1.3).
--  OMX_COMMANDTYPE includes the possible commands that an IL client can send to
-an OpenMAX component (see section 3.1.1.1).
--  OMX_EVENTTYPE includes events that can be generated inside an OpenMAX
-component and that are passed to the IL client through a callback function (see
-section 3.1.1.4).
--  OMX_BUFFERSUPPLIERTYPE includes all the possibilities for the buffer supplier
-in the case of tunneled ports. A description of the use of this enumerative type can be
-found in section 3.1.1.5.
--  OMX_STATETYPE, which is described in section 3.1.1.2.
-Figure 3-1 shows the enumerations defined in OMX_Core.h.
+- `OMX_ERRORTYPE` is returned by each function defined in the OpenMAX Integration Layer API (see section 3.1.1.3).
+- `OMX_COMMANDTYPE` includes the possible commands that an IL client can send to an OpenMAX component (see section 3.1.1.1).
+- `OMX_EVENTTYPE` includes events that can be generated inside an OpenMAX component and that are passed to the IL client through a callback function (see section 3.1.1.4).
+- `OMX_BUFFERSUPPLIERTYPE` includes all the possibilities for the buffer supplier in the case of tunneled ports. A description of the use of this enumerative type can be found in section 3.1.1.5.
+- `OMX_STATETYPE`, which is described in section 3.1.1.2.Figure 3-1 shows the enumerations defined in `OMX_Core.h`.
 
 ![](img/3_1.png)
 
 
 **Figure 3-1. Enumerations Defined in OMX_Core.h**
 ####3.1.1.1  OMX_COMMANDTYPE
-Table 3-1 represents the possible commands that an IL client can send to an OpenMAX
-component. Since commands are non-blocking, the OpenMAX component generates a
-command completion event via a callback function when the command has completed.
+Table 3-1 represents the possible commands that an IL client can send to an OpenMAX component. Since commands are non-blocking, the OpenMAX component generates a command completion event via a callback function when the command has completed.
 Callbacks are defined in a dedicated structure; see section 3.1.2.7.
 
 | Field Name | Description |
@@ -95,19 +62,13 @@ Table 3-2 describes the parameters to be used for each command.
 
 **Table 3-2. Command Syntax**
 ####3.1.1.2  OMX_STATETYPE
-Figure 3-2 illustrates the transitions among states that occur as a consequence of the IL
-client calling OMX_SendCommand(OMX_StateSet, <state>), where the new state for
-the component is passed as a parameter. A transition name surrounded by curly braces
-indicates that the transition is not triggered by a command sent by the IL client but is a
-consequence of internal component events
+Figure 3-2 illustrates the transitions among states that occur as a consequence of the IL client calling `OMX_SendCommand`(`OMX_StateSet`, <state>), where the new state for the component is passed as a parameter. A transition name surrounded by curly braces indicates that the transition is not triggered by a command sent by the IL client but is a consequence of internal component events
 
 ![](img/3_2.png)
 
 **Figure 3-2. OpenMAX Component State Transitions**
 
-This section describes component states. An IL client commands a component to change
-states via the OMX_SendCommand function using the OMX_CommandStateSet
-command.
+This section describes component states. An IL client commands a component to change states via the `OMX_SendCommand` function using the `OMX_CommandStateSet` command.
 
 Table 3-3 represents the states of an OpenMAX component.
 
@@ -122,125 +83,50 @@ Table 3-3 represents the states of an OpenMAX component.
 
 **Table 3-3. OpenMAX Component States**
 ######3.1.1.2.1  OMX_StateLoaded
-A component is in the OMX_StateLoaded state after it has been created via an
-OMX_GetHandle call and before allocation of its resources. In this state, the IL client
-may modify the component’s parameters via OMX_SetParameter, set up data tunnels
-on the component’s ports with OMX_SetupTunnel, or transition the component to
-either the OMX_StateIdle state or the OMX_StateWaitForResources state.
+A component is in the OMX_StateLoaded state after it has been created via an `OMX_GetHandle` call and before allocation of its resources. In this state, the IL client may modify the component’s parameters via `OMX_SetParameter`, set up data tunnels on the component’s ports with `OMX_SetupTunnel`, or transition the component to either the `OMX_StateIdle` state or the OMX_StateWaitForResources state.
 
-The IL client may elect to transition a component that is currently in the
-OMX_StateLoaded state into the OMX_StateWaitForResources state if, for example, the
-component failed to acquire all of its resources on an attempted transition to the
-OMX_StateIdle state.
+The IL client may elect to transition a component that is currently in the OMX_StateLoaded state into the OMX_StateWaitForResources state if, for example, the component failed to acquire all of its resources on an attempted transition to the `OMX_StateIdle` state.
+
 ###### 3.1.1.2.1.1  OMX_StateLoaded to OMX_StateIdle
-If the IL client requests a state transition from OMX_StateLoaded to OMX_StateIdle, the
-component must acquire all of its resources, including buffers, before completing the
-transition. Furthermore, before the transition can complete, the buffer supplier, which is
-always the IL client when not tunneling, must ensure that the non-supplier possesses all
-of its buffers. For a port connected to the IL client, the IL client may allocate the buffers
-itself and then pass them to the port via an OMX_UseBuffer call on the port, or it may
-direct the port to perform the allocation via an OMX_AllocateBuffer call on the port.
-When a port is tunneling, the supplier port either allocates buffers itself or, if the port
-implements buffer sharing, re-uses buffers from a port on the same component. A
-tunneling supplier port then passes the buffers to the non-supplier port via an
-OMX_UseBuffer call on the non-supplier.
+If the IL client requests a state transition from `OMX_StateLoaded` to `OMX_StateIdle`, the component must acquire all of its resources, including buffers, before completing the transition. Furthermore, before the transition can complete, the buffer supplier, which is always the IL client when not tunneling, must ensure that the non-supplier possesses all of its buffers. For a port connected to the IL client, the IL client may allocate the buffers itself and then pass them to the port via an `OMX_UseBuffer` call on the port, or it may direct the port to perform the allocation via an `OMX_AllocateBuffer` call on the port.
 
-The number of buffers used on a port is specified in its port definition (see
-OMX_IndexParamPortDefinition), which defaults to the minimum (specified in
-the same structure) but which may be modified by the supplier before the sequence of
-OMX_UseBuffer and OMX_AllocateBuffer calls via a call to
-OMX_SetParameter.
+When a port is tunneling, the supplier port either allocates buffers itself or, if the port implements buffer sharing, re-uses buffers from a port on the same component. A tunneling supplier port then passes the buffers to the non-supplier port via an `OMX_UseBuffer` call on the non-supplier.
+
+The number of buffers used on a port is specified in its port definition (see `OMX_IndexParamPortDefinition`), which defaults to the minimum (specified in the same structure) but which may be modified by the supplier before the sequence of `OMX_UseBuffer` and `OMX_AllocateBuffer` calls via a call to `OMX_SetParameter`.
+
 #####3.1.1.2.2  OMX_StateIdle
-In the OMX_StateIdle state, the component is ready to be used, meaning that all
-necessary resources have been properly allocated. However, the suppliers retain all their
-buffers, and no buffer exchange or processing is taking place. Thus, if this state is entered
-from an OMX_StateExecuting or OMX_StatePause state, the component shall have
-returned all buffers it was processing to their respective suppliers. The IL client may
-transition the component to any states other than the OMX_StateInvalid and
-OMX_StateWaitForResources states.
+In the `OMX_StateIdle` state, the component is ready to be used, meaning that all necessary resources have been properly allocated. However, the suppliers retain all their buffers, and no buffer exchange or processing is taking place. Thus, if this state is entered from an `OMX_StateExecuting` or `OMX_StatePause` state, the component shall have returned all buffers it was processing to their respective suppliers. The IL client may transition the component to any states other than the `OMX_StateInvalid` and `OMX_StateWaitForResources` states.
+
 ######3.1.1.2.2.1  OMX_StateIdle to OMX_StateLoaded
-On a transition from OMX_StateIdle to OMX_StateLoaded, each buffer supplier must
-call OMX_FreeBuffer on the non-supplier port for each buffer residing at the non-
-supplier port. If the supplier allocated the buffer, it must free the buffer before calling
-OMX_FreeBuffer. If the non-supplier port allocated the buffer, it must free the buffer
-upon receipt of an OMX_FreeBuffer call. Furthermore, a non-supplier port must
-always free the buffer header upon receipt of an OMX_FreeBuffer call. When all of
-the buffers have been removed from the component, the state transition is complete; the
-component communicates that the initiating OMX_SendCommand call has completed via
-a callback event.
+On a transition from OMX_StateIdle to OMX_StateLoaded, each buffer supplier must call `OMX_FreeBuffer` on the non-supplier port for each buffer residing at the non-supplier port. If the supplier allocated the buffer, it must free the buffer before calling `OMX_FreeBuffer`. If the non-supplier port allocated the buffer, it must free the buffer upon receipt of an `OMX_FreeBuffer` call. Furthermore, a non-supplier port must always free the buffer header upon receipt of an OMX_FreeBuffer call. When all of the buffers have been removed from the component, the state transition is complete; the component communicates that the initiating `OMX_SendCommand` call has completed via a callback event.
+
 ######3.1.1.2.2.2  OMX_StateIdle to OMX_StateExecuting
-If the IL client requests a state transition from OMX_StateIdle to OMX_StateExecuting,
-the component shall begin transferring and processing data. For ports that communicate
-with the IL client, the IL client will initiate buffer transfers via
-OMX_EmptyThisBuffer and OMX_FillThisBuffer. Among tunneling ports, any
-input port that is also a supplier shall transfer its empty buffers to the tunneled output port
-via OMX_FillThisBuffer.
+If the IL client requests a state transition from OMX_StateIdle to `OMX_StateExecuting`, the component shall begin transferring and processing data. For ports that communicate with the IL client, the IL client will initiate buffer transfers via `OMX_EmptyThisBuffer` and `OMX_FillThisBuffer`. Among tunneling ports, any input port that is also a supplier shall transfer its empty buffers to the tunneled output port via `OMX_FillThisBuffer`.
+
 #####3.1.1.2.3  OMX_StateExecuting
-In this state, an OpenMAX component is transferring and processing data buffers. The
-component shall accept calls to OMX_EmptyThisBuffer on its input ports and
-OMX_FillThisBuffer on its output ports. Any port that communicates with the IL
-client shall call the EmptyBufferDone and FillBufferDone callbacks to return an
-empty or full buffer, respectively, back to the IL client. Any tunneling port shall call OMX_FillThisBuffer or OMX_EmptyThisBuffer on its corresponding tunneled
-port to return an empty or full buffer, respectively, back to its tunneled port. An IL client
-may transition a component in the OMX_StateExecuting state to either the
-OMX_StateIdle state or the OMX_StatePaused state.
+In this state, an OpenMAX component is transferring and processing data buffers. The component shall accept calls to `OMX_EmptyThisBuffer` on its input ports and `OMX_FillThisBuffer` on its output ports. Any port that communicates with the IL client shall call the `EmptyBufferDone` and `FillBufferDone` callbacks to return an empty or full buffer, respectively, back to the IL client. Any tunneling port shall call `OMX_FillThisBuffer` or `OMX_EmptyThisBuffer` on its corresponding tunneled port to return an empty or full buffer, respectively, back to its tunneled port. An IL client may transition a component in the `OMX_StateExecuting` state to either the `OMX_StateIdle` state or the `OMX_StatePaused` state.
+
 ######3.1.1.2.3.1  OMX_StateExecuting to OMX_StateIdle
-If the IL client requests a state transition from OMX_StateExecuting to OMX_StateIdle,
-the component shall return all buffers to their respective suppliers and receive all buffers
-belonging to its supplier ports before completing the transition. Any port communicating
-with the IL client shall return any buffers it is holding via OMX_EmptyBufferDone
-and OMX_FillBufferDone callbacks, which are used by input and output ports,
-respectively. Any non-supplier port shall return all buffers it is holding to the input port
-or output port it is tunneling with using OMX_EmptyThisBuffer or
-OMX_FillThisBuffer, respectively. Likewise, any supplier tunneling port shall wait
-for all of its buffers to be returned from its tunneled port.
+If the IL client requests a state transition from `OMX_StateExecuting` to `OMX_StateIdle`,the component shall return all buffers to their respective suppliers and receive all buffers belonging to its supplier ports before completing the transition. Any port communicating with the IL client shall return any buffers it is holding via `OMX_EmptyBufferDone`
+and OMX_FillBufferDone callbacks, which are used by input and output ports, respectively. Any non-supplier port shall return all buffers it is holding to the input port or output port it is tunneling with using `OMX_EmptyThisBuffer` or `OMX_FillThisBuffer`, respectively. Likewise, any supplier tunneling port shall wait for all of its buffers to be returned from its tunneled port.
+
 #####3.1.1.2.4  OMX_StatePause
-In this state, an OpenMAX component is not transferring or processing data but buffers
-are not necessarily returned to their suppliers. From the OMX_StatePause state,
-execution may be resumed via a transition to OMX_StateExecuting, preferably without
-dropping data. The component may still accept data buffers at its input, but such buffers
-will be queued only and not processed further. The IL client may transition a component
-in the OMX_StatePause state to OMX_StateIdle or OMX_StateExecuting. On a
-transition from OMX_StatePause to OMX_StateIdle, the component shall return all
-buffers to their respective suppliers in a manner identical to the OMX_StateExecuting-to-
-OMX_StateIdle transition described in section 3.1.1.2.3.1.
+In this state, an OpenMAX component is not transferring or processing data but buffers are not necessarily returned to their suppliers. From the `OMX_StatePause` state, execution may be resumed via a transition to `OMX_StateExecuting`, preferably without dropping data. The component may still accept data buffers at its input, but such buffers will be queued only and not processed further. The IL client may transition a component in the `OMX_StatePause` state to `OMX_StateIdle` or `OMX_StateExecuting`. On a transition from `OMX_StatePause` to `OMX_StateIdle`, the component shall return all buffers to their respective suppliers in a manner identical to the `OMX_StateExecuting` to `OMX_StateIdle` transition described in section 3.1.1.2.3.1.
+
 #####3.1.1.2.5  OMX_StateWaitForResources
-In this state, the component is waiting for one or more of its required resources to become
-available. This state is related to resource management. The assumption is that one or
-more hardware-specific resource managers exist on the platform to handle available
-resources. The interaction among OpenMAX components and resource managers is
-outside the scope of this specification.
+In this state, the component is waiting for one or more of its required resources to become available. This state is related to resource management. The assumption is that one or more hardware-specific resource managers exist on the platform to handle available resources. The interaction among OpenMAX components and resource managers is outside the scope of this specification.
 
-If a component in the OMX_StateLoaded state fails to enter the OMX_StateIdle state
-because resources other than buffers are insufficient, the IL client may put the component
-in the OMX_StateWaitForResources state if the IL client wants to be notified when the
-needed resources become available. The IL client may command the component to
-discontinue waiting for resources by transitioning it from the
-OMX_StateWaitForResources state to the OMX_StateLoaded state. If a component in
-the OMX_StateWaitForResources state acquires all the resources upon which it is
-waiting, it shall initiate a transition to the OMX_StateIdle state.
+If a component in the `OMX_StateLoaded` state fails to enter the `OMX_StateIdle` state because resources other than buffers are insufficient, the IL client may put the component in the `OMX_StateWaitForResources` state if the IL client wants to be notified when the needed resources become available. The IL client may command the component to discontinue waiting for resources by transitioning it from the `OMX_StateWaitForResources` state to the `OMX_StateLoaded` state. If a component in the `OMX_StateWaitForResources` state acquires all the resources upon which it is waiting, it shall initiate a transition to the `OMX_StateIdle` state.
+
 ######3.1.1.2.5.1  OMX_StateWaitForResources to OMX_StateIdle
-When a component initiates a transition from the OMX_StateWaitForResources state to
-the OMX_StateIdle state, it shall communicate the initiation of this transition to the IL
-client via an OMX_EventResourcesAcquired event. When the IL client receives
-the OMX_EventResourcesAcquired event, it shall call OMX_UseBuffer and
-OMX_AllocateBuffer in the manner of a transition from OMX_StateLoaded to
-OMX_StateIdle. Likewise, the component cannot complete its transition to
-OMX_StateIdle until it acquires all of its resources, including buffers.
-#####3.1.1.2.6  OMX_StateInvalid
-In this state, the component has suffered internal corruption or an error from which it
-cannot recover. When it detects such a condition, the component transitions itself to
-OMX_StateInvalid and informs the IL client by generating an OMX_ErrorEvent event
-with the value OMX_ErrorInvalidState. When the IL client receives OMX_EventError
-indicating a transition to OMX_StateInvalid, it shall free all resources associated with
-that component and eventually call OMX_FreeHandle to release the handle associated
-with the component.
+When a component initiates a transition from the OMX_StateWaitForResources state to the `OMX_StateIdle` state, it shall communicate the initiation of this transition to the IL client via an `OMX_EventResourcesAcquired` event. When the IL client receives the `OMX_EventResourcesAcquired` event, it shall call `OMX_UseBuffer` and `OMX_AllocateBuffer` in the manner of a transition from `OMX_StateLoaded` to `OMX_StateIdle`. Likewise, the component cannot complete its transition to
+`OMX_StateIdle` until it acquires all of its resources, including buffers.
 
-A component in the OMX_StateInvalid state shall fail every call made upon it and return
-an OMX_ErrorStateInvalid error message except for OMX_GetState,
-OMX_FreeBuffer, or OMX_ComponentDeinit. The IL client may also command a
-transition to the OMX_StateInvalid state explicitly via OMX_SendCommand. A
-component may transition between any state and the OMX_StateInvalid state.
+#####3.1.1.2.6  OMX_StateInvalid
+In this state, the component has suffered internal corruption or an error from which it cannot recover. When it detects such a condition, the component transitions itself to `OMX_StateInvalid` and informs the IL client by generating an `OMX_ErrorEvent` event with the value `OMX_ErrorInvalidState`. When the IL client receives `OMX_EventError` indicating a transition to `OMX_StateInvalid`, it shall free all resources associated with that component and eventually call `OMX_FreeHandle` to release the handle associated with the component.
+
+A component in the `OMX_StateInvalid` state shall fail every call made upon it and return an `OMX_ErrorStateInvalid` error message except for `OMX_GetState`, `OMX_FreeBuffer`, or `OMX_ComponentDeinit`. The IL client may also command a transition to the `OMX_StateInvalid` state explicitly via `OMX_SendCommand`. A component may transition between any state and the `OMX_StateInvalid` state.
+
 ####3.1.1.3  OMX_ERRORTYPE
 The OMX_ERRORTYPE enumeration shown in Table 3-4 defines the standard
 OpenMAX errors that all functions defined in the OpenMAX IL API return. These errors
@@ -301,47 +187,30 @@ mechanism. Events have associated parameters that are also passed in the callbac
 **Table 3-5. OpenMAX Event Types**
 
 #####3.1.1.4.1  OMX_EventCmdComplete
-A component generates an OMX_EventCmdComplete event as soon as a command
-sent by the IL client has completed its execution. In case of a component state change, the
-new state that the component has entered is returned as an event parameter. A component
-that transitions to the OMX_StateInvalid state does not generate this event.
-#####3.1.1.4.2  OMX_EventError
-A component generates the OMX_EventError event when the component detects an
-error condition; the type of error detected is returned as an event parameter and will use
-values defined in OMX_ERRORTYPE. A component shall send the following errors via
-OMX_EventError:
+A component generates an OMX_EventCmdComplete event as soon as a command sent by the IL client has completed its execution. In case of a component state change, the new state that the component has entered is returned as an event parameter. A component that transitions to the OMX_StateInvalid state does not generate this event.
 
--  A component sends the OMX_ErrorInvalidState error if the component transitions to the OMX_StateInvalid state.
--  A component sends the OMX_ErrorResourcesPreempted error if the component transitions from OMX_StateExecuting or OMX_StatePause to OMX_StateIdle due to the loss of a resource.
--  A component sends the OMX_ErrorResourcesLost error if the component transitions from OMX_StateIdle to OMX_StateLoaded due to the loss of a resource.
+#####3.1.1.4.2  OMX_EventError
+A component generates the OMX_EventError event when the component detects an error condition; the type of error detected is returned as an event parameter and will use values defined in `OMX_ERRORTYPE`. A component shall send the following errors via `OMX_EventError`:
+
+-  A component sends the `OMX_ErrorInvalidState` error if the component transitions to the `OMX_StateInvalid` state.
+-  A component sends the `OMX_ErrorResourcesPreempted` error if the component transitions from `OMX_StateExecuting` or `OMX_StatePause` to `OMX_StateIdle` due to the loss of a resource.
+-  A component sends the `OMX_ErrorResourcesLost` error if the component transitions from `OMX_StateIdle` to `OMX_StateLoaded` due to the loss of a resource.]
+
 #####3.1.1.4.3  OMX_EventMark
-A component generates the OMX_EventMark event when it receives a marked buffer. When a component receives a buffer, it shall compare its own pointer to the pMarkTargetComponent field contained in the buffer. If the pointers match, then the
+A component generates the `OMX_EventMark` event when it receives a marked buffer. When a component receives a buffer, it shall compare its own pointer to the pMarkTargetComponent field contained in the buffer. If the pointers match, then the
 component shall send a mark event including pMarkData as a parameter, immediately after the component has finished processing the buffer. The IL client can use the mark event to measure the propagation delay of a data buffer through a chain of components, or to notify a component that a particular buffer has reached the given destination.
+
 #####3.1.1.4.4  OMX_EventPortSettingsChanged
-A component generates the OMX_EventPortSettingsChanged event as soon as component port settings change. For example, a video decoder may not know a priori the output frame size and frame rate, as these parameters are coded in the input bit stream. As soon as such parameters are parsed, the component changes the values of the
-configuration structures of its output port and sends the `OMX_EventPortSettingsChanged` event to the IL client.
+A component generates the `OMX_EventPortSettingsChanged` event as soon as component port settings change. For example, a video decoder may not know a priori the output frame size and frame rate, as these parameters are coded in the input bit stream. As soon as such parameters are parsed, the component changes the values of the configuration structures of its output port and sends the `OMX_EventPortSettingsChanged` event to the IL client.
+
 #####3.1.1.4.5  OMX_EventBufferFlag
-A component generates the `OMX_EventBufferFlag` event when an output port emits
-a buffer with the `OMX_BUFFERFLAG_EOS` flag set in the nFlags field. The nData1
-field of EventHandler specifies the value of the output port’s portindex field. The
-nData2 field of EventHandler specifies the unaltered nFlags field containing the
-end-of-stream (EOS) flag.
-If a component does not propagate a stream further (e.g., the component is an audio or
-video sink), then the component shall send an OMX_EventBufferFlag event for that
-stream when it has finished processing a buffer with OMX_BUFFERFLAG_EOS set. The
-nData1 field of EventHandler specifies the input port that received the buffer. The
-nData2 field of EventHandler specifies the unaltered nFlags field containing the
-EOS flag.
+A component generates the `OMX_EventBufferFlag` event when an output port emits a buffer with the `OMX_BUFFERFLAG_EOS` flag set in the `nFlags` field. The `nData1` field of EventHandler specifies the value of the output port’s portindex field. The nData2 field of `EventHandler` specifies the unaltered nFlags field containing the end-of-stream (EOS) flag. If a component does not propagate a stream further (e.g., the component is an audio or video sink), then the component shall send an OMX_EventBufferFlag event for that stream when it has finished processing a buffer with OMX_BUFFERFLAG_EOS set. The nData1 field of EventHandler specifies the input port that received the buffer. The nData2 field of EventHandler specifies the unaltered nFlags field containing the EOS flag.
+
 #####3.1.1.4.6  OMX_EventResourcesAcquired
-A component generates the OMX_EventResourcesAcquired event when it is in the
-OMX_StateWaitForResources state, and the resource manager detects that the needed
-resources are available. When the component receives this event, it is ready to change
-state into the OMX_StateIdle, and it waits for all the buffers to be allocated and assigned
-to its ports.
+A component generates the `OMX_EventResourcesAcquired` event when it is in the `OMX_StateWaitForResources` state, and the resource manager detects that the needed resources are available. When the component receives this event, it is ready to change state into the `OMX_StateIdle`, and it waits for all the buffers to be allocated and assigned to its ports.
+
 ####3.1.1.5  OMX_BUFFERSUPPLIERTYPE
-The OMX_BUFFERSUPPLIERTYPE enumerative type shown in Table 3-6 specifies the
-port in the tunnel that is the supplier port. A buffer supplier port either may allocate its
-buffers or reuse buffers provided by another port within the same component.
+The OMX_BUFFERSUPPLIERTYPE enumerative type shown in Table 3-6 specifies the port in the tunnel that is the supplier port. A buffer supplier port either may allocate its buffers or reuse buffers provided by another port within the same component.
 
 | Field Name | Value | Description |
 | ------------- |
@@ -351,14 +220,10 @@ buffers or reuse buffers provided by another port within the same component.
 **Table 3-6. OpenMAX Buffer Supplier Type Used in Tunnel Setup**
 
 ###3.1.2 Structures
-This section discusses the data structures defined in the OpenMAX core. The first two
-fields of each OpenMAX data structure denote the size of the structure and the version of
-type OMX_VERSIONTYPE, which is defined in section 3.1.2.4. The entity that allocates
-an OpenMAX structure is responsible for filling in these two values.
+This section discusses the data structures defined in the OpenMAX core. The first two fields of each OpenMAX data structure denote the size of the structure and the version of type `OMX_VERSIONTYPE`, which is defined in section 3.1.2.4. The entity that allocates an OpenMAX structure is responsible for filling in these two values.
+
 ####3.1.2.1  OMX_COMPONENTREGISTERTYPE
-The `OMX_COMPONENTREGISTERTYPE` structure is used in the case of static linking
-of components to the core. The core optionally uses it to load the component and run the
-specific component initialization functions.
+The `OMX_COMPONENTREGISTERTYPE` structure is used in the case of static linking of components to the core. The core optionally uses it to load the component and run the specific component initialization functions.
 
 `OMX_COMPONENTREGISTERTYPE` is defined as follows.
 
@@ -378,14 +243,16 @@ component initialization entry point. The definition is as follows:
 typedef OMX_ERRORTYPE (* OMX_COMPONENTINITTYPE)(OMX_IN OMX_HANDLETYPE hComponent);
 ```
 #####3.1.2.2.1  pName
-pName contains the string name of the component and has limit of 128 bytes (including‘\0’).
+`pName` contains the string name of the component and has limit of 128 bytes (including‘\0’).
+
 #####3.1.2.2.2  pInitialize
-pInitialize contains the pointer to the initialization function of the component.
-3.1.2.3  OMX_ComponentRegistered[]
-Any core that statically links its components shall define this global array containing the list of all registered components in the form of `OMX_COMPONENTREGISTERTYPE`
-fields.
-3.1.2.4  OMX_VERSIONTYPE
-The OMX_VERSIONTYPE type indicates the version of a component or structure. Each structure uses an OMX_VERSIONTYPE field to indicate the OpenMAX specification version under which the structure is defined. For OpenMAX IL version 1.0, the specification version is 1.0.0.0. The component structure also includes an `OMX_VERSIONTYPE` field to indicate a vendor-specific component version.
+`pInitialize` contains the pointer to the initialization function of the component.
+
+####3.1.2.3  OMX_ComponentRegistered[]
+Any core that statically links its components shall define this global array containing the list of all registered components in the form of `OMX_COMPONENTREGISTERTYPE` fields.
+
+####3.1.2.4  OMX_VERSIONTYPE
+The `OMX_VERSIONTYPE` type indicates the version of a component or structure. Each structure uses an `OMX_VERSIONTYPE` field to indicate the OpenMAX specification version under which the structure is defined. For OpenMAX IL version 1.0, the specification version is 1.0.0.0. The component structure also includes an `OMX_VERSIONTYPE` field to indicate a vendor-specific component version.
 
 ``` C
 OMX_VERSIONTYPE is defined as follows.
@@ -403,20 +270,20 @@ OMX_U32 nVersion;
 ```
 
 #####3.1.2.4.1  nVersionMajor
-nVersionMajor identifies the major version number.
+`nVersionMajor` identifies the major version number.
 
 #####3.1.2.4.2  nVersionMinor
-nVersionMinor identifies the minor version number.
+`nVersionMinor` identifies the minor version number.
 
 #####3.1.2.4.3  nRevision
-nRevision identifies the revision number.
+`nRevision` identifies the revision number.
 
 #####3.1.2.4.4  nStep
-nStep identifies the step number.]
+`nStep` identifies the step number.]
 
 ####3.1.2.5  OMX_PRIORITYMGMTTYPE
 The `OMX_PRIORITYMGMTTYPE` type describes the priority assigned to a set of components. A component group identifies a set of co-dependent components associated with the same feature. All components in the same group share the same group ID and
-priority. If one component in a group loses resources and stops running, the entire feature they collectively contribute to is lost. In this case, all of the other components in the same group shall transition to `OMX_StateLoaded`. A component that is the only one with a certain nGroupID acts atomically.
+priority. If one component in a group loses resources and stops running, the entire feature they collectively contribute to is lost. In this case, all of the other components in the same group shall transition to `OMX_StateLoaded`. A component that is the only one with a certain `nGroupID` acts atomically.
 
 `OMX_PRIORITYMGMTTYPE` is defined as follows.
 
@@ -505,11 +372,11 @@ nTimeStamp is a timestamp corresponding to the sample starting at the first logi
 The nFlags field contains buffer specific flags, such as the EOS flag. A component should propagate this field from an input buffer to its associated output buffer. The list of flags is as follows:
 
 ```C
-\#define OMX_BUFFERFLAG_EOS 0x00000001
-\#define OMX_BUFFERFLAG_STARTTIME 0x00000002
-\#define OMX_BUFFERFLAG_DECODEONLY 0x00000004
-\#define OMX_BUFFERFLAG_DATACORRUPT 0x00000008
-\#define OMX_BUFFERFLAG_ENDOFFRAME 0x00000010
+#define OMX_BUFFERFLAG_EOS 0x00000001
+#define OMX_BUFFERFLAG_STARTTIME 0x00000002
+#define OMX_BUFFERFLAG_DECODEONLY 0x00000004
+#define OMX_BUFFERFLAG_DATACORRUPT 0x00000008
+#define OMX_BUFFERFLAG_ENDOFFRAME 0x00000010
 ```
 
 ######3.1.2.6.13.1  OMX_BUFFERFLAG_EOS
@@ -834,3 +701,10 @@ When a time limit for the execution of a method is specified, it is not intended
 Table 3-9 lists all of the possible return error codes for each function. A critical error denotes an error from which the component cannot recover. The component should transition to the `OMX_StateInvalid` state when a critical error occurs. All columns but the last two correspond to errors returned from a call to the component. The rightmost two columns denote errors sent asynchronously as the result of an internal error.
 
 ![](img/t3_9.png)
+
+###3.2.2 Macros
+This section describes the OpenMAX core macros.
+
+Table 3-10 defines which macros may be called on a component in each component state.
+
+![](img/t3_10.png)
