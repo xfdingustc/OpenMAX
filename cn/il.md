@@ -89,7 +89,7 @@ a list of these words.
 
 
 | Word | Definition |
-| ------------- |:-------------:| 
+| ------------- |
 | May  | The stated functionality is an optional requirement for an implementation of the OpenMAX IL API. Optional features are not required by the specification but may have conformance requirements if they are implemented. This is an optional feature as in “The component may have vendor specific extensions.” |
 | Shall | The stated functionality is a requirement for an implementation of the OpenMAX IL API. If a component fails to meet a shall statement, it is not considered to conform to this specification. Shall is always used as a requirement, as in “The component designers shall produce good documentation.” |
 | Should | The stated functionality is not a requirement for an implementation of the OpenMAX IL API but is recommended or is a good practice. Should is usually used as follows: “The component should begin processing buffers immediately after it transitions to the OMX_StateExecuting state.” While this is good practice, there may be a valid reason to delay processing buffers, such as not having input data available. |
@@ -187,7 +187,7 @@ OpenMAX IL API.
 Table 2-1 lists acronyms commonly used in describing the OpenMAX IL API.
 
 | Acronym | Meaning |
-| ------------- |:-------------:| 
+| ------------- |
 | IPC | Abbreviation of inter-processor communication.|
 | OMX | Used as a prefix in the names of OpenMAX functions and structures. For example, a component may be place in the OMX_StateExecuting state.|
 
@@ -197,7 +197,7 @@ Table 2-1 lists acronyms commonly used in describing the OpenMAX IL API.
 Table 2-2 lists key definitions used in describing the OpenMAX IL API.
 
 | Key word | Meaning |
-| ------------- |:-------------:| 
+| ------------- |
 | Accelerated component | OpenMAX components that wrap a function with a portion running on an accelerator. Accelerated components have special characteristics such as being able to support some types of tunneling. |
 | Accelerator | Hardware designed to speed up processing of some functions.This hardware may also be referred to as accelerated hardware.Note that the accelerator may actually be software running in adifferent processor and not be hardware at all. |
 | AMR | Abbreviation of adaptive multimedia retrieval, which is an adaptive multi-rate codec from the 3GGP consortium. |
@@ -912,7 +912,7 @@ command completion event via a callback function when the command has completed.
 Callbacks are defined in a dedicated structure; see section 3.1.2.7.
 
 | Field Name | Description |
-| ------------- |:-------------:|
+| ------------- |
 | OMX_CommandStateSet | Change the component state OMX_CommandFlush  Flush the queue(s) of buffers on a port of a component|
 | OMX_CommandPortDisable | Disable a port on a component |
 | OMX_CommandPortEnable | Enable a port on a component |
@@ -921,7 +921,7 @@ Callbacks are defined in a dedicated structure; see section 3.1.2.7.
 Table 3-2 describes the parameters to be used for each command.
 
 | Command code | nParam | pCmdData |
-| ------------- |:-------------:|
+| ------------- |
 | OMX_CommandStateSet |OMX_STATETYPE – state to transition to | NULL |
 | OMX_CommandFlush | OMX_U32 – target port ID | NULL |
 | OMX_CommandPortDisable |OMX_U32 – target port ID | NULL |
@@ -1085,13 +1085,301 @@ additional error messages of their own as long as they follow these rules:
 -  Vendor error messages shall be in the range of 0x90000000 to 0x9000FFFF.
 -  Vendor error messages shall be defined in a header file provided with the component. No error messages are allowed that are not defined.
 
-| Field Name | Value | Description |
-| ------------- |:-------------:|
-| OMX_ErrorNone | 0 | The function returned successfully. |
-| OMX_ErrorInsufficientResources | 0x80001000 |There were insufficient resources toperform the requested operation. |
-| OMX_ErrorUndefined | 0x80001001 | There was an error but the cause of the error could not be determined. |
-| OMX_ErrorInvalidComponentName |0x80001002 | The component name string wasinvalid. |
-| OMX_ErrorComponentNotFound | 0x80001003 | No component with the specified name string was found. |
-| OMX_ErrorInvalidComponent | 0x80001004 | The component specified did not have a OMX_ComponentInit entry point, or the component did not correctly complete the OMX_ComponentInit call. |
+|Field Name| Value | Description |
+|------------- |:-------------:|
+|OMX_ErrorNone| 0 | The function returned successfully. |
+|OMX_ErrorInsufficientResources | 0x80001000 |There were insufficient resources toperform the requested operation. |
+|OMX_ErrorUndefined | 0x80001001 | There was an error but the cause of the error could not be determined. |
+|OMX_ErrorInvalidComponentName |0x80001002 | The component name string wasinvalid. |
+|OMX_ErrorComponentNotFound | 0x80001003 | No component with the specified name string was found. |
+|OMX_ErrorInvalidComponent | 0x80001004 | The component specified did not have a OMX_ComponentInit entry point, or the component did not correctly complete the OMX_ComponentInit call. |
+|OMX_ErrorBadParameter | 0x80001005 | One or more parameters were invalid.|
+|OMX_ErrorNotImplemented | 0x80001006 | The requested function is notimplemented. |
+|OMX_ErrorUnderflow | 0x80001007 | The buffer was emptied before the next buffer was ready. |
+|OMX_ErrorOverflow | 0x80001008 | The buffer was not available when it was needed.|
+|OMX_ErrorHardware | 0x80001009 | The hardware failed to respond as expected. |
+|OMX_ErrorInvalidState | 0x8000100A | The component is in the OMX_StateInvalid state. |
+|OMX_ErrorStreamCorrupt | 0x8000100B |The stream is found to be corrupt. |
+|OMX_ErrorPortsNotCompatible | 0x8000100C | Ports being set up for tunneled communication are incompatible. |
+|OMX_ErrorResourcesLost | 0x8000100D | Resources allocated to a component inthe OMX_StateIdle state have been lost, which has resulted in the component returning to the OMX_StateLoaded state. |
+|OMX_ErrorNoMore | 0x8000100E | No more indices can be enumerated. |
+|OMX_ErrorVersionMismatch | 0x8000100F |The component detected a versionmismatch. |
+|OMX_ErrorNotReady | 0x80001010 |The component is not ready to returndata at this time. |
+|OMX_ErrorTimeout | 0x80001011 | A timeout occurred. |
+|OMX_ErrorSameState | 0x80001012 |The component tried to transition into the state that it is currently in. |
+|OMX_ErrorResourcesPreempted | 0x80001013 |Resources allocated to a component in the OMX_StateExecuting or OMX_Pause states have been pre- empted, causing the component to return to the OMX_StateIdle state. |
+|OMX_ErrorPortUnresponsiveDuringAllocation |0x80001014|The non-supplier port deemed that it had waited an unusually long time for the supplier port to send it an allocated buffer via an OMX_UseBuffer call. A non-supplier port sends this error to the IL client via the EventHandler callback during the allocation of buffers on a transition from the LOADED to the IDLE state or on a port enable.|
+|OMX_ErrorPortUnresponsiveDuringDeallocation|0x80001015|The non-supplier port deemed that it had waited an unusually long time for the supplier port to request the de-allocation of a buffer header via a OMX_FreeBuffer call. A non-supplier port sends this error to the IL client via the EventHandler callback during the de-allocation of buffers on a transition from the IDLE to LOADED state or on a port disablement.|
+|OMX_ErrorPortUnresponsiveDuringStop |0x80001016|The supplier port deemed that it had waited an unusually long time for the non-supplier port to return a buffer via an EmptyThisBuffer or FillThisBuffer call. A supplier port sent this error to the IL client via the EventHandler callback during the disabling of a port, either on a transition from the IDLE to LOADED state or on a port disablement.|
+|OMX_ErrorIncorrectStateTransition|0x80001017|A state transition was attempted that is not allowed.|
+|OMX_ErrorIncorrectStateOperation|0x80001018|A command or method was attempted that is not allowed during the present state. |
+|OMX_ErrorUnsupportedSetting| 0x80001019|One or more values encapsulated in the parameter or configuration structure are unsupported.|
+|OMX_ErrorUnsupportedIndex|  0x8000101A|The parameter or configuration indicated by the given index is unsupported.|
+|OMX_ErrorBadPortIndex|  0x8000101B|The port index that was supplied is incorrect.|
+|OMX_ErrorPortUnpopulated | 0x8000101C | The port has lost one or more of its buffers and is thus unpopulated.|
 
+**Table 3-4. OpenMAX Error Codes**
+####3.1.1.4  OMX_EVENTTYPE
+The OMX_EVENTTYPE enumeration shown in Table 3-5 includes the event types that
+an OpenMAX component can generate. Section 3.1.2.7 describes events that the
+OpenMAX component generates and passes to the IL client by means of the callback
+mechanism. Events have associated parameters that are also passed in the callback.
+
+| Field Name | Description |
+| ------------- |
+| OMX_EventCmdComplete | Component has completed the execution of a command. |
+| OMX_EventError | Component has detected an error condition. |
+| OMX_EventMark | A buffer mark has reached the target component, and the IL client has received this event with the private data pointer of the mark. |
+| OMX_EventPortSettingsChanged | Component has changed port settings. For example, the component has changed port settings resulting from bit stream parsing. |
+| OMX_EventBufferFlag | The event that a component sends when it detects the end of a stream. |
+| OMX_EventResourcesAcquired | The component has been granted resources and is transitioning from the OMX_StateWaitForResources state to the OMX_StateIdle state. |
+**Table 3-5. OpenMAX Event Types**
+
+#####3.1.1.4.1  OMX_EventCmdComplete
+A component generates an OMX_EventCmdComplete event as soon as a command
+sent by the IL client has completed its execution. In case of a component state change, the
+new state that the component has entered is returned as an event parameter. A component
+that transitions to the OMX_StateInvalid state does not generate this event.
+#####3.1.1.4.2  OMX_EventError
+A component generates the OMX_EventError event when the component detects an
+error condition; the type of error detected is returned as an event parameter and will use
+values defined in OMX_ERRORTYPE. A component shall send the following errors via
+OMX_EventError:
+
+-  A component sends the OMX_ErrorInvalidState error if the component transitions to the OMX_StateInvalid state.
+-  A component sends the OMX_ErrorResourcesPreempted error if the component transitions from OMX_StateExecuting or OMX_StatePause to OMX_StateIdle due to the loss of a resource.
+-  A component sends the OMX_ErrorResourcesLost error if the component transitions from OMX_StateIdle to OMX_StateLoaded due to the loss of a resource.
+#####3.1.1.4.3  OMX_EventMark
+A component generates the OMX_EventMark event when it receives a marked buffer. When a component receives a buffer, it shall compare its own pointer to the pMarkTargetComponent field contained in the buffer. If the pointers match, then the
+component shall send a mark event including pMarkData as a parameter, immediately after the component has finished processing the buffer. The IL client can use the mark event to measure the propagation delay of a data buffer through a chain of components, or to notify a component that a particular buffer has reached the given destination.
+#####3.1.1.4.4  OMX_EventPortSettingsChanged
+A component generates the OMX_EventPortSettingsChanged event as soon as component port settings change. For example, a video decoder may not know a priori the output frame size and frame rate, as these parameters are coded in the input bit stream. As soon as such parameters are parsed, the component changes the values of the
+configuration structures of its output port and sends the `OMX_EventPortSettingsChanged` event to the IL client.
+#####3.1.1.4.5  OMX_EventBufferFlag
+A component generates the `OMX_EventBufferFlag` event when an output port emits
+a buffer with the `OMX_BUFFERFLAG_EOS` flag set in the nFlags field. The nData1
+field of EventHandler specifies the value of the output port’s portindex field. The
+nData2 field of EventHandler specifies the unaltered nFlags field containing the
+end-of-stream (EOS) flag.
+If a component does not propagate a stream further (e.g., the component is an audio or
+video sink), then the component shall send an OMX_EventBufferFlag event for that
+stream when it has finished processing a buffer with OMX_BUFFERFLAG_EOS set. The
+nData1 field of EventHandler specifies the input port that received the buffer. The
+nData2 field of EventHandler specifies the unaltered nFlags field containing the
+EOS flag.
+#####3.1.1.4.6  OMX_EventResourcesAcquired
+A component generates the OMX_EventResourcesAcquired event when it is in the
+OMX_StateWaitForResources state, and the resource manager detects that the needed
+resources are available. When the component receives this event, it is ready to change
+state into the OMX_StateIdle, and it waits for all the buffers to be allocated and assigned
+to its ports.
+####3.1.1.5  OMX_BUFFERSUPPLIERTYPE
+The OMX_BUFFERSUPPLIERTYPE enumerative type shown in Table 3-6 specifies the
+port in the tunnel that is the supplier port. A buffer supplier port either may allocate its
+buffers or reuse buffers provided by another port within the same component.
+
+| Field Name | Value | Description |
+| ------------- |
+| OMX_BufferSupplyUnspecified | 0x0 | The port supplying the buffers is unspecified, or no supplier is preferred. |
+| OMX_BufferSupplyInput | | The input port supplies the buffers. |
+| OMX_BufferSupplyOutput | | The output port supplies the buffer.|
+**Table 3-6. OpenMAX Buffer Supplier Type Used in Tunnel Setup**
+
+###3.1.2 Structures
+This section discusses the data structures defined in the OpenMAX core. The first two
+fields of each OpenMAX data structure denote the size of the structure and the version of
+type OMX_VERSIONTYPE, which is defined in section 3.1.2.4. The entity that allocates
+an OpenMAX structure is responsible for filling in these two values.
+####3.1.2.1  OMX_COMPONENTREGISTERTYPE
+The `OMX_COMPONENTREGISTERTYPE` structure is used in the case of static linking
+of components to the core. The core optionally uses it to load the component and run the
+specific component initialization functions.
+
+`OMX_COMPONENTREGISTERTYPE` is defined as follows.
+
+``` C
+typedef struct OMX_COMPONENTREGISTERTYPE
+{
+const char * pName;
+OMX_COMPONENTINITTYPE pInitialize;
+} OMX_COMPONENTREGISTERTYPE;
+```
+
+####3.1.2.2  OMX_COMPONENTINITTYPE Type Definition
+The `OMX_COMPONENTINITTYPE` type definition is the type of function pointer for the
+component initialization entry point. The definition is as follows:
+
+```C
+typedef OMX_ERRORTYPE (* OMX_COMPONENTINITTYPE)(OMX_IN OMX_HANDLETYPE hComponent);
+```
+#####3.1.2.2.1  pName
+pName contains the string name of the component and has limit of 128 bytes (including‘\0’).
+#####3.1.2.2.2  pInitialize
+pInitialize contains the pointer to the initialization function of the component.
+3.1.2.3  OMX_ComponentRegistered[]
+Any core that statically links its components shall define this global array containing the list of all registered components in the form of `OMX_COMPONENTREGISTERTYPE`
+fields.
+3.1.2.4  OMX_VERSIONTYPE
+The OMX_VERSIONTYPE type indicates the version of a component or structure. Each structure uses an OMX_VERSIONTYPE field to indicate the OpenMAX specification version under which the structure is defined. For OpenMAX IL version 1.0, the specification version is 1.0.0.0. The component structure also includes an `OMX_VERSIONTYPE` field to indicate a vendor-specific component version.
+
+``` C
+OMX_VERSIONTYPE is defined as follows.
+typedef union OMX_VERSIONTYPE
+{
+struct
+{
+OMX_U8 nVersionMajor;
+OMX_U8 nVersionMinor;
+OMX_U8 nRevision;
+OMX_U8 nStep;
+} s;
+OMX_U32 nVersion;
+} OMX_VERSIONTYPE;
+```
+
+#####3.1.2.4.1  nVersionMajor
+nVersionMajor identifies the major version number.
+
+#####3.1.2.4.2  nVersionMinor
+nVersionMinor identifies the minor version number.
+
+#####3.1.2.4.3  nRevision
+nRevision identifies the revision number.
+
+#####3.1.2.4.4  nStep
+nStep identifies the step number.]
+
+####3.1.2.5  OMX_PRIORITYMGMTTYPE
+The `OMX_PRIORITYMGMTTYPE` type describes the priority assigned to a set of components. A component group identifies a set of co-dependent components associated with the same feature. All components in the same group share the same group ID and
+priority. If one component in a group loses resources and stops running, the entire feature they collectively contribute to is lost. In this case, all of the other components in the same group shall transition to `OMX_StateLoaded`. A component that is the only one with a certain nGroupID acts atomically.
+
+`OMX_PRIORITYMGMTTYPE` is defined as follows.
+
+``` C
+typedef struct OMX_PRIORITYMGMTTYPE {
+OMX_U32 nSize;
+OMX_VERSIONTYPE nVersion;
+OMX_U32 nGroupPriority;
+OMX_U32 nGroupID;
+} OMX_PRIORITYMGMTTYPE;
+```
+
+#####3.1.2.5.1  nGroupPriority
+The value of nGroupPriority is the priority value associated with a group of components. If a parameter of this type is assigned to a component, that component belongs to the group identified with nGroupID and has a priority equal to
+nGroupPriority. By definition, the value 0 represents the highest priority for a group of components.
+
+The exact mechanism to assign priorities to groups of components is outside the scope of this document.
+
+#####3.1.2.5.2  nGroupID
+The value for nGroupID is a unique ID for all components in the same component group.
+
+####3.1.2.6  OMX_BUFFERHEADERTYPE
+In the context of a single port, each data buffer has a header associated with it that contains meta-information about the buffer. The IL client shares buffer headers with each port with which it is communicating. Likewise, each pair of tunneling ports share buffer headers; otherwise, the same buffer transferred over multiple ports will have distinct buffer headers associated with it for each port. The definition of the buffer header is shown as follows.
+
+``` C
+typedef struct OMX_BUFFERHEADERTYPE
+{
+OMX_U32 nSize;
+OMX_VERSIONTYPE nVersion;
+OMX_U8* pBuffer;
+OMX_U32 nAllocLen;
+OMX_U32 nFilledLen;
+OMX_U32 nOffset;
+OMX_PTR pAppPrivate;
+OMX_PTR pPlatformPrivate;
+OMX_U32 nOutputPortPrivate;
+OMX_U32 nInputPortPrivate;
+OMX_HANDLETYPE hMarkTargetComponent;
+OMX_PTR pMarkData;
+OMX_U32 nTickCount;
+OMX_TICKS nTimeStamp;
+OMX_U32 nFlags;
+OMX_U32 nOutputPortIndex;
+OMX_U32 nInputPortIndex;
+} OMX_BUFFERHEADERTYPE;
+```
+
+#####3.1.2.6.1  pBuffer
+pBuffer is a pointer to the actual buffer where data is stored but not necessarily the start of valid data; for more information, see the description of nOffset in section 3.1.2.6.4.
+
+#####3.1.2.6.2  nAllocLen
+nAllocLen is the total size of the allocated buffer in bytes, including valid and unused byte.
+
+#####3.1.2.6.3  nFilledLen
+nFilledLen is the total size of valid bytes currently in the buffer starting from the location specified by pBuffer and nOffset.
+
+#####3.1.2.6.4  nOffset
+nOffset is the start offset of valid data in bytes from the start of the buffer. A pointer to the valid data may be obtained by adding nOffset to pBuffer.
+
+#####3.1.2.6.5  pAppPrivate
+pAppPrivate is a pointer to an IL client private structure.
+
+#####3.1.2.6.6  pPlatformPrivate
+pPlatformPrivate is a pointer to a platform private structure. The core that allocated this buffer header structure uses this pointer.
+
+#####3.1.2.6.7  pOutputPortPrivate
+pOutputPortPrivate is a private pointer of the output port that uses the buffer. If a buffer header is used on an input port communicating with the IL client, the value of the buffer’s pOutputPortPrivate is undefined.
+
+#####3.1.2.6.8  pInputPortPrivate
+pInputPortPrivate is a private pointer of the input port that uses the buffer. If a buffer header is used on an output port communicating with the IL client, the value of the buffer’s pInputPortPrivate is undefined.
+
+#####3.1.2.6.9  hMarkTargetComponent
+hMarkTargetComponent is the handle of the component that should emit an `OMX_EventMark` event upon processing this buffer. A NULL handle indicates that the buffer carries no mark. The `OMX_CommandMarkBuffer` command provides this handle to the marking component. The marking component, in turn, copies this handle to the marked buffer. Each component that is processing a buffer should compare its own handle to this handle and emit the mark if the handles match. A component should
+propagate this field from an input buffer to its associated output buffer.
+
+#####3.1.2.6.10  pMarkData
+The pMarkData pointer refers to IL client-specific data associated with the mark that is sent on `OMX_EventMark` when emitted. Upon receipt of a mark, the IL client may use this data to disambiguate this mark from others. The `OMX_CommandMarkBuffer` command provides this pointer to the marking component. The marking component, in turn, copies this pointer to the marked buffer. A component should propagate this field from an input buffer to its associated output buffer.
+
+#####3.1.2.6.11  nTickCount
+nTickCount is an optional entry that the component and IL client can update with a tick count when they access the component; not all components will update it. The value of nTickCount is in microseconds. Since this is a value relative to an arbitrary starting point, nTickCount cannot be used to determine absolute time.
+
+#####3.1.2.6.12  nTimeStamp
+nTimeStamp is a timestamp corresponding to the sample starting at the first logical sample boundary in the buffer. Timestamps of successive samples within the buffer may be inferred by adding the duration of the preceding buffer to the timestamp of the preceding buffer. A component should propagate this field from an input buffer to its associated output buffer.
+
+#####3.1.2.6.13  nFlags
+The nFlags field contains buffer specific flags, such as the EOS flag. A component should propagate this field from an input buffer to its associated output buffer. The list of flags is as follows:
+
+```C
+\#define OMX_BUFFERFLAG_EOS 0x00000001
+\#define OMX_BUFFERFLAG_STARTTIME 0x00000002
+\#define OMX_BUFFERFLAG_DECODEONLY 0x00000004
+\#define OMX_BUFFERFLAG_DATACORRUPT 0x00000008
+\#define OMX_BUFFERFLAG_ENDOFFRAME 0x00000010
+```
+
+######3.1.2.6.13.1  OMX_BUFFERFLAG_EOS
+A component sets EOS when it has no more data to emit on a particular output port. Thus, an output port shall set EOS on the last buffer it emits. The determination by a component of when an output port should cease sending data is implementation specific.
+
+######3.1.2.6.13.2  OMX_BUFFERFLAG_STARTTIME
+The source of a stream (e.g., a de-multiplexing component) sets the `OMX_BUFFERFLAG_STARTTIME` flag on the buffer that contains the starting timestamp for the stream. The starting timestamp corresponds to the first data that should be displayed at startup or after a seek operation. 
+
+The first timestamp of the stream is not necessarily the start time. For instance, in the case of a seek to a particular video frame, the target frame may be an interframe. Thus the first buffer of the stream will be the intraframe preceding the target frame, and the start time will occur with the target frame along with any other required frames required to reconstruct the target intervening.
+
+The `OMX_BUFFERFLAG_STARTTIME` flag is directly associated with the buffer timestamp. Thus, the association of the OMX_BUFFERFLAG_STARTTIME flag to buffer data and its propagation is identical to that of the timestamp.
+
+
+A clock component client that receives a buffer with the STARTTIME flag shall perform an OMX_SetConfig call on its sync port using `OMX_ConfigTimeClientStartTime` and pass the timestamp for the buffer.
+
+######3.1.2.6.13.3  OMX_BUFFERFLAG_DECODEONLY
+The source of a stream (e.g., a de-multiplexing component) sets the `OMX_BUFFERFLAG_DECODEONLY` flag on any buffer that should be decoded but not rendered. This flag is used, for instance, when a source seeks to a target interframe that requires decoding of frames preceding the target to facilitate reconstruction of the target. In this case, the source would emit the frames preceding the target downstream but mark them as decode only.
+
+The `OMX_BUFFERFLAG_DECODEONLY` flag is associated with buffer data and propagated in a manner identical to that of the buffer timestamp. A component that renders data should ignore all buffers with the `OMX_BUFFERFLAG_DECODEONLY` flag set.
+
+######3.1.2.6.13.4  OMX_BUFFERFLAG_DATACORRUPT
+The `OMX_BUFFERFLAG_DATACORRUPT` flag is set when the IL client identifies the data in the associated buffer as corrupt.
+
+######3.1.2.6.13.5  OMX_BUFFERFLAG_ENDOFFRAME
+`OMX_BUFFERFLAG_ENDOFFRAME` is an optional flag that is set by an output port when the last byte that a buffer payload contains is an end-of-frame. Any component that implements setting the `OMX_BUFFERFLAG_ENDOFFRAME` flag on an output port
+shall set this flag for every buffer sent from the output port containing an end-of-frame.No buffer payload can contain data from two separate frames.
+
+These restrictions enable input ports that receive data from the output port to detect an end-of-frame without requiring additional processing. These restrictions also enable an input port to easily detect if an output port supports this flag by its presence or absence on completion of the first frame.
+
+####3.1.2.6.14  nOutputPortIndex
+nOutputPortIndex contains the port index of the output port that uses the buffer. If a buffer header is used on an input port that is communicating with the IL client, the value of nOutputPortIndex is undefined.
+
+#####3.1.2.6.15  nInputPortIndex
+nInputPortIndex contains the port index of the input port that uses the buffer. If a buffer header is used on an input port that is communicating with the IL client, the value of nInputPortIndex is undefined.
+
+####3.1.2.7  OMX_PORT_PARAM_TYPE
+A component uses the OMX_PORT_PARAM_TYPE structure to identify the number and starting index of ports of a particular domain.
 
