@@ -1,5 +1,4 @@
 #OpenMAX IL 介绍和框架
-This section of the document describes the OpenMAX IL features and architecture.
 本章介绍了OpenMAX的特点和框架
 
 ##2.1  OpenMAX IL 简介
@@ -74,39 +73,38 @@ partitions for an OpenMAX implementation that provides these functions.
 ###2.1.3 系统组件
 图2-2显示了使用OpenMAX进行通信的各种类型。每个组件可以有任意数量的端口用于数据通信。具有单个输出端口的组件称为源组件(Source component)。具有单个输入端口的组件称为接收器组件(sink component)。完全运行在主处理器上的组件称为主组件。在松耦合的加速器上运行的组件称为加速器组件。OpenMAX可能直接与应用程序或异构的多媒体框架集成。
 
-Three types of communication are described. Non-tunneled communications defines a mechanism for exchanging data buffers between the IL client and a component. Tunneling defines a standard mechanism for components to exchange data buffers
-directly with each other in a standard way. Proprietary communication describes a proprietary mechanism for direct data communications between two components and may be used as an alternative when a tunneling request is made, provided both
-components are capable of doing so.
+
+下面描述了三种类型的通信。非通道通信(Non-tunneled)指的是IL客户端和组件之间的数据Buffer交换机制。通道(Tunneling)指的是组件之间直接交换数据Buffer的标准机制。专有通信(Proprietary）指的是两个组件之间直接信息数据通信，也可以当通道请求（tunneling request）时，作为一个两个组件通道的替代方案。
+
 ![](img/2_2.png)
 
 
 **表 2-2. OpenMAX IL 系统组件**
 
-####2.1.3.1  Component Profiles
-OpenMAX component functionality is grouped into two profiles: base profile and interop profile.
+####2.1.3.1  组件Profiles
+OpenMAX组件功能分为两个profile：base profile和interop profile。
 
-The base profile shall support non-tunneled communication. Base profile components may support proprietary communication. Base profile components do not support tunneled communication.
+Base profile 应该支持非管道（non-tunneled）通信， 可能支持专有通信（proprietary），不支持管道（tunneled）通信。
 
-The interop profile is a superset of the base profile. An interop profile component shall support non-tunneled communication and tunneled communication. An interop profile
-component may support proprietary communication.
+Interop profile是base profile的一个超集，它应该支持管道（tunneled）和非管道（non-tunneled）通信，可能支持专有通信。
 
-The primary difference between the interop profile and the base profile is that the component supports tunneled communication. The base profile exists to reduce the adoption barrier for OpenMAX implementers by simplifying the implementation. A base profile component does not need to implement tunneled communication.
+Interop profile和base profile的主要区别是是否支持管道（tunneled）通信。定义base profile的意义在于简化OpenMAX的实现难度，因为并不需要实现tunneled 通信
 
-###2.1.4 Component States
-Each OpenMAX component can undergo a series of state transitions, as depicted in Figure 2-3. Every component is first considered to be unloaded. The component shall be loaded through a call to the OpenMAX core. All other state transitions may then be achieved by communicating directly with the component.
+###2.1.4 组件状态
+每一个OpenMAX组件的运行可以视为一系列状态的转移，如图2-3。每一个组件的初始窗台为unloaded。组件可以通过调用OpenMAX Core的接口进行装载。其他的状态转移可以通过直接和组件进行通信来完成。
 
-A component can enter an invalid state when a state transition is made with invalid data. For example, if the callback pointers are not set to valid locations, the component may time out and alert the IL client of the error. The IL client shall stop, de-initialize, unload, and reload the component when the IL client detects an invalid state. Figure 2-3 depicts
-the invalid state as enterable from any state, although the only way to exit the invalid state is to unload and reload the component.
+当使用不正确的数据进行状态转移的时候，组件可以进入非法（invalide）状态。例如，如果回调函数的指针指向非法地址的时候，组件可能会超时并且向IL客户端发出错误警告。IL客户端检测到非法状态时， 应该停止运行，释放，卸载并且重新加载这个组件。图2-3描绘了所有的状态均可以跳转到非法状态，但非法状态只能跳转到unload状态，并且重新加载组件。
 
 ![](img/2_3.png)
 
-**Figure 2-3. Component States**
+**表 2-3. 组件状态**
 
-Transitioning into the IDLE state may fail since this state requires allocation of all operational resources. When the transition from LOADED to IDLE fails, the IL client may try again or may choose to put the component into the WAIT FOR RESOURCES state. Upon entering the WAIT FOR RESOURCE state, the component registers with a vendor-specific resource manager to alert it when resources have become available. The resource manager subsequently puts the component into the IDLE state. A command that the IL client sends controls all other state transitions except to INVALID.
+由于需要获得所需要的资源， 进入IDLE状态可能会失败。当从LOADED向IDLE转移失败时， IL客户端可以重试或者转入等待资源（Wait for resource）状态。当进入等待资源（wait for resource）状态是， 组件会向资源管理器注册，当资源可以可以获得时得到提醒。资源管理器随后将组件转至IDLE状态。IL客户端发送控制命令进行除了非法（invalide）状态以外的所以其他状态转移。
 
-The IDLE state indicates that the component has all of its needed resources but is not processing data. The EXECUTING state indicates that the component is pending reception of buffers to process data and will make required callbacks as specified in section 3. The PAUSED state maintains a context of buffer execution with the component without processing data or exchanging buffers. Transitioning from PAUSED to EXECUTING enables buffer processing to resume where the component left off.
+IDLE状态表明组件已经获得所有所需资源，但此时并没有处理数据。EXECUTING状态表明组件正在接受数据Buffer，进行处理，并且会发出响应的回调（见第3节）。PAUSE状态保持了数据buffer执行的上下文，但并不处理或交换数据或。从PAUSED到EXECUTING的状态转移可以当组件由挂起到继续时能够处理buffer。
 
-Transitioning from EXECUTING or PAUSED to IDLE will cause the context in which buffers were processed to be lost, which requires the start of a stream to be reintroduced. Transitioning from IDLE to LOADED will cause operational resources such as communication buffers to be lost.
+
+从EXECLUTING到PAUSED或者IDLE的转移可能会导致处理过的buffer上下文丢失，这时候需要重新开始一个新的流。IDLE到LOADED的转可能会导致运行的资源例如通信Buffer的丢失。
 
 ###2.1.5 Component Architecture
 Figure 2-4 depicts the component architecture. Note that there is only one entry point for the component (through its handle to an array of standard functions) but there are multiple possible outgoing calls that depend on how many ports the component has. Each component will make calls to a specified IL client event handler. Each port will also make calls (or callbacks) to a specified external function. A queue for pointers to buffer headers is also associated with each port. These buffer headers point to the actual buffers. The command function also has a queue for commands. All parameter or configuration calls are performed on a particular index and include a structure associated with that parameter or configuration, as depicted in Figure 2-4.
