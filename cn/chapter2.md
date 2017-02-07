@@ -6,8 +6,6 @@ This section of the document describes the OpenMAX IL features and architecture.
 OpenMAX IL层API定义了一个用于在系统提供的软件组件的接入层软件接口。目的是让拥有不同方法的组件提供一个标准化的接口和命令集， 来构建和销毁组件。
 
 ###2.1.1 架构概述
-Consider a system that requires the implementation of four multimedia processing functions denoted as F1, F2, F3, and F4. Each of these functions may be from different vendors or may be developed in house but by different groups within the organization. Each may have different requirements for setup and teardown. Each may have different methods of facilitating configuration and data transfer. The OpenMAX IL API provides a means of encapsulating these functions, singly or in logical groups, into components.
-
 如果一个系统，需要四种多媒体处理模块，记为F1，F2，F3和F4。这些模块可能来自不同的公司或部门。每一个处理模块可能都有不同的初始化/销毁，配置和数据传输接口。OpenMAX IL的API可以将这些不同的接口或模块封装为标准的组件。
 
 The API includes a standard protocol that enables compliant components that are potentially from different vendors/groups to exchange data with one another and be used interchangeably.
@@ -33,12 +31,11 @@ An OpenMAX component provides access to a standard set of component functions vi
 Every OpenMAX component shall have at least one port to claim OpenMAX conformance. Although a vendor may provide an OpenMAX-compatible component without ports, the bulk of conformance testing is dependent on at least one conformant port. The four types of ports defined in OpenMAX correspond to the types of data a port may transfer: audio, video, and image data ports, and other ports. Each port is defined as either an input or output depending on whether it consumes or produces buffers. In a system containing four multimedia processing functions F1, F2, F3, and F4, a system implementer might provide a standard OpenMAX interface for each of the functions. The implementer might just as easily choose any combination of functions. The delineation for the separation of this functionality is based on ports. Figure 2-1 shows a few possible
 partitions for an OpenMAX implementation that provides these functions.
 
-每个OpenMAX部件应至少有一个端口要求OpenMAX一致性。虽然供应商可以提供一个兼容的组件没有OpenMAX端口、协议一致性测试的大部分是依赖于至少一个符合港口。定义四种类型的OpenMAX端口对应一个端口可以传输数据的类型：音频、视频、图像数据的端口，其他端口。每个端口被定义为输入或输出取决于它是否消耗或产生缓冲区。在一个系统中含有四的多媒体处理功能，F1，F2，F3和F4，，系统的实现可以提供每一功能OpenMAX接口标准。实施者只能选择函数的任意组合。这个功能的分离是基于端口的划分。图2-1显示了几个可能的
-为实现这些功能分区提供了OpenMAX。
+每个OpenMAX部件应至少有一个端口要求OpenMAX一致性。虽然供应商可以提供一个兼容的组件没有OpenMAX端口、协议一致性测试的大部分是依赖于至少一个符合港口。定义四种类型的OpenMAX端口对应一个端口可以传输数据的类型：音频、视频、图像数据的端口，其他端口。每个端口被定义为输入或输出取决于它是否消耗或产生缓冲区。在一个系统中含有四的多媒体处理功能，F1，F2，F3和F4，，系统的实现可以提供每一功能OpenMAX接口标准。实施者只能选择函数的任意组合。这个功能的分离是基于端口的划分。图2-1显示了几个可能的为实现这些功能分区提供了OpenMAX。
 
 ![](img/2_1.png)
 
-**Figure 2-1. Possible Partitions for an OpenMAX Implementation**
+**表 2-1. OpenMAX实现的几种形式**
 
 ###2.1.2 名词解释
 本小节介绍了OpenMax IL 中所用的字母缩写和关键词定义
@@ -59,23 +56,23 @@ partitions for an OpenMAX implementation that provides these functions.
 | 关键词 | 含义 |
 | ------------- | ------------- |
 | Accelerated component | OpenMAX组件封装了一部分在加速器中运行的功能。加速组件具有某些特殊的特性，如能够支持某些类型的管道(tunnel)。|
-| Accelerator | Hardware designed to speed up processing of some functions.This hardware may also be referred to as accelerated hardware.Note that the accelerator may actually be software running in adifferent processor and not be hardware at all. |
-| AMR | Abbreviation of adaptive multimedia retrieval, which is an adaptive multi-rate codec from the 3GGP consortium. |
-| Host processor | The processor in a multi-core system that controls media acceleration and typically runs a high-level operating system. |
-| IL client |  The layer of software that invokes the methods of the core or component. The IL client may be a layer below the GUI application, such as GStreamer, or may be several layers below the GUI layer. In this document, the application refers to any software that invokes the OpenMAX methods. |
-| Main memory | Typically external memory that the host processor and the accelerator share. |
-| OpenMAX component | A component that is intended to wrap functionality that is required in the target system. The OpenMAX wrapper provides a standard interface for the function being wrapped. |
-| OpenMAX core | Platform-specific code that has the functionality necessary to locate and then load an OpenMAX component into main memory. The core also is responsible for unloading the component from memory when the application indicates that the component is no longer needed. In general, after the OpenMAX core loads a component into memory, the core will not participate in communication between the application and the component.|
-| Resource manager | A software entity that manages hardware resources in the system. |
-| RTP |  Abbreviation of real-time protocol, which is the Internet-standard protocol for the transport of real-time data, including audio and video. |
-| Synchronization | A mechanism for gating the operation of one component with another. |
-| Tunnels/Tunneling | The establishment and use of a standard data path that is managed directly between two OpenMAX components. |
+| Accelerator | 硬件加速功能处理器。这种硬件模块也可称为硬件加速器。注意，加速器也可以不是硬件而是运行在另一个处理器上的软件模块。|
+| AMR | 自适应多媒体检索的缩写，是一种从3GGP组织提出的自适应码率编解码算法。|
+| Host processor | 多核系统中控制多媒体加速的处理器，通常运行高级操作系统。|
+| IL client |  调用OpenMAX核心（Core）或组件(component)方法的软件层。IL客户端可能是低于GUI的软件层，如Gstreamer，也可能在GUI下面几层。在此文档中，应用是指任何调用OpenMAX方法的软件模块。|
+| Main memory | CPU和加速器共享的外部存储器。|
+| OpenMAX component | 封装目标系统所需功能的组件。OpenMAX封装了提供功能的标准接口。 |
+| OpenMAX core | 与系统平台相关的代码，提供了找到并加载OpenMAX组件到内存的必要功能。当应用不再需要此OpenMAX组件时，Core也负责销毁内存中的组件。总的来说，加载OpenMAX组件到内存后，Core将不参与组件和应用程序之间的通信|
+| Resource manager | 管理系统中硬件资源的软件模块。 |
+| RTP |  实时协议的缩写，它是用于传输实时数据的因特网标准协议，包括音频和视频。|
+| Synchronization | 组件之间相互控制的机制。|
+| Tunnels/Tunneling | 两个OpenMAX组件之间标准数据通路。|
 
 
 **表 2-2. 关键词定义**
 
 ###2.1.3 系统组件
-Figure 2-2 depicts the various types of communication enabled with OpenMAX. Each component can have an arbitrary number of ports for data communication. Components with a single output port are referred to as source components. Components with a single input port are referred to as sink components. Components running entirely on the host processor are referred to as host components. Components running on a loosely coupled accelerator are referred to as accelerator components. OpenMAX may be integrated directly with an application or may be integrated with multimedia framework components enabling heterogeneous implementations.
+图2-2显示了使用OpenMAX进行通信的各种类型。每个组件可以有任意数量的端口用于数据通信。具有单个输出端口的组件称为源组件(Source component)。具有单个输入端口的组件称为接收器组件(sink component)。完全运行在主处理器上的组件称为主组件。在松耦合的加速器上运行的组件称为加速器组件。OpenMAX可能直接与应用程序或异构的多媒体框架集成。
 
 Three types of communication are described. Non-tunneled communications defines a mechanism for exchanging data buffers between the IL client and a component. Tunneling defines a standard mechanism for components to exchange data buffers
 directly with each other in a standard way. Proprietary communication describes a proprietary mechanism for direct data communications between two components and may be used as an alternative when a tunneling request is made, provided both
