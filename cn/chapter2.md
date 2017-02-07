@@ -106,16 +106,16 @@ IDLE状态表明组件已经获得所有所需资源，但此时并没有处理�
 
 从EXECLUTING到PAUSED或者IDLE的转移可能会导致处理过的buffer上下文丢失，这时候需要重新开始一个新的流。IDLE到LOADED的转可能会导致运行的资源例如通信Buffer的丢失。
 
-###2.1.5 Component Architecture
-Figure 2-4 depicts the component architecture. Note that there is only one entry point for the component (through its handle to an array of standard functions) but there are multiple possible outgoing calls that depend on how many ports the component has. Each component will make calls to a specified IL client event handler. Each port will also make calls (or callbacks) to a specified external function. A queue for pointers to buffer headers is also associated with each port. These buffer headers point to the actual buffers. The command function also has a queue for commands. All parameter or configuration calls are performed on a particular index and include a structure associated with that parameter or configuration, as depicted in Figure 2-4.
+###2.1.5 组件架构
+表2-4描述了组件的架构。注意，该组件只有一个入口（通过一个拥有一系列标准方法接口的句柄），但可能会有多个回调，取决于组件有多少个端口（port）。每个组件会调用指定的IL客户端的事件处理程序（event handler）。每个端口（port）会调用（或回调）制定的外部方法。每个端口（port）会和一个指向buffer头的队列关联。这些buffer头指向真正的buffer。命令函数（command functions）也有一个命令队列。所有的参数或者配置函数需要提供一个指定的索引并包括一个参数或配置的结构，如图2-4。
 
 ![](img/2_4.png)
 
-**Figure 2-4. OpenMAX IL API Component Architecture**
+**图 2-4. OpenMAX IL API 组件架构**
 
-A port must support callbacks to the IL client and, when part of an interop profile component, must support communication with ports on other components. 
+端口必须支持向IL客户端的回调。当组件是interop profile的时候，必须支持和其他组件之间的通信。
 
-###2.1.6 Communication Behavior
+###2.1.6 通信行为
 Configuration of a component may be accomplished once the handle to the component has been received from the OpenMAX core. Data communication calls with a component are non-blocking and are enabled once the number of ports has been configured, each port has been configured for a specific data format, and the component has been put in the appropriate state. Data communication is specific to a port of the component. Input ports are always called from the IL client with `OMX_EmptyThisBuffer` (for more information, see section 3.2.2.17). Output ports are always called from the IL client with
 `OMX_FillThisBuffer` (for more information, see section 3.2.2.18). In an in-context implementation, callbacks to `OMX_EmptyBufferDone` or `OMX_FillBufferDone` will be made before the return. Figure 2-5 depicts the anticipated behavior for an in- context versus an out-of-context implementation. Note that the IL client should not make assumptions about return/callback sequences to enable heterogeneous integration of in-context and out-of-context OpenMAX components.
 
