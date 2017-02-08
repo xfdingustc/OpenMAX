@@ -340,16 +340,14 @@ buffer的阴影部分表示数据，白色部分表示没有数据。
 当为解码器的输入或者编码器的输出用压缩数据填充一块buffer的时候，只有当帧不是字节对齐时才会遇到限制填充完整帧的问题。在格式的协议之外必须加入额外的填充。之后填充会被删除，因为数据无法被附加。这需要拥有标准规范以外的填充位的知识。同样，如果填充不到位，无法保证标准符合端口配置的标准规范，完整的帧无法被放入buffer中。在这两种情况下，必须知道如果处理这种情况，而且每个组件是不同的。
 
 
-For interoperability, the content delivered in a buffer should not be assumed or required to be any number of complete frames, although at least one complete unit of data will be delivered in a buffer for uncompressed data formats. Compressed data formats do not place restrictions on the amount of content delivered in each buffer.
+为了保证通用性，buffer中存储的内容不能假设或要求是完整的若干帧，但对未压缩的数据格式，至少有一个完整数据单元会存在与一个buffer中。压缩数据格式不限制每个buffer中传递的内容量。
 
-###2.1.13  Buffer Flags and Timestamps
-Buffer flags associate certain properties (e.g., the end of a data stream) with the data contained in a buffer. A buffer timestamp associates a presentation time in microseconds with the data in the buffer used to time the rendering of that data. Once a timestamp is associated with a buffer, no component should alter the timestamp for rate control or synchronization, which are implemented in the clock component.
+###2.1.13  Buffer标记和时间戳
+buffer标记与buffer包含的数据的某些属性关联。buffer的时间戳以微秒为单位，表示数据被显示的时间。一旦一个时间戳和一块buffer关联，没有组件应该修改这个用于速率控制或同步的时间戳。同步是在时钟组件中实现的。
 
-Buffer metadata (i.e., flags and timestamps) applies to the first new logical unit in the buffer. Thus, given the presence of multiple logical units in a buffer, the metadata applies to the logical unit whose starting boundary occurs in the buffer. Unless otherwise stated (e.g., in a flag definition), a component that receives a logical input unit marked with a
-flag or timestamp shall copy that metadata to all logical output units that the input
-contributes to.
+buffer元数据（即标记和时间戳）适用于buffer中的第一个逻辑单元。因此，buffer中存在多个逻辑单元是，元数据适用于起始边界在buffer中的逻辑单元。除非另有规定（例如，一个标记的定义），一个组件收到有标记或者时间戳的逻辑单元应该将这个元数据拷贝到输入产生的逻辑输出单元中。
 
-###2.1.14  Synchronization
+###2.1.14  同步
 Synchronization is enabled by the use of synchronization (sync) ports on a clock component. These ports and the clock component are defined within the “other” domain and operate with the same protocols and calls that regulate data ports. The clock component maintains a media clock that tracks the position in the media stream based on audio and video reference clocks. The clock component transmits buffers containing time information (denoted by a media time update and containing the media clock’s current position, scale, and state) to client components via sync ports. A client component may time the execution of an operation (e.g., the presentation of a video frame) to a timestamp by requesting that the clock component send that timestamp when it matches the media clock. In this case, the client component executes the operation when it receives the fulfillment of the request over its sync port. Figure 2-14 illustrates the flow of time and data buffers in an example configuration of components.
 
 ![](img/2_14.png)
@@ -366,8 +364,8 @@ However, if the core supports static linking with components, then it will suppo
 
 A component can be registered statically using this mechanism but have the bulk of its code dynamically loaded.
 
-###2.1.17  Resource Management
-This section discusses the role of resource management in the OpenMAX IL API.
+###2.1.17  资源管理器
+这一小节讨论OpenMAX IL API中的资源管理器的角色。
 
 ####2.1.17.1  Need for Resource Management
 When a component is not allowed to go to idle state due to lack of resources, the IL client has cannot know what the limited resource is or which components are using that resource. Therefore, the IL client cannot, for example, free up resources for a mandatory audio stream to play without turning off all of the IL components or having specific knowledge of IL component implementations, neither of which is a viable option. These situations necessitate IL resource management.
