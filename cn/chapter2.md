@@ -269,6 +269,7 @@ OpenMAX虽然没有明确要求组件支持共享, 但定义了外部构件语�
 ![](img/2_10.png)
 
 **图 2-10. 端口重连接**
+
 在某些情况下，例如音频，将一个组件重新连接到另一个组件，老的组件淡出新的组件淡入也是可以的。图2-11展示了这是如何工作的。步骤1，组件A发送数据给组件B1。步骤2，IL客户端首先建立组件A和B2之间的管道，再建立B2和C之间的管道，然后启用两个管道上的所有端口。组件C可能将B1和B2通过不同的增益进行混音。步骤3，组件B1和组件A，C连接的端口都被禁用，B1的资源也会被释放。
 
 ![](img/2_11.png)
@@ -316,28 +317,28 @@ Ports make buffer handling callbacks upon availability of a buffer or to indicat
 
 buffer的阴影部分表示数据，白色部分表示没有数据。
 
-案例1：每块buffer全部或部分填充。在含有压缩数据帧的时候，帧由f1到fn表示。
+情况1：每块buffer全部或部分填充。在含有压缩数据帧的时候，帧由f1到fn表示。
 
 ![](img/2_13_1.png)
 
-案例1的优点在于解码回放的时候。buffer可以容纳多个帧以减少解码时候的所需的buffer数量。但这种情况下，解码器需要在解码帧的时候解析数据。它也要求解码器组件有一个帧生成buffer，用于放置被解析的数据或维护下一个buffer才能来的完成的部分帧。
+情况1的优点在于解码回放的时候。buffer可以容纳多个帧以减少解码时候的所需的buffer数量。但这种情况下，解码器需要在解码帧的时候解析数据。它也要求解码器组件有一个帧生成buffer，用于放置被解析的数据或维护下一个buffer才能来的完成的部分帧。
 
-案例2：每一块buffer都被完整的压缩数据帧填充。
+情况2：每一块buffer都被完整的压缩数据帧填充。
 
 ![](img/2_13_2.png)
 
-案例2不同与案例1，它需要压缩的数据首先被解析一遍以保证只有完整的帧被放在buffer中。案例2 也需要解码组件解析数据，但可能不需要额外的工作buffer用于解析帧。
+情况2不同与情况1，它需要压缩的数据首先被解析一遍以保证只有完整的帧被放在buffer中。案例2 也需要解码组件解析数据，但可能不需要额外的工作buffer用于解析帧。
 
-案例3：每一块buffer仅被一个压缩数据帧填充。
+情况3：每一块buffer仅被一个压缩数据帧填充。
 
 ![](img/2_13_3.png)
 
 案例3的好处是解码组件并不需要解析数据。解析的工作在源组件中完成。但对于这种方式，数据传输是瓶颈。数据传输一次只能传递一帧。基于这种时间，每一帧传输的消耗可能比从buffer中解析帧有更大的消耗。
 
-At a minimum, a decoder or encoder component would be required to support case 1. By definition, if a codec component can support case 1, then it can support cases 2 and 3, but only if the compression format allows for byte-aligned frame boundaries. Operating in case 2 or 3 may not make sense when, for example, configuring an Adaptive Multi-Rate (AMR) codec for RTP-payload format, bandwidth-efficient mode. The non-byte aligned frames defined by this format would not fit the byte-aligned frame boundaries defined by these cases.
+一个编码器或解码器至少要支持第一种情况。根据定义，编解码其可以支持情况1，那么他可以支持情况2和3，但只有但压缩格式允许帧边界的字节对其。情况2或3的可能没有意义，例如，在RTP-payload格式，bandwidth-efficient模式的AMR的配置中。这种格式定义并不是字节对其，并不适合这些情况定义的字节对齐的帧边界。
 
-When filling a buffer with compressed data for input to a decoder or output from an encoder, a problem with limiting the filling to complete frames only might arise when frames are not byte aligned. Padding would have to be added outside of any padding defined in the format specification. The padding would then need to be removed, since the data could not be appended as is. This would require knowledge of the padding bits outside of any standard specification. Likewise, if this padding were not in place to maintain compliance with the standards specification for the port configuration, complete
-frames could not always be placed in the buffers. In either case, specific knowledge of how this situation is handled would be required, and may be different between components.
+当为解码器的输入或者编码器的输出用压缩数据填充一块buffer的时候，只有当帧不是字节对齐时才会遇到限制填充完整帧的问题。在格式的协议之外必须加入额外的填充。之后填充会被删除，因为数据无法被附加。这需要拥有标准规范以外的填充位的知识。同样，如果填充不到位，无法保证标准符合端口配置的标准规范，完整的帧无法被放入buffer中。在这两种情况下，必须知道如果处理这种情况，而且每个组件是不同的。
+
 
 For interoperability, the content delivered in a buffer should not be assumed or required to be any number of complete frames, although at least one complete unit of data will be delivered in a buffer for uncompressed data formats. Compressed data formats do not place restrictions on the amount of content delivered in each buffer.
 
