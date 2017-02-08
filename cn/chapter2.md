@@ -176,24 +176,24 @@ OpenMAX虽然没有明确要求组件支持共享, 但定义了外部构件语�
 
 当命令组件由loaded转移到idle的时候，它需要按顺序进行下面的操作：
 
-1. 组件决定那种buffer共享它需要实现。如果有，需要遵循下列规则：
+- 1.组件决定那种buffer共享它需要实现。如果有，需要遵循下列规则：
 
 	- a) 它的一个输入端口到一个或多个输出端口、一个输出端口到一个输入端口。
 	- b) 只有提供者端口可以复用其他端口的buffer。
 	- c) 一个组件在多个输出端口上共享buffer需要输出的端口是只读的，如图2-7所示。
-	
+
 ![](img/2_7.png)
 
 **图 2-7. 可能的共享关系**
 
-2. 组件确定哪个是其供应端口和分配器端口（如果有有的话）。如果不从同组件的非供应端口复用buffer是，一个供应端口也是一个分配端口（即，不是一个分享端口）。在图2-8中，供应端口是有箭头指向外面的端口，非供应端口是有箭头指向它的端口。端口上的箭头表明了共享关系。端口旁边的正方形（buffer）表明了这是一个分配器端口。
+- 2.组件确定哪个是其供应端口和分配器端口（如果有有的话）。如果不从同组件的非供应端口复用buffer是，一个供应端口也是一个分配端口（即，不是一个分享端口）。在图2-8中，供应端口是有箭头指向外面的端口，非供应端口是有箭头指向它的端口。端口上的箭头表明了共享关系。端口旁边的正方形（buffer）表明了这是一个分配器端口。
  
 
 ![](img/2_8.png)
 
 **图 2-8. 确定分配器**
 
-3. 组件在每个分配器端口上分配buffer的策略如下：
+- 3.组件在每个分配器端口上分配buffer的策略如下：
 	- a) 每个复用分配器端口buffer的端口，分配器端口会确定其共享端口的buffer需求。见下面的条例A。
 	- b) 分配器端口通过调用`OMX_GetParameter`决定其管道端口buffer要求。参见条例B。
 	- c) 分配器端口根据自己的最大需求，管道端口的要求，和所有的共享端口的要求分配buffer。
@@ -208,46 +208,41 @@ OpenMAX虽然没有明确要求组件支持共享, 但定义了外部构件语�
 - B. 当一个非供应端口接受到`OMX_GetParameter`调用来查询自己的buffer需求是，它需要首先确定所有复用自己buffer的端口的需求（见条例A），然后返回自己和其他这些端口的最大值。
 - C. 当一个非供应端口接受到来自其管道端口的`OMX_GetParameter`调用，它需要把这些buffer和组件内所有和它复用buffer的端口共享。
 - D. 当端口A和组件内复用其buffer的端口B共享一个buffer时，端口B需要调用 `OMX_UseBuffer`并且将buffer传递给他的管道端口。
-- E. 当非供应端口接受到其管道端口的`OMX_SetParameter` 的`OMX_IndexParamPortDefinition`调用时，供应端口应该将值`nBufferCountActual`传递给所有复用其buffer的端口。
- 
-Likewise, each supplier port that receives the `nBufferCountActual` field in this way shall pass the `nBufferCount` to its tunneled port by performing an `OMX_SetParameter` call on `OMX_IndexParamPortDefinition`. The actual number of buffers used throughout the dependency chain is propagated in this way.
+- E. 当非供应端口接受到其管道端口的`OMX_SetParameter` 的`OMX_IndexParamPortDefinition`调用时，供应端口应该将值`nBufferCountActual`传递给所有复用其buffer的端口。同理，每一个通过这种方式收到 `nBufferCountActual`值的供应端口，需要通过调用传递`OMX_SetParameter` 的`OMX_IndexParamPortDefinition`的接口将`nBufferCount` 值给他的管道端口， buffer的实际数量以这种方式在整个依赖链中传播。
 
-A component may transition from loaded to idle when all enabled ports have all the buffers they require.
+当一个组件获得所需的所有buffer，便可以由loaded状态转为idle状态。
 
-In practice, there could be a direct mapping between the following:
+在实践中，可以有如下的直接映射：
 
--  Steps 1-3 discussed earlier and code in the loaded-to-idle case in the state transition handler
--  Obligation A and a subroutine to determine a shared ports buffer requirements
--  Obligation B and the OMX_GetParameter implementation
--  Obligation C and the OMX_UseBuffer implementation
--  Obligation D and a subroutine to share a buffer from one port to another
+-  步骤1~3对应loaded向idle状态的转变
+-  条例A对应一个共享端口的buffer需求的子函数
+-  条例B对应`OMX_GetParameter`的实现
+-  条例C对应`OMX_UseBuffer`的实现
+-  条例D对应一个端口向另一个端口分享buffer的子函数
   
-To clarify why conformity to these steps and obligations leads to proper buffer allocation, consider the example illustrated in Figure 2-9. Note that this example is contrived to exercise every step and obligation outlined above, and is therefore more complex then most real use cases.
+为了搞清楚合理分配buffer的这些步骤和条例，可以参考图2-9.注意这个例子是用于实践上面步骤和条例的，实际的用例会负责的多。
 
 ![](img/2_9.png)
 
-**Figure 2-9. Example of Buffer Allocation**
+**图 2-9. Buffer分配的例子**
 
-This discussion focuses only on the transition of component 3 to idle; similar operations occur inside the other components.
+下面集中讨论组件3如何到idle状态的，其他的组件类似。
 
-When the IL client commands component 3 to transition from loaded to idle, it follows the following prescribed steps:
+当IL客户端命令组件3从loaded向idle转移时，它需要遵循下面的步骤：
 
-1. Component 3 notices that it can re-use port d’s buffers since port e is a supplier port. Component 3 establishes a sharing relationship from port d to port e.
-2. Component 3 decides that since port d is a supplier port that does not re-use buffers,
-port d shall be an allocator port.
-3. Component 3 allocates and distributes port d’s buffers:
-	- a) Since port e will re-use the buffer of port d, component 3 determines the buffer requirements of port e. In accordance with obligation A, port e calls `OMX_GetParameter` on port f to determine its buffer requirements and reports the requirements as the maximum between its own and those of port f.
-	- b) Port d calls `OMX_GetParameter` on port c to determine its buffer requirements. In accordance with obligation B, port c shall determine the buffer requirements of port b. In accordance with obligation A, port b returns the maximum of its own requirements and the requirement of port a (retrieved via `OMX_GetParameter`) when queried. Port c then returns the maximum of its own requirements and the requirements that port b returns.
-	- c) Port d allocates buffers according to the maximum of its own requirements and the requirements that ports c and e return. The resulting buffers are effectively allocated according to the maximum requirements of ports a, b, c, d, e, and f, all of which use the buffers of port d.
-	- d) Since port e will re-use the buffers of port d, component 3 shares these buffers with port e. In accordance with obligation D, port e calls `OMX_UseBuffer` on port f for every buffer that is shared.
-	- e) For each buffer allocated, port d calls `OMX_UseBuffer` on port c. In accordance with obligation C, port c shares each buffer with port b. Port b, in turn, obeys obligation D and calls `OMX_UseBuffer` on port a with the buffer.
+1. 组件3注意到它可以重用端口d的buffer，因为端口e是一个供应者端口。组件3建立了端口d到端口e的共享关系。
+2. 既然端口d是一个供应者端口并且不复用buffer，那么端口d是一个分配者端口。
+3. 端口3分配并部署端口d的buffer:
+	- a) 既然端口e复用端口d的buffer，组件3确定端口e的需求。根据条例A， 端口e调用端口f的`OMX_GetParameter`确定f的需求，并将自己的和f的最大值报告出去。
+	- b) 端口d调用端口c的`OMX_GetParameter`接口确定他的buffer需求。根据条例B，端口C需要确定端口b的buffer需求。更具提条例A，端口b返回自己和a的最大需求。端口c得到这个需求在和自己的需求比较返回最大值。
+	- c) 端口d根据自己的需求和端口c，e返回的最大值分配buffer， 分配的buffer是根据端口a,b,c,d,e,f需求的最大值确定的，所有的端口都复用端口d的buffer。
+	- d) 既然端口e复用端口d的buffer，组件3用端口e分享这些buffer。根据条例D，端口e调用端口f的`OMX_UseBuffer`接口以分享这些buffer。 
+	- e) 对于每块分配的buffer，端口d调用端口c的 `OMX_UseBuffer`。根据提条例C，端口C和B分享这些buffer。而端口b根据条例D调用端口a`OMX_UseBuffer`
 
-Since all ports of all components now have their buffers, all components may transition to idle.
+至此，所有组件的所有端口都有自己的buffer，所有的组件都可以转移到idle状态。
 
-####2.1.7.4  Protocol for Using a Shared Buffer
-When an input port receives a shared buffer via an OMX_EmptyThisBuffer call, the
-input port may re-use that buffer on an output port that it is sharing with the output port
-by obeying the following rules:
+####2.1.7.4  使用共享buffer的协议
+当一个输入端口收到`OMX_EmptyThisBuffer`调用得到一块共享buffer是，输入端口可以通过遵循下面的准则复用这块buffer到其共享端口：
 
 - The output port calls `OMX_EmptyThisBuffer` on its tunneling port before the input port sends the corresponding `OMX_EmptyBufferDone` call to its tunneling port.
 - The input port does not call `OMX_EmptyBufferDone` until all output ports on which the buffer is shared (i.e., via `OMX_EmptyThisBuffer` calls) return `OMX_EmptyBufferDone`.
