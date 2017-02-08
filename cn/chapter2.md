@@ -91,7 +91,7 @@ Interop profile是base profile的一个超集，它应该支持管道（tunneled
 Interop profile和base profile的主要区别是是否支持管道（tunneled）通信。定义base profile的意义在于简化OpenMAX的实现难度，因为并不需要实现tunneled 通信
 
 ###2.1.4 组件状态
-每一个OpenMAX组件的运行可以视为一系列状态的转移，如图2-3。每一个组件的初始窗台为unloaded。组件可以通过调用OpenMAX Core的接口进行装载。其他的状态转移可以通过直接和组件进行通信来完成。
+每一个OpenMAX组件的运行可以视为一系列状态的转移，如图2-3。每一个组件的初始状态为unloaded。组件可以通过调用OpenMAX Core的接口进行装载。其他的状态转移可以通过直接和组件进行通信来完成。
 
 当使用不正确的数据进行状态转移的时候，组件可以进入非法（invalide）状态。例如，如果回调函数的指针指向非法地址的时候，组件可能会超时并且向IL客户端发出错误警告。IL客户端检测到非法状态时， 应该停止运行，释放，卸载并且重新加载这个组件。图2-3描绘了所有的状态均可以跳转到非法状态，但非法状态只能跳转到unload状态，并且重新加载组件。
 
@@ -116,57 +116,63 @@ IDLE状态表明组件已经获得所有所需资源，但此时并没有处理�
 端口必须支持向IL客户端的回调。当组件是interop profile的时候，必须支持和其他组件之间的通信。
 
 ###2.1.6 通信行为
-Configuration of a component may be accomplished once the handle to the component has been received from the OpenMAX core. Data communication calls with a component are non-blocking and are enabled once the number of ports has been configured, each port has been configured for a specific data format, and the component has been put in the appropriate state. Data communication is specific to a port of the component. Input ports are always called from the IL client with `OMX_EmptyThisBuffer` (for more information, see section 3.2.2.17). Output ports are always called from the IL client with
-`OMX_FillThisBuffer` (for more information, see section 3.2.2.18). In an in-context implementation, callbacks to `OMX_EmptyBufferDone` or `OMX_FillBufferDone` will be made before the return. Figure 2-5 depicts the anticipated behavior for an in- context versus an out-of-context implementation. Note that the IL client should not make assumptions about return/callback sequences to enable heterogeneous integration of in-context and out-of-context OpenMAX components.
+一旦OpenMAX core获得了组件的句柄，便可以开始对组件进行配置工作。当端口的数量被确定后，组件数据通信的方法便可以调用，并且是不可以阻塞的。
+每一个端口会指定一个特定的数据格式，并且组件会进入合适的状态。数据通信是和组件的端口（port）绑定的。IL客户端总是会调用输入端口`OMX_EmptyThisBuffer`接口（具体信息可以看3.2.2.17小节），调用输出端口（port）的`OMX_FillThisBuffer`（具体信息可以看3.2.2.18小节）。如果是同步执行，在返回之前，回调用回调函数`OMX_EmptyBufferDone` 或 `OMX_FillBufferDone`。 图2-5表述了同步执行和异步执行的对比行为。注意， IL客户端不应该假设返回和回调的先后顺序， 必须对同步和异步的OpenMAX组件都进行异构集成。
 
 ![](img/2_5.png)
 
-**Figure 2-5. Out-of-Context versus In-Context Operation**
+**图 2-5. 异步对比同步操作**
 
-Data communications with components is always directed to a specific component port. Each port has a component-defined minimum number of buffers it shall allocate or use. A port associates a buffer header with each buffer. A buffer header references data in the buffer and provides metadata associated with the contents of the buffer. Every component port shall be capable of allocating its own buffers or using pre-allocated buffers; one of these choices will usually be more efficient than the other.
+与组件的数据通信总是指向特定的组件端口。每一个端口（port）有一个分配供使用的buffer，最小数量由组件制定。端口将buffer头与每一块buffer相关联。buffer头拥有buffer数据的引用，并且提供响应的元数据（metadata）。每个组件端口应该既可以分配自己的buffer也可以使用分配好的buffer，往往某一种方案会比其他的效率高。 
 
-###2.1.7 Tunneled Buffer Allocation and Sharing
-This section describes buffer allocation for tunneling components and buffer sharing. For a given tunnel, exactly one port supplies the buffers and passes those buffers to the non-supplier port. In the simplest case, the supplier also allocates the buffers. Under the right circumstances, however, a tunneling component may choose to re-use buffers from one port on another to avoid memory copies and optimize memory usage. This practice is known as buffer sharing.
+###2.1.7 管道（tunneled） buffer的分配和共享
+本小结描述了管道（tunnel）组件的buffer分配和共享。对于给定的管道，会有一个端口提供buffer并且将buffer转递给接受的端口。最简单的情况，提供者同时会分配这些buffer。然而，在适当的情况下，管道（tunnel）组件会选择复用buffer，以免多次内存拷贝。这种做法被称为buffer共享
 
-A tunnel between any two ports represents a dependency between those ports. Buffer sharing extends that dependency so that all ports that share the same set of buffers form an implicit dependency chain. Exactly one port in that dependency chain allocates the buffers shared by all of them.
 
-Buffer sharing is implemented within a component and is transparent to other components. The non-supplier port is unaware whether the supplier’s component allocated the buffers itself or re-used buffers from another of its ports. Furthermore, the supplier is unaware of whether the non-supplier’s component will re-use the buffers that the supplier provided.
+两个端口之间的管道表示了两个端口之间的依赖关系。buffer共享扩展了这个依赖关系，使得共享同一组buffer的所有端口形成隐式依赖链。该依赖链中的一个端口分配所有的共享buffer。
 
-Strictly speaking, a component is only obligated to obey the external semantics required of it and may implement buffer sharing behind those semantics. More specifically, external semantics require that a component do the following:
 
--  Provide buffers on all of its supplier ports.
--  Accurately communicate buffer requirements on its ports.
--  Pass a buffer from an output port to an input port with an OMX_EmptyThisBuffer call.
--  Return a buffer from an input port to an output port with an OMX_FillThisBuffer call.
+共享buffer是在组件内部实现的，并且对其他组件透明。接受端口并不知道提供者是分配还是复用了这些buffer。此外，输出也不知道输入是否复用了这些buffer。
 
-If a component chooses to share buffers, its implementation may fulfill those requirements by doing the following:
 
--  Provide re-used buffers on some supplier ports.
--  Account for the needs of shared ports when communicating buffer requirements on ports.
--  Internally pass a buffer from an input port to an output port between an OMX_EmptyThisBuffer call and its corresponding `OMX_EmptyBufferDone` call.
+严格的说，一个组件只需要遵守他所需要的外部语义，并且实现buffer共享。更具体的说，外部语义要求一个组件能够做到如下：
+
+-  在所有输出端口（Provide buffer）上提供buffer。
+-  精确地在其端口上传递buffer要求。
+-  从一个输出端口向一个输入端口通过调用`OMX_EmptyThisBuffer`转递数据
+-  从一个输入端口向一个输出端口通过调用`OMX_FillThisBuffer`返回一个buffer
+
+如果一个组件使用共享buffer, 它需要实现如下功能：
+
+-  在某些输出端口上提供可复用的buffer
+-  当端口上有buffer通信的需求时可以共享端口。
+-  调用`OMX_EmptyThisBuffer`和其对应的回调函数`OMX_EmptyBufferDone`之间， 内部会从输出端口到另一个输出端口传递一个buffer
   
-OpenMAX defines external component semantics to be compatible with sharing, although it does not explicitly require that a component support sharing. This section discusses the implementation of those semantics in the context of buffer sharing. If no components are sharing buffers, the implementation reduces to a simpler set of steps and obligations.
 
-####2.1.7.1  Relevant Terms
-This section describes terms used in discussions of tunneled buffer allocation and sharing.Figure 2-6 illustrates the concepts.
+OpenMAX虽然没有明确要求组件支持共享, 但定义了外部构件语义需要兼容共享方式。本节讨论在共享buffer的上下文中实现这些语义。如果没有组件共享buffer，则实现简化为一组简单的步骤和过称。
+
+####2.1.7.1  相关术语
+本节描述了tunneled buffer的分配和共享。图2-6描绘了概念。
+
 ![](img/2_6.png)
 
-**Figure 2-6. Example of Buffer Allocation and Sharing Relationships**
+**图 2-6. Buffer分配和共享关系的例子**
 
-Among a pair of ports that are tunneling, the port that calls UseBuffer on its neighbor is known as a supplier port. A buffer supplier port does not necessarily allocate its buffers; it may re-use buffer from another port on the same component. Ports a and c in Figure 2-6 illustrate supplier ports.
 
-The port that receives the UseBuffer calls from its neighbor is known as a non-supplier port. Ports b and d Figure 2-6 illustrate non-supplier ports.
+在一对管道连接的端口中，端口会调用他的邻居端口`UseBuffer`接口告知自己为输出端口。输出端口并不一定需要分配内存，它可以复用同组件下另一端口的buffer。在图2-6中，端口a和c描绘了输出端口。
 
-A port’s tunneling port is the port neighboring it with which it shares a tunnel. For example, port b in Figure 2-6 is the tunneling port to port a. Likewise, port a is the tunneling port to port b.
+从邻居端口接收到`UseBuffer`调用的端口是一个输出端口。图2-6中的端口b和d描绘了出入端口。
 
-An allocator port is a supplier port that also allocates its own buffers. Port a in Figure 2-6 is the only allocator port.
 
-A sharing port is a port that re-uses buffers from another port on the same component. For example, port c in Figure 2-6 is a sharing port.
+一个端口的管道端口是指其共享管道的邻居端口。例如，在图2-6中端口b是端口a的管道端口。同理，a也是b的管道端口。
 
-A tunneling component is a component that uses at least one tunnel.
+一个分配器端口（allocator port）是一个输出端口，而且可有分配自己的buffer。图2-6中的端口a是唯一的分配器端口。
 
-The set of buffer requirements for a port includes the number of buffers required and the required size of each buffer. The maximum of multiple sets of buffer requirements is defined as the largest number of buffers mandated in any set combined with the largest size mandated in any set. One port retrieves buffer requirements from its tunneled port in a OMX_PORTDEFINITIONTYPE structure via an OMX_GetParameter call on the tunneled port's component. Note that one port may determine buffer requirements from a port that shares its buffers without resorting to an OMX_GetParameter call since they
-are both contained in the same component.
+共享端口（sharing port）是可以复用同一组件中其他端口buffer的端口。例如，图2-6中端口c就是共享端口。
+
+一个管道组件指的是至少有一个管道的组件。
+
+端口buffer的需求包括了buffer的数量和每块buffer的大小。buffer所需的最大值是指所需数量的最大值和所需大小的最大值。一个端口通过其管道端口调用`OMX_GetParameter`接口，并传入结构体`OMX_PORTDEFINITIONTYPE`参数来获得buffer的需求。注意，一个端口可能从其共享buffer的端口而不是接受`OMX_GetParameter`接口来确定其buffer的需求，因为他们隶属于同一个组件。
 
 ####2.1.7.2  IL Client Component Setup
 To set up tunneling components, the IL client shall perform the following setup operations in this order:
