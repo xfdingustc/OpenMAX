@@ -7,9 +7,7 @@ OpenMAX IL层API定义了一个用于在系统提供的软件组件的接入层�
 ###2.1.1 架构概述
 如果一个系统，需要四种多媒体处理模块，记为F1，F2，F3和F4。这些模块可能来自不同的公司或部门。每一个处理模块可能都有不同的初始化/销毁，配置和数据传输接口。OpenMAX IL的API可以将这些不同的接口或模块封装为标准的组件。
 
-The API includes a standard protocol that enables compliant components that are potentially from different vendors/groups to exchange data with one another and be used interchangeably.
-
-该API包括一个标准协议，使兼容的组件可能来自不同的供应商/组彼此交换数据和使用互换。
+该API包括一个可以让来自不同的供应商/组织之间可以彼此交换数据的相互兼容组件的标准协议。
 
 The OpenMAX IL API interfaces with a higher-level entity denoted as the IL client, which is typically a functional piece of a filter graph multimedia framework or an application. The IL client interacts with a centralized IL entity called the core. The IL client uses the OpenMAX core for loading and unloading components, setting up direct communication between two OpenMAX components, and accessing the component’s method functions.
 
@@ -21,7 +19,7 @@ IL客户端总是通过IL核心与组件进行通信。在大多数情况下，�
 
 Components embody the media processing function or functions. Although this specification clearly defines the functionality of the OpenMAX core, the component provider defines the functionality of a given component. Components operate on four types of data that are defined according to the parameter structures that they export: audio, video, image, and other (e.g., time data for synchronization).
 
-组件体现媒体处理功能或功能。虽然本规范明确规定了OpenMAX核心功能，组件供应商定义了组件的功能。组件操作的四种类型的数据，根据他们出口的参数结构定义：音频，视频，图像，和其他（例如，同步的时间数据）。
+组件内嵌了多媒体处理功能。虽然本规范明确规定了OpenMAX Core的功能，组件供应商定义了组件的功能。组件可以操作四种类型的数据：音频，视频，图像，和其他（例如，同步的时间数据）。
 
 An OpenMAX component provides access to a standard set of component functions via its component handle. These functions allow a client to get and set component and port configuration parameters, get and set the state of the component, send commands to the component, receive event notifications, allocate buffers, establish communications with a single component port, and establish communication between two component ports. 
 
@@ -174,47 +172,49 @@ OpenMAX虽然没有明确要求组件支持共享, 但定义了外部构件语�
 
 端口buffer的需求包括了buffer的数量和每块buffer的大小。buffer所需的最大值是指所需数量的最大值和所需大小的最大值。一个端口通过其管道端口调用`OMX_GetParameter`接口，并传入结构体`OMX_PORTDEFINITIONTYPE`参数来获得buffer的需求。注意，一个端口可能从其共享buffer的端口而不是接受`OMX_GetParameter`接口来确定其buffer的需求，因为他们隶属于同一个组件。
 
-####2.1.7.2  IL Client Component Setup
-To set up tunneling components, the IL client shall perform the following setup operations in this order:
+####2.1.7.2  IL客户端组建设置
+为了配置管道组件，IL客户端需要按顺序进行下面的操作：
 
-1. Load all tunneling components and set up the tunnels on these components.
-2. Command all tunneling components to transition from the loaded state to the idle state.
+1. 加载所有的管道组件并配置这些组件的管道。
+2. 将所有的管道组件的状态由loaded转为idle。
 
-If the IL client does not operate in this manner, a tunneling component might never transition to idle because of the possible dependencies between components.
+如果IL客户端没有按此进行操作，一个管道组件可能由于组件间的依赖关系而永远无法转移到idle状态。
 
-####2.1.7.3  Component Transition from Loaded to Idle State with Sharing
-During the OMX_SetupTunnel call, the two ports of a tunnel establish which port (input or output) will act as the buffer supplier. Thus, when a component is commanded to transition from loaded to idle, it is aware of the roles of all its supplier or non-supplier ports.
+####2.1.7.3  共享时组件状态由loaded到idle的转移
+在`OMX_SetupTunnel`调用时，管道的两个端口会确立哪个端口（输入或输出）是buffer提供者。因此，当一个组件被要求从loaded转移到idle时，它会知道它所有提供者和接受者端口的角色。
 
-When commanded to transition from loaded to idle, a component performs the following operations in this order:
+当命令组件由loaded转移到idle的时候，它需要按顺序进行下面的操作：
 
-1. The component determines what buffering sharing it will implement, if any. The following rules apply:
+1. 组件决定那种buffer共享它需要实现。如果有，需要遵循下列规则：
 
-	- a) A component may re-use a buffer only from one of its one input ports on one or more of its output ports or from one of its output ports on one of its input ports.
-	- b) Only a supplier port may re-use the buffers from another port.
-	- c) A component sharing buffers over multiple output ports requires read-only output port as shown in Figure 2-7.
+	- a) A component may re-use a buffer only from one of its one input ports on one or more of its output ports or from one of its output ports on one of its input ports.组件可以仅在其一个或多个输出端口上或其一个输出端口的一个输出端口上从一个输入端口重新使用缓冲区。
+	- b) 只有提供者端口可以复用其他端口的buffer。
+	- c) A component sharing buffers over multiple output ports requires read-only output port as shown in Figure 2-7.一个组件在多个输出端口共享缓存需要只读输出端口，如图2-7所示。
 ![](img/2_7.png)
 
-**Figure 2-7. Possible Sharing Relationships**
+**图 2-7. 可能的共享关系**
 
 2. The component determines which of its supplier ports, if any, are also allocator ports. A supplier port is also an allocator port only if it does not re-use buffers from a non-supplier port on the same component (i.e., is not a sharing port). In Figure 2-8, a supplier port is a port with an arrow pointing away. A non-supplier port is a port with an arrow pointing toward it. An arrow from one port represents a sharing relationship. A port with boxes (buffers) adjacent to it represents an allocator port.
+该组件确定其供应商端口，如果有的话，也是分配器端口。一个供应商的港口也只有当它不重用缓冲区在同一组件的非供应商端口分配器端口（即，不是一个共享端口）。在图2-8中，供应商的港口是一个箭头指向端口。非供应商端口是一个箭头指向它的端口。来自一个端口的箭头表示共享关系。一口箱子（缓冲区）毗邻，它代表了一个分配器端口。
+
 
 ![](img/2_8.png)
 
 **Figure 2-8. Determining Allocators**
 
-3. The component allocates its buffers for each of its allocator ports as follows:
-	- a) For each port that re-uses the allocator ports buffer, the allocator port determines the buffer requirements of the sharing port. See obligation A below.
-	- b) The allocator port determines the buffer requirements of its tunneled port via an `OMX_GetParameter` call. See obligation B below.
-	- c) The allocator port allocates buffers according to the maximum of its own requirements, the requirements of the tunneled port, and the requirement of all of the sharing ports.
-	- d) The allocator port informs the non-supplier port that it is tunneling with of the actual number of buffers via an `OMX_SetParameter` call on `OMX_IndexParamPortDefinition` by setting the value of `nBufferCountActual` appropriately. See obligation E below.
-	- e) The allocator port shares its buffers with each sharing port that re-uses its buffers. See obligation D below.
-	- f) For every allocated buffer, the allocator port calls `OMX_UseBuffer` on its tunneling port. See obligation C below.
+3. The component allocates its buffers for each of its allocator ports as follows: 该组件分配的缓冲区为每个端口的配置如下：
+	- a) For each port that re-uses the allocator ports buffer, the allocator port determines the buffer requirements of the sharing port. See obligation A below.每个端口，再使用分配器端口缓冲，分配器端口决定了共享端口的缓冲要求。见义务如下。
+	- b) The allocator port determines the buffer requirements of its tunneled port via an `OMX_GetParameter` call. See obligation B below.分配器端口决定其隧道端口缓冲要求通过` omx_getparameter `呼叫。参见以下义务B。
+	- c) The allocator port allocates buffers according to the maximum of its own requirements, the requirements of the tunneled port, and the requirement of all of the sharing ports.分配器端口分配缓冲区，根据自己的需求最大，对隧道口的要求，和所有的共享端口的要求。
+	- d) The allocator port informs the non-supplier port that it is tunneling with of the actual number of buffers via an `OMX_SetParameter` call on `OMX_IndexParamPortDefinition` by setting the value of `nBufferCountActual` appropriately. See obligation E below.分配器端口通知非供应商端口，它是隧道的实际数量的缓冲区通过` omx_setparameter `呼吁` omx_indexparamportdefinition `通过设定值` nbuffercountactual `适当。见以下义务。
+	- e) The allocator port shares its buffers with each sharing port that re-uses its buffers. See obligation D below.分配器港口股每个共享端口，再利用其缓冲区缓冲区。见义务d。
+	- f) For every allocated buffer, the allocator port calls `OMX_UseBuffer` on its tunneling port. See obligation C below.每个分配的缓冲区，分配器的港口` omx_usebuffer `在隧道口。参见以下义务。
 	
 
-A component shall also fulfill the following obligations:
+A component shall also fulfill the following obligations:组件还应履行下列义务：
 
-- A. For a sharing port to determine its requirements, the sharing port shall first call `OMX_GetParameter` on its tunneled port to query for requirements and then return the maximum of its own requirements and the requirements of the tunneled ports.
-- B.  When a non-supplier port receives an `OMX_GetParameter` call querying its buffer requirements, the non-supplier port shall first determine the requirements of all ports that re-use its buffers (see obligation A) and then return the maximum of its own requirements and those of its ports.
+- A. For a sharing port to determine its requirements, the sharing port shall first call `OMX_GetParameter` on its tunneled port to query for requirements and then return the maximum of its own requirements and the requirements of the tunneled ports.A.一个共享端口来确定其需求，共享端口应先打电话` omx_getparameter `在隧道口的查询要求，然后返回自己的要求最大的隧道口的要求。
+- B.  When a non-supplier port receives an `OMX_GetParameter` call querying its buffer requirements, the non-supplier port shall first determine the requirements of all ports that re-use its buffers (see obligation A) and then return the maximum of its own requirements and those of its ports.当一个非供应商端口接收` omx_getparameter `电话查询缓冲要求，非供应商口岸应当首先确定所有端口的利用其缓冲区的要求（见义务）然后返回自己的需求最大的港口。
 - C.  When a non-supplier port receives an `OMX_UseBuffer` call from its tunneled port, the non-supplier port shall share the buffer with all ports on that component that re-use it.
 - D.  When a port A shares a buffer with a port B on the same component where port B re-uses the buffer of port A, then port B shall call `OMX_UseBuffer` and pass the buffer on its tunneled port.
 - E.  When a non-supplier port receives a `OMX_SetParameter` call on `OMX_IndexParamPortDefinition` from its tunneled port, the non-supplier port shall pass the nBufferCountActual field to any port that re-uses its buffers.
