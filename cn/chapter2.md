@@ -178,37 +178,37 @@ OpenMAX虽然没有明确要求组件支持共享, 但定义了外部构件语�
 
 1. 组件决定那种buffer共享它需要实现。如果有，需要遵循下列规则：
 
-	- a) A component may re-use a buffer only from one of its one input ports on one or more of its output ports or from one of its output ports on one of its input ports.组件可以仅在其一个或多个输出端口上或其一个输出端口的一个输出端口上从一个输入端口重新使用缓冲区。
+	- a) 它的一个输入端口到一个或多个输出端口、一个输出端口到一个输入端口。
 	- b) 只有提供者端口可以复用其他端口的buffer。
-	- c) A component sharing buffers over multiple output ports requires read-only output port as shown in Figure 2-7.一个组件在多个输出端口共享缓存需要只读输出端口，如图2-7所示。
+	- c) 一个组件在多个输出端口上共享buffer需要输出的端口是只读的，如图2-7所示。
+	
 ![](img/2_7.png)
 
 **图 2-7. 可能的共享关系**
 
-2. The component determines which of its supplier ports, if any, are also allocator ports. A supplier port is also an allocator port only if it does not re-use buffers from a non-supplier port on the same component (i.e., is not a sharing port). In Figure 2-8, a supplier port is a port with an arrow pointing away. A non-supplier port is a port with an arrow pointing toward it. An arrow from one port represents a sharing relationship. A port with boxes (buffers) adjacent to it represents an allocator port.
-该组件确定其供应商端口，如果有的话，也是分配器端口。一个供应商的港口也只有当它不重用缓冲区在同一组件的非供应商端口分配器端口（即，不是一个共享端口）。在图2-8中，供应商的港口是一个箭头指向端口。非供应商端口是一个箭头指向它的端口。来自一个端口的箭头表示共享关系。一口箱子（缓冲区）毗邻，它代表了一个分配器端口。
-
+2. 组件确定哪个是其供应端口和分配器端口（如果有有的话）。如果不从同组件的非供应端口复用buffer是，一个供应端口也是一个分配端口（即，不是一个分享端口）。在图2-8中，供应端口是有箭头指向外面的端口，非供应端口是有箭头指向它的端口。端口上的箭头表明了共享关系。端口旁边的正方形（buffer）表明了这是一个分配器端口。
+ 
 
 ![](img/2_8.png)
 
-**Figure 2-8. Determining Allocators**
+**图 2-8. 确定分配器**
 
-3. The component allocates its buffers for each of its allocator ports as follows: 该组件分配的缓冲区为每个端口的配置如下：
-	- a) For each port that re-uses the allocator ports buffer, the allocator port determines the buffer requirements of the sharing port. See obligation A below.每个端口，再使用分配器端口缓冲，分配器端口决定了共享端口的缓冲要求。见义务如下。
-	- b) The allocator port determines the buffer requirements of its tunneled port via an `OMX_GetParameter` call. See obligation B below.分配器端口决定其隧道端口缓冲要求通过` omx_getparameter `呼叫。参见以下义务B。
-	- c) The allocator port allocates buffers according to the maximum of its own requirements, the requirements of the tunneled port, and the requirement of all of the sharing ports.分配器端口分配缓冲区，根据自己的需求最大，对隧道口的要求，和所有的共享端口的要求。
-	- d) The allocator port informs the non-supplier port that it is tunneling with of the actual number of buffers via an `OMX_SetParameter` call on `OMX_IndexParamPortDefinition` by setting the value of `nBufferCountActual` appropriately. See obligation E below.分配器端口通知非供应商端口，它是隧道的实际数量的缓冲区通过` omx_setparameter `呼吁` omx_indexparamportdefinition `通过设定值` nbuffercountactual `适当。见以下义务。
-	- e) The allocator port shares its buffers with each sharing port that re-uses its buffers. See obligation D below.分配器港口股每个共享端口，再利用其缓冲区缓冲区。见义务d。
-	- f) For every allocated buffer, the allocator port calls `OMX_UseBuffer` on its tunneling port. See obligation C below.每个分配的缓冲区，分配器的港口` omx_usebuffer `在隧道口。参见以下义务。
+3. 组件在每个分配器端口上分配buffer的策略如下：
+	- a) 每个复用分配器端口buffer的端口，分配器端口会确定其共享端口的buffer需求。见下面的条例A。
+	- b) 分配器端口通过调用`OMX_GetParameter`决定其管道端口buffer要求。参见条例B。
+	- c) 分配器端口根据自己的最大需求，管道端口的要求，和所有的共享端口的要求分配buffer。
+	- d) 分配器端口通过调用`OMX_SetParameter`的`OMX_IndexParamPortDefinition`设置合适的`nBufferCountActual`值，来通知非供应端口实际的buffer数量。见下面的条例E。
+	- e) 分配器端口和每个复用其buffer的共享端口共享buffer。见条例D。
+	- f) 每个分配的buffer，分配器端口调用其管道端口的`OMX_UseBuffer`接口。参见条例C。
 	
 
-A component shall also fulfill the following obligations:组件还应履行下列义务：
+组件还应遵循下列条例：
 
-- A. For a sharing port to determine its requirements, the sharing port shall first call `OMX_GetParameter` on its tunneled port to query for requirements and then return the maximum of its own requirements and the requirements of the tunneled ports.A.一个共享端口来确定其需求，共享端口应先打电话` omx_getparameter `在隧道口的查询要求，然后返回自己的要求最大的隧道口的要求。
-- B.  When a non-supplier port receives an `OMX_GetParameter` call querying its buffer requirements, the non-supplier port shall first determine the requirements of all ports that re-use its buffers (see obligation A) and then return the maximum of its own requirements and those of its ports.当一个非供应商端口接收` omx_getparameter `电话查询缓冲要求，非供应商口岸应当首先确定所有端口的利用其缓冲区的要求（见义务）然后返回自己的需求最大的港口。
-- C.  When a non-supplier port receives an `OMX_UseBuffer` call from its tunneled port, the non-supplier port shall share the buffer with all ports on that component that re-use it.
-- D.  When a port A shares a buffer with a port B on the same component where port B re-uses the buffer of port A, then port B shall call `OMX_UseBuffer` and pass the buffer on its tunneled port.
-- E.  When a non-supplier port receives a `OMX_SetParameter` call on `OMX_IndexParamPortDefinition` from its tunneled port, the non-supplier port shall pass the nBufferCountActual field to any port that re-uses its buffers.
+- A. 一个共享端口要确定其需求，共享端口应先调用其管道端口的`OMX_GetParameter`来查询需求，然后返回自己和其管道端口的最大要求。
+- B. 当一个非供应端口接受到`OMX_GetParameter`调用来查询自己的buffer需求是，它需要首先确定所有复用自己buffer的端口的需求（见条例A），然后返回自己和其他这些端口的最大值。
+- C. 当一个非供应端口接受到来自其管道端口的`OMX_GetParameter`调用，它需要把这些buffer和组件内所有和它复用buffer的端口共享。
+- D. 当端口A和组件内复用其buffer的端口B共享一个buffer时，端口B需要调用 `OMX_UseBuffer`并且将buffer传递给他的管道端口。
+- E. 当非供应端口接受到其管道端口的`OMX_SetParameter` 的`OMX_IndexParamPortDefinition`调用时，供应端口应该将值`nBufferCountActual`传递给所有复用其buffer的端口。
  
 Likewise, each supplier port that receives the `nBufferCountActual` field in this way shall pass the `nBufferCount` to its tunneled port by performing an `OMX_SetParameter` call on `OMX_IndexParamPortDefinition`. The actual number of buffers used throughout the dependency chain is propagated in this way.
 
