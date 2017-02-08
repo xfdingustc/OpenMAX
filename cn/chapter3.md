@@ -3,15 +3,15 @@ The OpenMAX Integration Layer API allows integration layer clients to control mu
 
 The OpenMAX Integration Layer API is defined in a set of header files, namely:
 
--  OMX_Types.h: Data types used in the OpenMAX IL
--  OMX_Core.h: OpenMAX IL core API
--  OMX_Component.h: OpenMAX component API
--  OMX_Audio.h: OpenMAX audio domain data structures
--  OMX_IVCommon.h: OpenMAX structures common to image and video domains
--  OMX_Video.h: OpenMAX video domain data structures
--  OMX_Image.h: OpenMAX image domain data structures
--  OMX_Other.h: OpenMAX other domain data structures (includes A/V synchronization)
--  OMX_Index.h: Index of all OpenMAX-defined data structures
+-  OMX_Types.h: OpenMAX IL使用的数据类型
+-  OMX_Core.h: OpenMAX IL 核心 API
+-  OMX_Component.h: OpenMAX 组件 API
+-  OMX_Audio.h: OpenMAX 音频数据结构
+-  OMX_IVCommon.h: OpenMAX 视频和图像通用的数据结构
+-  OMX_Video.h: OpenMAX 视频数据结构
+-  OMX_Image.h: OpenMAX 图像据结构
+-  OMX_Other.h: OpenMAX 其他的数据结构 (包括音视频同步)
+-  OMX_Index.h: OpenMAX定义的数据结构的索引
 
 This section describes how the OpenMAX core and OpenMAX components are configured for operation.
 

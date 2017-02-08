@@ -242,34 +242,33 @@ OpenMAX虽然没有明确要求组件支持共享, 但定义了外部构件语�
 至此，所有组件的所有端口都有自己的buffer，所有的组件都可以转移到idle状态。
 
 ####2.1.7.4  使用共享buffer的协议
-当一个输入端口收到`OMX_EmptyThisBuffer`调用得到一块共享buffer是，输入端口可以通过遵循下面的准则复用这块buffer到其共享端口：
+当一个输入端口收到`OMX_EmptyThisBuffer`调用得到一块共享buffer时，输入端口可以通过遵循下面的准则复用这块buffer到其共享端口：
 
-- The output port calls `OMX_EmptyThisBuffer` on its tunneling port before the input port sends the corresponding `OMX_EmptyBufferDone` call to its tunneling port.
-- The input port does not call `OMX_EmptyBufferDone` until all output ports on which the buffer is shared (i.e., via `OMX_EmptyThisBuffer` calls) return `OMX_EmptyBufferDone`.
+- 输出端口要在其管道端口的返回相应的回调函数`OMX_EmptyBufferDone`前，调用其管道端口的`OMX_EmptyThisBuffer`方法。 
+- 输入端口不能在所有的与其共享buffer的输出端口返回`OMX_EmptyBufferDone`之前返回`OMX_EmptyBufferDone`。 
  
-####2.1.7.5  Component Transition from Loaded to Idle State without Sharing
-If a component does not share buffers, the component implementation reduces to a
-simpler set of steps and obligations than the case for sharing buffers.
+####2.1.7.5  非共享情况下组件状态由loaded到idle的转移
+如果一个组件没有共享buffer，和共享buffer的情况相比起来，组件的实现的步骤和准则会简单一些：
 
-When commanded to transition from loaded to idle, a non-sharing component performs the following operations in this order:
+一个非共享组件要从loaded转移到idle状态时，它需要按下面的顺序进行操作：
 
-1. The component determines what buffering sharing it will implement, if any. In this case, there is no sharing.
-2. The component determines which of its supplier ports, if any, are also allocator ports. All supplier ports are allocator ports.
-3. The component allocates it buffers for each allocator port as follows:
-	- a. Since there is no sharing, the component does not ask the sharing port for requirements.
-	- b. The allocator determines the buffer requirements of its tunneled port via an `OMX_GetParameter` call.
-	- c. The allocator allocates buffers according to the maximum of its own requirements and the requirements of the tunneled ports.
-	- d. Since there is no sharing, no buffers must be passed to sharing ports.
-	- e. For every allocated buffer, the allocator port calls `OMX_UseBuffer` on its tunneling port.
+1. 组件确定那些buffer共享需要实现。在这情况下，没有共享需要实现。
+2. 组件确定那些是供应端口，如果有，他们都是分配者端口。所有的供应端口都是分配者端口。
+3. 组件按照下面准则为所有的分配者端口分配buffer：
+	- a. 由于没有buffer共享，组件不需要获取共享端口的需求。
+	- b. 分配器通过调用`OMX_GetParameter`来确定其管道端口的buffer需求。
+	- c. 分配器端口根据自身和其管道端口对buffer需求的最大值来分配buffer。
+	- d. 由于没有共享，没有buffer需要转递到共享端口。
+	- e. 对每一块分配出来的buffer， 分配器端口调用其管道端口的`OMX_UseBuffer`
 	
-All component obligations described for sharing components do not apply to non-sharing components.
+所有共享组件的准则不适用与非共享组件。
 
-###2.1.8 Port Reconnection
+###2.1.8 端口重连接
 Port reconnection enables a tunneled component to be replaced with another tunneled component without having to tear down surrounding components. In Figure 2-10, component B1 is to be replaced with component B2. To do this, the component A output port and the component B input port shall first be disabled with the port disable command. Once all allocated buffers have returned to their rightful owner and freed, the component A output port may be connected to component B2. The component B1 output port and the component C input port should similarly be given the port disable command. After all allocated buffers have returned to their owners and freed, the component C input port may be connected to the component B2 output port. Then all ports may be given the enable command.
 
 ![](img/2_10.png)
 
-**Figure 2-10. Port Reconnection**
+**图 2-10. 端口重连接**
 
 In some cases such as audio, reconnecting one component to another and then fading in data for one component while fading out data for the original component may be desirable. Figure 2-11 illustrates how this would work. In step 1, component A sends data to component B1, which then sends the data on to component C. Components A and C both have an extra port that is disabled. In step 2, the IL client first establishes a tunnel between component A and B2, then establishes a tunnel between B2 and C, and then enables all ports in the two tunnels. Component C may be able to mix data from components B1 and B2 at various gains, assuming that these are audio components. In step 3, the ports connected to component B1 from components A and C are disabled, and component B1 resources may be de-allocated.
 
