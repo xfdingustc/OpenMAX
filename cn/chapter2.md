@@ -264,73 +264,75 @@ OpenMAX虽然没有明确要求组件支持共享, 但定义了外部构件语�
 所有共享组件的准则不适用与非共享组件。
 
 ###2.1.8 端口重连接
-Port reconnection enables a tunneled component to be replaced with another tunneled component without having to tear down surrounding components. In Figure 2-10, component B1 is to be replaced with component B2. To do this, the component A output port and the component B input port shall first be disabled with the port disable command. Once all allocated buffers have returned to their rightful owner and freed, the component A output port may be connected to component B2. The component B1 output port and the component C input port should similarly be given the port disable command. After all allocated buffers have returned to their owners and freed, the component C input port may be connected to the component B2 output port. Then all ports may be given the enable command.
+端口的重连接可以使一个管道组件被另一个管道组件替换而不需要卸载周围的组件。图2-10，组件B1被组件B2替换。要做到这一点，组件A的输出端口和组件B的输入端口首先应该用disable的命令禁用。一旦所有所有分配的buffer回到他们的拥有者并且释放，组件A的输出端口便可以连接到组件B2.组件B1输出端口和组件C的输入端口应该给予同样的禁用命令。所有分配buffer回到他们的拥有者并被释放后，组件C的输入端口可以重新连接到组件B2的输出端口。然后，可以给所有的端口发启用命令。
 
 ![](img/2_10.png)
 
 **图 2-10. 端口重连接**
-
-In some cases such as audio, reconnecting one component to another and then fading in data for one component while fading out data for the original component may be desirable. Figure 2-11 illustrates how this would work. In step 1, component A sends data to component B1, which then sends the data on to component C. Components A and C both have an extra port that is disabled. In step 2, the IL client first establishes a tunnel between component A and B2, then establishes a tunnel between B2 and C, and then enables all ports in the two tunnels. Component C may be able to mix data from components B1 and B2 at various gains, assuming that these are audio components. In step 3, the ports connected to component B1 from components A and C are disabled, and component B1 resources may be de-allocated.
+在某些情况下，例如音频，将一个组件重新连接到另一个组件，老的组件淡出新的组件淡入也是可以的。图2-11展示了这是如何工作的。步骤1，组件A发送数据给组件B1。步骤2，IL客户端首先建立组件A和B2之间的管道，再建立B2和C之间的管道，然后启用两个管道上的所有端口。组件C可能将B1和B2通过不同的增益进行混音。步骤3，组件B1和组件A，C连接的端口都被禁用，B1的资源也会被释放。
 
 ![](img/2_11.png)
 
-**Figure 2-11. Reconnecting Components**
+**图 2-11. 组件重连接**
 
-###2.1.9 Queues and Flush
-A separate command queue enables the component to flush buffers that have not been processed and return these buffers to the IL client when using non-tunneled communication, or to the tunneled port when using tunneled communication. In Figure 2-12, assume that the component has an output port that is using buffers allocated by the IL client. In this example, the client sends a series of five buffers to the component before sending the flush command. Upon processing the flush command, the component returns each unprocessed buffer in the original order, and finally triggers its event handler to notify the IL client. Two buffers were already processed before the flush command got processed. The component returns the remaining three buffers unfilled and generates an event. The IL client should wait for the event before attempting to de-initialize the component.
+###2.1.9 队列和清空
+一个单独的命令队列能够在使用非管道通信时让组件将没有处理的buffer清空并返回给IL客户端，或在使用管道通信是返回给管道端口。图2-12，假设端口有一个输出端口，它使用了IL客户端分配的buffer。在这个例子中，客户端在发送清空命令之前发送了一串共5块buffer给组件。处理清空命令时，组件按照原先的顺序返回每一个未处理的buffer，并触发事件处理程序通知IL客户端。有两块buffer已经在收到清空命令之前被处理了。组件返回剩下的三块buffer并产生一个事件。IL客户端应该等待此时间然后再去尝试释放这个组件。
 
 ![](img/2_12.png)
 
-**Figure 2-12. Flushing Buffers**
+**图 2-12. 清空队列**
 
-###2.1.10  Marking Buffers
-An IL client can also trigger an event to be generated when a marked buffer is encountered. A buffer can be marked in its buffer header. The mark is internally transmitted from an input buffer to an output buffer in a chain of OpenMAX components. The mark enables a component to send an event to the IL client when the marked buffer is encountered. Figure 2-13 depicts how this works.
+###2.1.10  标记buffer
+当遇到标记buffer是，IL客户端还可以触发一个事件。一块buffer可以在其头部被标记。标记在OpenMAX组件的输入端口和输出端口直接内部传递。当遇到这块标记buffer是，组件可以发送一个时间给IL客户端。图2-13显示了这是怎么工作的。
+
 
 ![](img/2_13.png)
 
-**Figure 2-13. Marking Buffers**
-The IL client sends a command to mark a buffer. The next buffer sent from the output port of the component is marked B1. Component B processes the B1 buffer and provides the results in buffer B2 along with the mark. When component C receives the marked buffer B2 through its input port, the component does not trigger its event handler until it has processed the buffer.
+**图 2-13. 标记buffer**
+IL客户端发送一个命令来标记buffer。组件的输出端口发送的下一个buffer被标记成B1。组件B处理buffer B1后提供了加入此标记的buffer B2.当组件C从输入端口中收到这个标记过的buffer B2，组件处理这块buffer出发事件处理程序。
 
-###2.1.11  Events and Callbacks
+###2.1.11  时间和回调
 Six kinds of events are sent by a component to the IL client:
+组件发送给客户端一共有六种事件：
 
-- Error events are enumerated and can occur at any time
-- Command complete notification events are triggered upon successful execution of a command.
-- Marked buffer events are triggered upon detection of a marked buffer by a component.
-- A port settings changed notification event is generated when the component changes its port settings.
-- A buffer flag event is triggered when an end of stream is encountered.
-- A resources acquired event is generated when a component gets resources that it has been waiting for.
+- 任何时间都可能遇到错误时间
+- 命令成功处理后会触发一个命令完成通知时间
+- 组件检测到一块标记的buffer时会触发标记buffer事件
+- 当组件改变其端口设置时会触发端口设置改变通知事件
+- 码流结束时（EOS）会触发buffer标志事件。
+- 组件获得正在等待的资源时会触发资源获得事件。
 
 Ports make buffer handling callbacks upon availability of a buffer or to indicate that a buffer is needed.
+端口标记buffer的处理回调指示了buffer的可用性或表明buffer是需要的。
 
-###2.1.12  Buffer Payload
-The port configuration is used to determine and define the format of the data to be transferred on a component port, but the configuration does not define how that data exists in the buffer.
+###2.1.12  Buffer载荷(Payload)
+端口的配置用于确定传输到组件端口上的数据格式，但配置并没有定义数据怎么样存储在buffer中的。
 
-There are generally three cases that describe how a buffer can be filled with data. Each case presents its own benefits.
+通常有三种情况描述了数据如何填充buffer，每一种都有其优点。
 
-In all cases, the range and location of valid data in a buffer is defined by the pBuffer, nOffset, and nFilledLength parameters of the buffer header. The pBuffer parameter points to the start of valid data in the buffer. The nOffset parameter indicates the number of bytes between the start of the buffer and the start of valid data. The nFilledLength parameter specifies the number of contiguous bytes of valid data in the buffer. The valid data in the buffer is therefore located in the range pBuffer + nOffset to pBuffer + nOffset + nFilledLength.
+在所有的情况下，buffer中有效的数据范围和位置通过buffer头部中的参数`pBuffer`, `nOffset` 和`nFilledLength`来定义。参数`pBuffer`指向了buffer的起始地址。参数`nOffset`指示了buffer的起始位置和有效数据开始之间的字节数。参数`nFilledLength`指定了buffer中连续有效数据的字节数。因此buffer中的有效数据位于`pBuffer` + `nOffset` 和 `pBuffer` + `nOffset` + `nFilledLength`之间。
 
-The following cases are representative of compressed data in a buffer that is transferred into or out of a component when decoding or encoding. In all cases, the buffer just provides a transport mechanism for the data with no particular requirement on the content. The requirement for the content is defined by the port configuration parameters.
+下面的案例代表了在编解码时输入或输出到一个组件的压缩过的数据。在所有的情况中，buffer仅为数据提供传输机制，而对内容没有特别的要求。对内容的要求有端口配置参数定义。
 
-The shaded portion of the buffer represents data and the white portion denotes no data.
+buffer的阴影部分表示数据，白色部分表示没有数据。
 
-Case 1: Each buffer is filled in whole or in part. In the case of buffers containing compressed data frames, the frames are denoted by f1 to fn.
+案例1：每块buffer全部或部分填充。在含有压缩数据帧的时候，帧由f1到fn表示。
 
 ![](img/2_13_1.png)
 
-Case 1 provides a benefit when decoding for playback. The buffer can accommodate multiple frames and reduce the number of transactions required to buffer an amount of data for decoding. However, this case may require the decoder to parse the data when decoding the frames. It also may require the decoder component to have a frame-building buffer in which to put the parsed data or maintain partial frames that would be completed with the next buffer.
+案例1的优点在于解码回放的时候。buffer可以容纳多个帧以减少解码时候的所需的buffer数量。但这种情况下，解码器需要在解码帧的时候解析数据。它也要求解码器组件有一个帧生成buffer，用于放置被解析的数据或维护下一个buffer才能来的完成的部分帧。
 
-Case 2: Each buffer is filled with only complete frames of compressed data.
+案例2：每一块buffer都被完整的压缩数据帧填充。
 
 ![](img/2_13_2.png)
 
-Case 2 differs from case 1 because it requires the compressed data to be parsed first so that only complete frames are put in the buffers. Case 2 may also require the decoder component to parse the data for decoding. This case may not require the extra working buffer for parsing frames required in case 1.
+案例2不同与案例1，它需要压缩的数据首先被解析一遍以保证只有完整的帧被放在buffer中。案例2 也需要解码组件解析数据，但可能不需要额外的工作buffer用于解析帧。
 
-Case 3: Each buffer is filled with only one frame of compressed data.
+案例3：每一块buffer仅被一个压缩数据帧填充。
 
 ![](img/2_13_3.png)
 
-The benefit in case 3 is that a decoding component does not have to parse the data. Parsing would be required at the source component. However, this method creates a bottleneck in data transfer. Data transfer would be limited to one frame per transfer. Depending on the implementation, one transaction per frame could have a greater impact on performance than parsing frames from a buffer.
+案例3的好处是解码组件并不需要解析数据。解析的工作在源组件中完成。但对于这种方式，数据传输是瓶颈。数据传输一次只能传递一帧。基于这种时间，每一帧传输的消耗可能比从buffer中解析帧有更大的消耗。
 
 At a minimum, a decoder or encoder component would be required to support case 1. By definition, if a codec component can support case 1, then it can support cases 2 and 3, but only if the compression format allows for byte-aligned frame boundaries. Operating in case 2 or 3 may not make sense when, for example, configuring an Adaptive Multi-Rate (AMR) codec for RTP-payload format, bandwidth-efficient mode. The non-byte aligned frames defined by this format would not fit the byte-aligned frame boundaries defined by these cases.
 
