@@ -400,25 +400,24 @@ OpenMAX的一个目的是提供给上层一个硬件无关的软件层。硬件�
 
 ####2.1.17.3  组件优先级
 
-Each IL component has a priority value (an OMX_U32 integer) that the IL client sets. The actual range of priorities can be left up to the platform, but the priority order is important and needs to be the same across IL implementations. A descending order of priority is chosen with 0 denoting the highest priority. The following tie-breaking rule also applies: When comparing components with the same priority, components that have acquired the resource most recently should be deemed to be of higher priority than components that have had the resource longer.
+每一个IL组件有一个优先级值（一个OMX_32整型数），由IL客户端设置。优先级的实际范围可以留给平台，但优先级的顺序是重要的，并且在IL的实现中要一致：递减的优先级顺序。即0是最高优先级。下面的准则也适用：当相同优先级组件进行比较时，最近获得资源的组件应该有更高的优先级。
 
-####2.1.17.4  Behavioral Rules
-The following behavior is defined on the IL layer:
+####2.1.17.4  行为准则
+IL层定义了下面的行为准则：
 
--  The `OMX_ErrorInsufficientResources` error is called only on a component that attempts to go to the idle state when there are insufficient resources and sufficientresources cannot be freed by preempting lower priority components.
--  A component is not aware that preemption is occurring when it tries to go to the idle state, and the resources it requires need to be freed by preempting lower priority components.
--  When a component that already has resources needs to be preempted, it will send the `OMX_ErrorResourcesPreempted` and `OMX_ErrorResourcesLost` errors to the IL client as it moves from the Executing or Paused state to the Idle state and
-from the Idle state to the Loaded state, respectively.
--  In cases where the IL client wants to know when the stream associated with the component can be resumed or started, the IL client shall request to be notified when resources are available. This occurs by putting the component into the
-OMX_StateWaitForResources state. When the resources become available, the component automatically goes to the idle state. When the client receives the notification that the component is in the idle state, it can try to move the rest of the components in that chain to the idle state as well. This automatic movement to the idle state ensures that in cases where multiple IL clients are waiting for the same resource, the IL client can resume or start the stream as soon as the resource is available. If the component were to automatically move just to the loaded state, then another IL client could grab that resource first. These behavioral rules are intended to cover only the interactions between the IL client(s) and the IL components.
+-  错误`OMX_ErrorInsufficientResources`仅当组件试图进入idle状态但没有足够资源或是资源无法被低优先级的组件释放时调用。
+-  组件不知道当他试图进入idle状态时会发生资源抢占，资源需要被低优先级的组件释放。
+-  当一个组件已经被抢占，当从Executing或pause状态转移到idle时，发出`OMX_ErrorResourcesPreempted`错误，如果从idle转移到loaded状态时，发出 `OMX_ErrorResourcesLost` 错误给IL客户端，
+-  如果IL客户端想知道什么时候和流相关的组件可以被启动或继续，IL客户端则应该要求当资源可用时被通知。这是通过将组件转移到`OMX_StateWaitForResources`状态。当资源可用时，组件自动进入idle状态。当客户端收到组件进入idle状态的通知是，它会尝试将其他的链上的组件也转移到idle状态。这种向idle状态的资源的自动转移可以确保当多个IL客户端等待同一个资源时，IL客户端可以当资源可用时立即开始或恢复。如果组件自动转移到loaded状态，其他的IL客户端可以首先获得资源。这些行为准则可以覆盖IL客户端和组件之间的交互。
 
-####2.1.17.5  Hardware Vendor-Specific Resource Manager
-To implement the behavioral rules, a hardware vendor-specific resource manager will need to exist below the IL layer and perform the following functions:
+####2.1.17.5  硬件厂商资源管理器
+要实现行为准则，需要在IL层下拥有一个硬件厂商的资源管理器，并执行下面的功能：
 
--  Implement and manage the wait queue(s).
--  Keep track of available resources.
--  Keep track of each component that has resources and which resources they are using.
--  Notify a component or multiple components that they need to give up their resources when a higher priority component requests the resource.
--  Notify the highest priority component waiting for a resource when the resource is available.
+-  实现并管理等待队列。
+-  跟踪可用资源。
+-  跟踪每一个拥有资源的组件和被使用的资源。
+-  当一个高优先级组件请求资源时，通知一个或多个组件让他们放弃他们的资源。
+-  当资源可用时通知等待资源高优先级的组件。
 
 The actual interactions between the components and the hardware vendor-specific resource manager(s) are vendor-specific and outside the scope of this document. Section 3 provides more details of the parameter structures and use cases related to priority and resource management.
+组件和硬件资源管理器之间的实际交互是基于特定厂商
