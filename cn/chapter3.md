@@ -29,57 +29,62 @@ OpenMAX IL API定义了一组头文件，他们的名称是：
 ###3.1.1 枚举
 `OMX_Core.h`中定义了5个32位整型枚举数
 
-- `OMX_ERRORTYPE`为每一个OpenMAX IL API方法的返回值（见3.1.1.3小节）
-- `OMX_COMMANDTYPE` includes the possible commands that an IL client can send to an OpenMAX component (see section 3.1.1.1).
-- `OMX_EVENTTYPE` includes events that can be generated inside an OpenMAX component and that are passed to the IL client through a callback function (see section 3.1.1.4).
-- `OMX_BUFFERSUPPLIERTYPE` includes all the possibilities for the buffer supplier in the case of tunneled ports. A description of the use of this enumerative type can be found in section 3.1.1.5.
-- `OMX_STATETYPE`, which is described in section 3.1.1.2.Figure 3-1 shows the enumerations defined in `OMX_Core.h`.
+- `OMX_ERRORTYPE` 为每一个OpenMAX IL API方法的返回值（见3.1.1.3小节）
+- `OMX_COMMANDTYPE` 包含了所有IL客户端发往组件的命令（见小节3.1.1.1）
+- `OMX_EVENTTYPE` 包括了OpenMAX组件产生并传递给IL客户端的消息（见3.1.1.4节）。
+- `OMX_BUFFERSUPPLIERTYPE` 包括了管道端口中所有可能的buffer供应者。3.1.1.5小节可以看到这个枚举类型用法的描述。 
+- `OMX_STATETYPE`, 在3.1.1.2中描述。
+
+图 3-1 显示了`OMX_Core.h`定义的枚举类型
 
 ![](img/3_1.png)
 
 
-**Figure 3-1. OMX_Core.h中定义的枚举数**
+**图 3-1. OMX_Core.h中定义的枚举类型**
+
 ####3.1.1.1  OMX_COMMANDTYPE
-Table 3-1 represents the possible commands that an IL client can send to an OpenMAX component. Since commands are non-blocking, the OpenMAX component generates a command completion event via a callback function when the command has completed.
-Callbacks are defined in a dedicated structure; see section 3.1.2.7.
+表3-1展示了IL客户端可以向OpenMAX组件发送的消息类型。由于消息是非阻塞的，当消息处理完毕后， OpenMAX组件会生成一个消息完成回调。
+回调是在一个专门的结构中定义，见3.1.2.7小节。
 
-| Field Name | Description |
+
+| 字段名称 | 描述 |
 | ------------- | ------------- |
-| OMX_CommandStateSet | Change the component state OMX_CommandFlush  Flush the queue(s) of buffers on a port of a component|
-| OMX_CommandPortDisable | Disable a port on a component |
-| OMX_CommandPortEnable | Enable a port on a component |
-| OMX_CommandMarkBuffer | Mark a buffer and specify which other component will raise the event mark received|
+| OMX_CommandStateSet | 切换组件状态 |
+| OMX_CommandFlush | 清空组件上一个端口的buffer队列|
+| OMX_CommandPortDisable | 禁用组件上一个端口 |
+| OMX_CommandPortEnable | 启用组件上一个端口|
+| OMX_CommandMarkBuffer | 标记一块buffer并指定接受标记时间的组件|
 
-Table 3-2 describes the parameters to be used for each command.
+表 3-2 描述了每一个命令需要的参数。
 
-| Command code | nParam | pCmdData |
+| 命令代码 | 参数 | 数据 |
 | ------------- | ------------- |  ------------- |
-| OMX_CommandStateSet |OMX_STATETYPE – state to transition to | NULL |
-| OMX_CommandFlush | OMX_U32 – target port ID | NULL |
-| OMX_CommandPortDisable |OMX_U32 – target port ID | NULL |
-| OMX_CommandPortEnable | OMX_U32 – target port ID | NULL |
-| OMX_CommandMarkBuffer | OMX_U32 – target port ID |OMX_MARKTYPE* - mark data and target component |
+| OMX_CommandStateSet |OMX_STATETYPE – 要转移的状态 | 无 |
+| OMX_CommandFlush | OMX_U32 – 目标端口ID | 无 |
+| OMX_CommandPortDisable |OMX_U32 – 目标端口ID  | 无 |
+| OMX_CommandPortEnable | OMX_U32 – 目标端口ID  | 无 |
+| OMX_CommandMarkBuffer | OMX_U32 – 目标端口ID  | OMX_MARKTYPE* - 标记数据和目标组件 |
 
-**Table 3-2. Command Syntax**
+**表 3-2. 命令语法**
 ####3.1.1.2  OMX_STATETYPE
-Figure 3-2 illustrates the transitions among states that occur as a consequence of the IL client calling `OMX_SendCommand`(`OMX_StateSet`, <state>), where the new state for the component is passed as a parameter. A transition name surrounded by curly braces indicates that the transition is not triggered by a command sent by the IL client but is a consequence of internal component events
+表3-2展示了IL客户端调用了一系列`OMX_SendCommand`(`OMX_StateSet`, <状态>)后的状态转移，新的状态当参数传递给组件。尖括号包围的转移名表示转换不是由IL客户端命令触发的，而是由一系列组件内部事件的结果。
 
 ![](img/3_2.png)
 
-**Figure 3-2. OpenMAX Component State Transitions**
+**图 3-2. OpenMAX 组件状态转移**
 
-This section describes component states. An IL client commands a component to change states via the `OMX_SendCommand` function using the `OMX_CommandStateSet` command.
+这个小节描述了组件的状态。IL客户端通过调用`OMX_SendCommand`发送`OMX_CommandStateSet`命令来切换组件状态。
 
-Table 3-3 represents the states of an OpenMAX component.
+表 3-3 展示了OpenMAX组件的状态
 
-| Field Name | Description | Resources Allocated |Location of buffer |
+| 字段名 | 描述 | 是否获取资源 | buffer位置 |
 | ------------- |-------------| ------------- | ------------- |
-| OMX_StateInvalid | Component is corrupt or has encountered an error from which it cannot recover. | Unknown | Unknown |
-| OMX_StateLoaded | Component has been loaded but has no resources allocated. | No | Not available |
-| OMX_StateIdle | Component has all resources but has not transferred any buffers or begun processing data. | Yes | Supplier only |
-| OMX_StateExecuting | Component is transferring buffers and is processing data (if data is available). | Yes | Supplier or non-supplier |
-| OMX_StatePause | Component data processing has been paused but may be resumed from the point it was paused. | Yes |Supplier or non-supplier |
-| OMX_StateWaitFor | Resources Component is waiting for aresource to become available.| No | Not available |
+| OMX_StateInvalid | 组件已损坏或遇到无法回复的错误 | 未知 | 未知 |
+| OMX_StateLoaded | 组件已加载但没有获得资源 | 否 | 无 |
+| OMX_StateIdle | 组件已获得资源但没有转递任何buffer或开始处理数据 | 是 | 只有供应者 |
+| OMX_StateExecuting | 组件以开始转递buffer并处理数据 | 是 | 供应者和非供应者 |
+| OMX_StatePause | 组件暂停处理数据但可能会从暂停点恢复 | 是 | 供应者和非供应者 |
+| OMX_StateWaitForResources | 组件在等待可用资源| 否 | 无 |
 
 **Table 3-3. OpenMAX Component States**
 ######3.1.1.2.1  OMX_StateLoaded
