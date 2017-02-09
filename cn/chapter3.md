@@ -1,35 +1,35 @@
-#3 OpenMAX Integration Layer Control API
-The OpenMAX Integration Layer API allows integration layer clients to control multimedia components in the audio, video and image domains. An “other” domain is also included to provide for extra functionality, such as audio-video (A/V) synchronization. The user of the OpenMAX Integration Layer API is usually a multimedia framework. In the rest of this document, the user of the OpenMAX Integration Layer API will be referred to as the IL client.
+#3 OpenMAX IL控制API
+OpenMAX IL API允许IL客户端控制音频、视频、图像领域上的组件。“其他”领域还包括额外的一些功能，例如音视频同步。OpenMAX IL API的使用者往往是一个多媒体框架。在本文档的其他部分，OpenMAX IL API的使用者指的就是IL客户端。
 
-The OpenMAX Integration Layer API is defined in a set of header files, namely:
+OpenMAX IL API定义了一组头文件，他们的名称是：
 
--  OMX_Types.h: OpenMAX IL使用的数据类型
--  OMX_Core.h: OpenMAX IL 核心 API
--  OMX_Component.h: OpenMAX 组件 API
--  OMX_Audio.h: OpenMAX 音频数据结构
--  OMX_IVCommon.h: OpenMAX 视频和图像通用的数据结构
--  OMX_Video.h: OpenMAX 视频数据结构
--  OMX_Image.h: OpenMAX 图像据结构
--  OMX_Other.h: OpenMAX 其他的数据结构 (包括音视频同步)
--  OMX_Index.h: OpenMAX定义的数据结构的索引
+-  `OMX_Types.h`: OpenMAX IL使用的数据类型
+-  `OMX_Core.h`: OpenMAX IL 核心 API
+-  `OMX_Component.h`: OpenMAX 组件 API
+-  `OMX_Audio.h`: OpenMAX 音频数据结构
+-  `OMX_IVCommon.h`: OpenMAX 视频和图像通用的数据结构
+-  `OMX_Video.h`: OpenMAX 视频数据结构
+-  `OMX_Image.h`: OpenMAX 图像据结构
+-  `OMX_Other.h`: OpenMAX 其他的数据结构 (包括音视频同步)
+-  `OMX_Index.h`: OpenMAX定义的数据结构的索引
 
-This section describes how the OpenMAX core and OpenMAX components are configured for operation.
+本节介绍了如果配置OpenMAX Core和OpenMAX组件的操作。
 
-First, the OpenMAX data types are introduced. Next, the methods of the OpenMAX core are described. The methods that components implement are discussed in section 3.3. Finally, section 3.4 shows calling sequences for a few meaningful operations, including component initialization, normal data flow, data tunnel setup, and data flow in the presence of data tunneling. Such sequence diagrams aim at describing the dynamic interactions between the IL client, the IL core, and the OpenMAX components.
+首先介绍了OpenMAX的数据类型。其次，阐述了OpenMAX Core的方法。组件的实现的方法在第3.3节中讨论。最后，第3.4节介绍了一些操作的调用顺序，包括组件的初始化，普通数据流，数据管道的建立，数据管道中数据流。这些时序图介绍了IL客户端，IL Core和OpenMAX组件之间的交互。
 
-When documenting functions, the following convention is used for function parameters:
+下面约定用于记录接口方法参数：
 
--  <param_name> [in] specifies an input parameter, which is set by the function caller and read by the function implementation.
--  <param_name> [out] specifies an output parameter, which is set by the function implementation and passed back to the caller. When the function returns, the caller can read the new value of the parameter, which is passed as a reference.
--  <param_name> [inout] specifies an input/output parameter, which the function caller can set. The function implementation can modify the parameter before returning it back to the function caller.
+-  <参数名> [输入] 指定一个输入参数，由函数调用者设置并被函数读取。
+-  <参数名> [输出] 指定一个输出参数，由函数本身设置并返回给调用者。当函数返回时，调用者读取通过引用传递的参数的新值。
+-  <参数名> [输入输出] 指定一个输入/输出参数，由函数调用者设置。函数改变这个参数的值并返回给调用者。
 
-This parameter classification can also be found in the OpenMAX header files, where the null macros OMX_IN, OMX_OUT and OMX_INOUT are defined. OMX_IN corresponds to the function parameter <param_name> [in]. OMX_OUT corresponds to the function parameter <param_name> [out], and OMX_INOUT corresponds to the function parameter <param_name> [inout].
+参数的分类可以在OpenMAX的头文件中找到，里面定义了空的宏： `OMX_IN`, `OMX_OUT` 和 `OMX_INOUT`。`OMX_IN`对应 <参数名> [输入]， `OMX_OUT`对应<参数名> [输出]， `OMX_INOUT` 对应<参数名> [输入输出] 
 
-##3.1  OpenMAX Types
-###3.1.1 Enumerations
-Five 32-bit integer enumerations are defined in OMX_Core.h:
+##3.1  OpenMAX 类型
+###3.1.1 枚举
+`OMX_Core.h`中定义了5个32位整型枚举数
 
-- `OMX_ERRORTYPE` is returned by each function defined in the OpenMAX Integration Layer API (see section 3.1.1.3).
+- `OMX_ERRORTYPE`为每一个OpenMAX IL API方法的返回值（见3.1.1.3小节）
 - `OMX_COMMANDTYPE` includes the possible commands that an IL client can send to an OpenMAX component (see section 3.1.1.1).
 - `OMX_EVENTTYPE` includes events that can be generated inside an OpenMAX component and that are passed to the IL client through a callback function (see section 3.1.1.4).
 - `OMX_BUFFERSUPPLIERTYPE` includes all the possibilities for the buffer supplier in the case of tunneled ports. A description of the use of this enumerative type can be found in section 3.1.1.5.
@@ -38,7 +38,7 @@ Five 32-bit integer enumerations are defined in OMX_Core.h:
 ![](img/3_1.png)
 
 
-**Figure 3-1. Enumerations Defined in OMX_Core.h**
+**Figure 3-1. OMX_Core.h中定义的枚举数**
 ####3.1.1.1  OMX_COMMANDTYPE
 Table 3-1 represents the possible commands that an IL client can send to an OpenMAX component. Since commands are non-blocking, the OpenMAX component generates a command completion event via a callback function when the command has completed.
 Callbacks are defined in a dedicated structure; see section 3.1.2.7.
