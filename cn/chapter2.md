@@ -348,17 +348,16 @@ buffer标记与buffer包含的数据的某些属性关联。buffer的时间戳�
 buffer元数据（即标记和时间戳）适用于buffer中的第一个逻辑单元。因此，buffer中存在多个逻辑单元是，元数据适用于起始边界在buffer中的逻辑单元。除非另有规定（例如，一个标记的定义），一个组件收到有标记或者时间戳的逻辑单元应该将这个元数据拷贝到输入产生的逻辑输出单元中。
 
 ###2.1.14  同步
-Synchronization is enabled by the use of synchronization (sync) ports on a clock component. These ports and the clock component are defined within the “other” domain and operate with the same protocols and calls that regulate data ports. The clock component maintains a media clock that tracks the position in the media stream based on audio and video reference clocks. The clock component transmits buffers containing time information (denoted by a media time update and containing the media clock’s current position, scale, and state) to client components via sync ports. A client component may time the execution of an operation (e.g., the presentation of a video frame) to a timestamp by requesting that the clock component send that timestamp when it matches the media clock. In this case, the client component executes the operation when it receives the fulfillment of the request over its sync port. Figure 2-14 illustrates the flow of time and data buffers in an example configuration of components.
+同步是靠启用时钟组件上的同步端口来实现的。这些端口和时钟组件被定义在其他（other）域，但操作协议和方法和数据端口一致。时钟组件维护了一个媒体时钟，基于音视频参考时钟，用于跟踪媒体流中的位置。时钟组件通过同步端口发送包含时间信息buffer到客户端组件（由媒体时间更新，包含了媒体时钟的当前位置，缩放和状态）。客户端组件可以通过要求时钟组件发送时间戳来给一个操作确定执行的时间（例如，视频帧的显示）。在这个例子中，客户端组件当收到请求执行时执行操作。图2-14展示了时间和数据buffer流程的一个例子。
 
 ![](img/2_14.png)
 
+**图 2-14. 时间和数据buffer的流程**
+###2.1.15  速率控制
+时钟组件还通过暴露一组控制媒体时钟的配置实现了所有的速率控制。IL客户端可能会改变媒体时钟的缩放因子来实现播放，快进，快退，暂停和慢动作特技。IL客户端可以通过改变媒体时钟的状态开始或停止时钟。时钟组件通过向所有的同步端口发送新的缩放或状态的媒体时间更新消息来改变使他所有的客户端组件知道媒体时钟缩放和状态的变化。虽然组件无法改变buffer的时间戳来响应缩放，但他可以响应的改变他的处理流程。例如，音频组件可以在特技播放时调整音调或完全停止输出。
 
-**Figure 2-14. Flow of Time and Data Buffers**
-###2.1.15  Rate Control
-The clock component also implements all rate control by exposing a set of configurations for controlling its media clock. The IL client may change the scale factor of the media clock (effectively changing the rate and direction that the media clock advances) to implement play, fast forward, rewind, pause, and slow motion trick modes. The IL client may also start and stop the clock by using these configurations to change the state of the media clock. The clock component makes all of its client components aware of a change to the media clock scale and state by sending a media time update with the new scale or state on all sync ports. Although a component may not alter a buffer timestamp in reaction to a scale change, a component may alter its processing accordingly. For instance, an audio component might scale and pitch correct audio during trick modes or cease transmitting output entirely.
-
-###2.1.16  Component Registration
-How components are registered with a core is generally core specific.
+###2.1.16  组件注册
+通常组件是如何注册到核心是核心自己来定义的。
 
 However, if the core supports static linking with components, then it will support a standard compile-time component registration scheme as described in section 3. Vendors can therefore supply components that are suitable for static linking with all cores that support it; this is achieved by placing component information into a data structure that is linked with the component and the core.
 
