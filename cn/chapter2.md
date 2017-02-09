@@ -419,5 +419,4 @@ IL层定义了下面的行为准则：
 -  当一个高优先级组件请求资源时，通知一个或多个组件让他们放弃他们的资源。
 -  当资源可用时通知等待资源高优先级的组件。
 
-The actual interactions between the components and the hardware vendor-specific resource manager(s) are vendor-specific and outside the scope of this document. Section 3 provides more details of the parameter structures and use cases related to priority and resource management.
-组件和硬件资源管理器之间的实际交互是基于特定厂商
+组件和硬件资源管理器之间的实际交互是基于特定厂商并超出了本文档的范围。第三节提供了优先级和资源管理相关参数结构和用例的更多细节。
