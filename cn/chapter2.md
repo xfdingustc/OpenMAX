@@ -293,7 +293,6 @@ OpenMAX虽然没有明确要求组件支持共享, 但定义了外部构件语�
 IL客户端发送一个命令来标记buffer。组件的输出端口发送的下一个buffer被标记成B1。组件B处理buffer B1后提供了加入此标记的buffer B2.当组件C从输入端口中收到这个标记过的buffer B2，组件处理这块buffer出发事件处理程序。
 
 ###2.1.11  时间和回调
-Six kinds of events are sent by a component to the IL client:
 组件发送给客户端一共有六种事件：
 
 - 任何时间都可能遇到错误时间
@@ -303,7 +302,7 @@ Six kinds of events are sent by a component to the IL client:
 - 码流结束时（EOS）会触发buffer标志事件。
 - 组件获得正在等待的资源时会触发资源获得事件。
 
-Ports make buffer handling callbacks upon availability of a buffer or to indicate that a buffer is needed.
+
 端口标记buffer的处理回调指示了buffer的可用性或表明buffer是需要的。
 
 ###2.1.12  Buffer载荷(Payload)
@@ -359,46 +358,47 @@ buffer元数据（即标记和时间戳）适用于buffer中的第一个逻辑�
 ###2.1.16  组件注册
 通常组件是如何注册到核心是核心自己来定义的。
 
-However, if the core supports static linking with components, then it will support a standard compile-time component registration scheme as described in section 3. Vendors can therefore supply components that are suitable for static linking with all cores that support it; this is achieved by placing component information into a data structure that is linked with the component and the core.
+然而，如果核心支持与组件的静态连接，那么他将支持一个标准的在编译时的组件注册机制，如第3节所述。因此，供应商可以提供组件所有核心支持的合适静态连接的组件，这是通过将组件信息放入数据结构中，这是核心和组件的联系。
 
-A component can be registered statically using this mechanism but have the bulk of its code dynamically loaded.
+一个组件可以使用这个机制静态注册，但他的大部分代码是动态加载的。
 
 ###2.1.17  资源管理器
 这一小节讨论OpenMAX IL API中的资源管理器的角色。
 
-####2.1.17.1  Need for Resource Management
-When a component is not allowed to go to idle state due to lack of resources, the IL client has cannot know what the limited resource is or which components are using that resource. Therefore, the IL client cannot, for example, free up resources for a mandatory audio stream to play without turning off all of the IL components or having specific knowledge of IL component implementations, neither of which is a viable option. These situations necessitate IL resource management.
+####2.1.17.1  资源管理的需求
+当组件由于资源不足而不发进入idle状态时，IL客户端不知道缺乏那些资源或是那些组件正在使用这个组员。因此，IL客户端无法关掉所有的组件强制释放音频流（例如），除非知道IL组件是怎么具体实现的。这两种情况都不是可行的选择。这些情况需要IL的资源管理。
 
-One of the goals of OpenMAX is hardware independence provided by the IL layer to the layers above it. The goal of hardware independence can be achieved by specifying the following requirements regarding resource management:
+OpenMAX的一个目的是提供给上层一个硬件无关的软件层。硬件无关的目标可以通过实现指定资源管理的下列要求来实现：
 
-- An IL client (e.g., a multimedia plug-in that is typically part of a software platform) should not need to know the details of an IL implementation or which resource an IL component is using. For example, the IL client might have no information on whether a component is hardware accelerated or not.
-- In case of resource conflicts, an IL client should be able to rely on consistent component behavior across IL implementations and hardware platforms.
--  An IL client should not have to interface directly with a hardware vendor-specific resource manager for two reasons.
-	-  This method violates the goal of hardware independence.
-	-  This method adds considerable re-work to the IL client, which has an impact on the re-usability of the IL client on multiple hardware platforms.
+- IL客户端（例如，通常是一个软件系统的多媒体插件）不需要知道IL实现的细节或组件使用的资源。例如，IL客户端可能不知道组件是否是硬件加速的。
+- 在资源冲突的情况下，IL客户端可以信赖组件在不同硬件平台上的实现是同一的行为。
+- 一个IL客户端不应该和硬件供应商的资源管理器直接连接，有下面两个原因。
+	- 这种方法违背了硬件无关性的目标。
+	- 这种方法增加了IL客户端相当大的工作，因为影响了IL客户端在多个硬件平台上的可复用性。
 	  
-Although resource management is not fully addressed in OpenMAX IL API version 1.0, “hooks” for resource management have been put in place in the form of behavioral rules, component priorities, and a resource management-related component state. These “hooks” lay the groundwork for full-fledged resource management in later versions of the OpenMAX IL API.
+虽然资源管理没有在OpenMAX IL API的1.0版本中彻底解决，“钩子（hook）”资源管理器已经放在了相应的位置包括行为的准则，组件的优先级，资源管理相关的组建状态。这些“钩子”作为后续版本OpenMAX IL API的基础。
 
-Before proceeding further, the terms resource management and policy are defined for the benefit of the discussion that follows:
+在进一步讨论之前，资源管理和策略的术语有必要阐述一下：
 
--  Resource management is responsible for managing the access of components to a limited resource. A resource manager will be aware of how much of a specific resource is available, which components are currently using the resource, and how much of the resource the components are using. A resource manager will recommend to policy which components should be pre-empted or resumed based on resource conflicts and availability.
--  Policy is responsible for managing component chains or streams. The policy manager determines if a stream is allowed to run or resume based on information it receives from resource management, system configuration, requests from applications, or other factors.
+-  资源管理负责管理组件对有限资源的访问。资源管理器将知道有多少特定的资源可用，那些组件使用当前资源，以及组件使用的资源有多少。资源管理器将推荐策略，组件可以根据资源可用性和冲突抢占或继续。
+-  策略负责管理组件链或流。策略管理器根据资源管理、系统配置、应用程序请求或其他因素来确定是否允许运行或继续
   
-####2.1.17.2  Architectural Assumptions
-The following discussion makes two architectural assumptions about the OpenMAX IL:
+####2.1.17.2  架构假设
+下面的讨论提出了两个关于OpenMAX IL的架构假设:
 
--  Assumption 1: A framework exists that contains a policy manager between the applications and the OpenMAX IL.
--  Assumption 2: A system can have one or more hardware platforms that are used by different OpenMAX components and that are managed by hardware vendor-specific resource manager(s).
+-  假设1：一个框架包含客户端和OpenMAX IL之间的策略管理器
+-  假设2：一个系统可以有一个或多个硬件平台，有不同的OpenMAX组件，并被硬件特定的资源管理器管理
 
-These assumptions are illustrated in the high-level architecture shown in Figure 2-15. For systems that do not have a framework (that is, where user applications interface directly with the IL), version 1.0 of the OpenMAX IL API specification does not specify how resource management will be handled. Assumption 2 covers systems that have a single,
-centralized resource manager as well.
+
+这些假设如上层架构图图2-15所示。如果一个系统没有架构（即，用户程序接口直接与IL连接），OpenMAX IL API协议没有规定资源管理是如何进行的。假设2规定系统有一个同一集中的资源管理器。
 
 ![](img/2_15.png)
 
-**Figure 2-15. Architectural Assumptions**
-To ensure consistent component behavior in case of resource conflicts, a common definition of component priority and a set of behavioral rules are needed.
+**Figure 2-15. 架构假设**
 
-####2.1.17.3  Component Priorities
+为保证资源冲突是组件的行为是一直的，组件优先级和行为准则的基本定义是必要的。
+
+####2.1.17.3  组件优先级
 
 Each IL component has a priority value (an OMX_U32 integer) that the IL client sets. The actual range of priorities can be left up to the platform, but the priority order is important and needs to be the same across IL implementations. A descending order of priority is chosen with 0 denoting the highest priority. The following tie-breaking rule also applies: When comparing components with the same priority, components that have acquired the resource most recently should be deemed to be of higher priority than components that have had the resource longer.
 
