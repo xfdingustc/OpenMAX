@@ -106,29 +106,27 @@ IL客户端可以选择一个处于`OMX_StateLoaded`的组件转移到`OMX_State
 在从`OMX_StateIdle` 到 `OMX_StateLoaded`的转移过程中，每一个buffer提供者必须为非提供者端口上的每一块buffer调用`OMX_FreeBuffer`方法。如果提供者分配了buffer，他必须在调用`OMX_FreeBuffer`之前释放buffer。如果非供应端口分配了buffer，他必须收到`OMX_FreeBuffer`调用时释放内存。此外，非供应端口总是必须收到`OMX_FreeBuffer`调用时释放buffer头。当所有的buffer被移出组件时，状态转移完成。组件通过一个回调时间表示调用`OMX_SendCommand`完成。
 
 ######3.1.1.2.2.2  OMX_StateIdle 到 OMX_StateExecuting
-If the IL client requests a state transition from OMX_StateIdle to `OMX_StateExecuting`, the component shall begin transferring and processing data. For ports that communicate with the IL client, the IL client will initiate buffer transfers via `OMX_EmptyThisBuffer` and `OMX_FillThisBuffer`. Among tunneling ports, any input port that is also a supplier shall transfer its empty buffers to the tunneled output port via `OMX_FillThisBuffer`.
+如果IL客户端请求将状态由`OMX_StateIdle`切换至`OMX_StateExecuting`，组件应该开始转移并处理数据。和IL客户端通信的端口，IL客户端会通过`OMX_EmptyThisBuffer`和`OMX_FillThisBuffer`初始化数据传输。在管道端口中，任何输入端口也是供应端口，应该把它的空buffer通过调用`OMX_FillThisBuffer`转移给他的管道输出端口。
 
 #####3.1.1.2.3  OMX_StateExecuting
-In this state, an OpenMAX component is transferring and processing data buffers. The component shall accept calls to `OMX_EmptyThisBuffer` on its input ports and `OMX_FillThisBuffer` on its output ports. Any port that communicates with the IL client shall call the `EmptyBufferDone` and `FillBufferDone` callbacks to return an empty or full buffer, respectively, back to the IL client. Any tunneling port shall call `OMX_FillThisBuffer` or `OMX_EmptyThisBuffer` on its corresponding tunneled port to return an empty or full buffer, respectively, back to its tunneled port. An IL client may transition a component in the `OMX_StateExecuting` state to either the `OMX_StateIdle` state or the `OMX_StatePaused` state.
+在这个状态中，OpenMAX组件传输并处理数据。组件应该接受其输入端口的`OMX_EmptyThisBuffer` 调用和输出端口的`OMX_EmptyThisBuffer`。任何与IL端口通信的端口应该调用回调函数`EmptyBufferDone`和`FillBufferDone`返回空或满的buffer给IL客户端。管道端口应该调用`OMX_FillThisBuffer`或`OMX_EmptyThisBuffer`返回空或满的buffer给管道端口的另一段。IL客户端可以将组件从`OMX_StateIdle`或`OMX_StatePaused`转移至`OMX_StateExecuting`。
 
-######3.1.1.2.3.1  OMX_StateExecuting to OMX_StateIdle
-If the IL client requests a state transition from `OMX_StateExecuting` to `OMX_StateIdle`,the component shall return all buffers to their respective suppliers and receive all buffers belonging to its supplier ports before completing the transition. Any port communicating with the IL client shall return any buffers it is holding via `OMX_EmptyBufferDone`
-and OMX_FillBufferDone callbacks, which are used by input and output ports, respectively. Any non-supplier port shall return all buffers it is holding to the input port or output port it is tunneling with using `OMX_EmptyThisBuffer` or `OMX_FillThisBuffer`, respectively. Likewise, any supplier tunneling port shall wait for all of its buffers to be returned from its tunneled port.
+######3.1.1.2.3.1  OMX_StateExecuting 到 OMX_StateIdle
+如果IL客户端请求状态由`OMX_StateExecuting`转移到`OMX_StateIdle`，组件应该在转移完成之前归换所有的buffer给他的提供者，并且接受所有自身提供者端口上的buffer。任何与IL客户端通信的端口应该通过`OMX_EmptyBufferDone`和`OMX_FillBufferDone`返回自己持有的buffer，这些buffer本来是分别给输入或输出端口使用的。任何管道端口应该通过`OMX_EmptyBufferDone`和`OMX_FillBufferDone`返回自己持有的buffer给管道另一端的端口。同理，非供应管道端口应该等待他的管道端口返回所有的buffer。
 
 #####3.1.1.2.4  OMX_StatePause
-In this state, an OpenMAX component is not transferring or processing data but buffers are not necessarily returned to their suppliers. From the `OMX_StatePause` state, execution may be resumed via a transition to `OMX_StateExecuting`, preferably without dropping data. The component may still accept data buffers at its input, but such buffers will be queued only and not processed further. The IL client may transition a component in the `OMX_StatePause` state to `OMX_StateIdle` or `OMX_StateExecuting`. On a transition from `OMX_StatePause` to `OMX_StateIdle`, the component shall return all buffers to their respective suppliers in a manner identical to the `OMX_StateExecuting` to `OMX_StateIdle` transition described in section 3.1.1.2.3.1.
+在这个状态下，OpenMAX组件不传输或者处理数据，但buffer也不会返回给供应者。`OMX_StatePause`转移到`OMX_StateExecuting`，执行可以继续并且可能不会丢失数据。组件在自己的输入端口上可能继续接受数据，但这些buffer仅仅存放到队列中但不会进一步处理。 IL客户端可能将组将由`OMX_StatePause`转移至`OMX_StateIdle`或`OMX_StateExecuting`。在`OMX_StatePause`向`OMX_StateIdle`转移时,组件应该想他的供应者归还所有的buffer，方式描述参见3.1.1.2.3.1小节。
 
 #####3.1.1.2.5  OMX_StateWaitForResources
-In this state, the component is waiting for one or more of its required resources to become available. This state is related to resource management. The assumption is that one or more hardware-specific resource managers exist on the platform to handle available resources. The interaction among OpenMAX components and resource managers is outside the scope of this specification.
+在这个状态中，组件等待一个或多个需要的资源。这个状态和资源管理器有关。假设系统有一个或多个硬件特有的资源管理器来管理资源。OpenMAX组件和资源管理器之间的交互不再本标准讨论范围内。
 
-If a component in the `OMX_StateLoaded` state fails to enter the `OMX_StateIdle` state because resources other than buffers are insufficient, the IL client may put the component in the `OMX_StateWaitForResources` state if the IL client wants to be notified when the needed resources become available. The IL client may command the component to discontinue waiting for resources by transitioning it from the `OMX_StateWaitForResources` state to the `OMX_StateLoaded` state. If a component in the `OMX_StateWaitForResources` state acquires all the resources upon which it is waiting, it shall initiate a transition to the `OMX_StateIdle` state.
+如果处于`OMX_StateLoaded`状态的组件由于非buffer资源不足而无法切换至`OMX_StateIdle`状态是，IL客户端如果希望知道什么时候资源变得可用，那么可以将组件至于`OMX_StateWaitForResources`状态。IL客户端可以通过由`OMX_StateWaitForResources`状态转移至 `OMX_StateLoaded`命令组件停止等待资源。如果在`OMX_StateWaitForResources`状态的组件得到了所有等待的资源，它应该开始转移至`OMX_StateIdle`。
 
-######3.1.1.2.5.1  OMX_StateWaitForResources to OMX_StateIdle
-When a component initiates a transition from the OMX_StateWaitForResources state to the `OMX_StateIdle` state, it shall communicate the initiation of this transition to the IL client via an `OMX_EventResourcesAcquired` event. When the IL client receives the `OMX_EventResourcesAcquired` event, it shall call `OMX_UseBuffer` and `OMX_AllocateBuffer` in the manner of a transition from `OMX_StateLoaded` to `OMX_StateIdle`. Likewise, the component cannot complete its transition to
-`OMX_StateIdle` until it acquires all of its resources, including buffers.
+######3.1.1.2.5.1  OMX_StateWaitForResources 到 OMX_StateIdle
+当组件开始从`OMX_StateWaitForResources`向`OMX_StateIdle`转移，它应该通过事件`OMX_EventResourcesAcquired`向IL客户端进行通知。当IL客户端收到`OMX_EventResourcesAcquired`时间，它应该调用`OMX_UseBuffer` 和`OMX_AllocateBuffer`，和从`OMX_StateLoaded`向 `OMX_StateIdle`一样，同理，除非组件获得了所有的资源，包括buffer，他不能完成到`OMX_StateIdle`的状态转移。
 
 #####3.1.1.2.6  OMX_StateInvalid
-In this state, the component has suffered internal corruption or an error from which it cannot recover. When it detects such a condition, the component transitions itself to `OMX_StateInvalid` and informs the IL client by generating an `OMX_ErrorEvent` event with the value `OMX_ErrorInvalidState`. When the IL client receives `OMX_EventError` indicating a transition to `OMX_StateInvalid`, it shall free all resources associated with that component and eventually call `OMX_FreeHandle` to release the handle associated with the component.
+在这个状态时，组件发现内部损坏或遇到无法恢复的错误。当它检测到这个情况是，组件将自己转移到`OMX_StateInvalid`并通知IL客户端产生一个值为`OMX_ErrorInvalidState`的`OMX_ErrorEvent`事件。 但客户端收到这个时间。它应该释放组件关联的所有资源并且最后调用`OMX_FreeHandle`释放组件关联的句柄。
 
 A component in the `OMX_StateInvalid` state shall fail every call made upon it and return an `OMX_ErrorStateInvalid` error message except for `OMX_GetState`, `OMX_FreeBuffer`, or `OMX_ComponentDeinit`. The IL client may also command a transition to the `OMX_StateInvalid` state explicitly via `OMX_SendCommand`. A component may transition between any state and the `OMX_StateInvalid` state.
 
