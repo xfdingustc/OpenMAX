@@ -86,26 +86,26 @@ OpenMAX IL API定义了一组头文件，他们的名称是：
 | OMX_StatePause | 组件暂停处理数据但可能会从暂停点恢复 | 是 | 供应者和非供应者 |
 | OMX_StateWaitForResources | 组件在等待可用资源| 否 | 无 |
 
-**Table 3-3. OpenMAX Component States**
+**表 3-3. OpenMAX 组件状态**
 ######3.1.1.2.1  OMX_StateLoaded
-A component is in the OMX_StateLoaded state after it has been created via an `OMX_GetHandle` call and before allocation of its resources. In this state, the IL client may modify the component’s parameters via `OMX_SetParameter`, set up data tunnels on the component’s ports with `OMX_SetupTunnel`, or transition the component to either the `OMX_StateIdle` state or the OMX_StateWaitForResources state.
+在调用`OMX_GetHandle`创建组件之后，分配资源之前，组件处于`OMX_StateLoaded`状态。在这个状态，IL客户端可以通过`OMX_SetParameter`改变组件参数，创建组件端口上的数据通道，或者切换组件状态至`OMX_StateIdle`或`OMX_StateWaitForResources`。
 
-The IL client may elect to transition a component that is currently in the OMX_StateLoaded state into the OMX_StateWaitForResources state if, for example, the component failed to acquire all of its resources on an attempted transition to the `OMX_StateIdle` state.
+IL客户端可以选择一个处于`OMX_StateLoaded`的组件转移到`OMX_StateWaitForResources`状态，例如，组件未能获得切换到`OMX_StateIdle`状态的资源。
 
-###### 3.1.1.2.1.1  OMX_StateLoaded to OMX_StateIdle
-If the IL client requests a state transition from `OMX_StateLoaded` to `OMX_StateIdle`, the component must acquire all of its resources, including buffers, before completing the transition. Furthermore, before the transition can complete, the buffer supplier, which is always the IL client when not tunneling, must ensure that the non-supplier possesses all of its buffers. For a port connected to the IL client, the IL client may allocate the buffers itself and then pass them to the port via an `OMX_UseBuffer` call on the port, or it may direct the port to perform the allocation via an `OMX_AllocateBuffer` call on the port.
+###### 3.1.1.2.1.1  OMX_StateLoaded 到 OMX_StateIdle
+如果IL客户端请求状态由`OMX_StateLoaded`切换到`OMX_StateIdle`，组件必须在完成状态切换前获得所有的资源，包换buffer。此外，在状态切换完成之前，buffer的提供者（在非管道模式时为IL客户端），必须保证非提供者拥有他所有的buffer。如果一个端口连接到IL客户端，IL客户端可以自己分配buffer并通过调用端口上的`OMX_UseBuffer`方法转递给端口，或者调用端口上`OMX_AllocateBuffer`命令让端口直接分配。
 
-When a port is tunneling, the supplier port either allocates buffers itself or, if the port implements buffer sharing, re-uses buffers from a port on the same component. A tunneling supplier port then passes the buffers to the non-supplier port via an `OMX_UseBuffer` call on the non-supplier.
+当端口出于管道状态，供应端口要么自己分配buffer，要么当端口实现了buffer共享时，复用同组件上的其他端口上的buffer。管道供应端口则通过调用非供应者的`OMX_UseBuffer` 将buffer转递给非供应者。
 
-The number of buffers used on a port is specified in its port definition (see `OMX_IndexParamPortDefinition`), which defaults to the minimum (specified in the same structure) but which may be modified by the supplier before the sequence of `OMX_UseBuffer` and `OMX_AllocateBuffer` calls via a call to `OMX_SetParameter`.
+端口上的buffer数量由端口的定义（见`OMX_IndexParamPortDefinition`）确定，默认是最小值（见同一个数据结构）。但在提供者可以调用`OMX_UseBuffer` 和`OMX_AllocateBuffer`之前可以通过调用 `OMX_SetParameter`修改此值。
 
 #####3.1.1.2.2  OMX_StateIdle
-In the `OMX_StateIdle` state, the component is ready to be used, meaning that all necessary resources have been properly allocated. However, the suppliers retain all their buffers, and no buffer exchange or processing is taking place. Thus, if this state is entered from an `OMX_StateExecuting` or `OMX_StatePause` state, the component shall have returned all buffers it was processing to their respective suppliers. The IL client may transition the component to any states other than the `OMX_StateInvalid` and `OMX_StateWaitForResources` states.
+在`OMX_StateIdle`状态时，组件已经可以被使用，这意味着所有必要的资源已经分配。但是，提供者仍然保留着buffer，并没有发生buffer交换或处理。因此，如果这个状态由`OMX_StateExecuting`或`OMX_StatePause`转移而来，组件必须归还他正在处理的所有buffer给他的提供者。IL客户端可能会转移到除了`OMX_StateInvalid`和`OMX_StateWaitForResources`任何其他状态。
 
-######3.1.1.2.2.1  OMX_StateIdle to OMX_StateLoaded
-On a transition from OMX_StateIdle to OMX_StateLoaded, each buffer supplier must call `OMX_FreeBuffer` on the non-supplier port for each buffer residing at the non-supplier port. If the supplier allocated the buffer, it must free the buffer before calling `OMX_FreeBuffer`. If the non-supplier port allocated the buffer, it must free the buffer upon receipt of an `OMX_FreeBuffer` call. Furthermore, a non-supplier port must always free the buffer header upon receipt of an OMX_FreeBuffer call. When all of the buffers have been removed from the component, the state transition is complete; the component communicates that the initiating `OMX_SendCommand` call has completed via a callback event.
+######3.1.1.2.2.1  OMX_StateIdle 到 OMX_StateLoaded
+在从`OMX_StateIdle` 到 `OMX_StateLoaded`的转移过程中，每一个buffer提供者必须为非提供者端口上的每一块buffer调用`OMX_FreeBuffer`方法。如果提供者分配了buffer，他必须在调用`OMX_FreeBuffer`之前释放buffer。如果非供应端口分配了buffer，他必须收到`OMX_FreeBuffer`调用时释放内存。此外，非供应端口总是必须收到`OMX_FreeBuffer`调用时释放buffer头。当所有的buffer被移出组件时，状态转移完成。组件通过一个回调时间表示调用`OMX_SendCommand`完成。
 
-######3.1.1.2.2.2  OMX_StateIdle to OMX_StateExecuting
+######3.1.1.2.2.2  OMX_StateIdle 到 OMX_StateExecuting
 If the IL client requests a state transition from OMX_StateIdle to `OMX_StateExecuting`, the component shall begin transferring and processing data. For ports that communicate with the IL client, the IL client will initiate buffer transfers via `OMX_EmptyThisBuffer` and `OMX_FillThisBuffer`. Among tunneling ports, any input port that is also a supplier shall transfer its empty buffers to the tunneled output port via `OMX_FillThisBuffer`.
 
 #####3.1.1.2.3  OMX_StateExecuting
@@ -141,27 +141,27 @@ additional error messages of their own as long as they follow these rules:
 -  Vendor error messages shall be in the range of 0x90000000 to 0x9000FFFF.
 -  Vendor error messages shall be defined in a header file provided with the component. No error messages are allowed that are not defined.
 
-|Field Name| Value | Description |
+|字段名称| 值 | 描述 |
 |------------- |:-------------:|  ------------- |
-|OMX_ErrorNone| 0 | The function returned successfully. |
-|OMX_ErrorInsufficientResources | 0x80001000 |There were insufficient resources toperform the requested operation. |
-|OMX_ErrorUndefined | 0x80001001 | There was an error but the cause of the error could not be determined. |
-|OMX_ErrorInvalidComponentName |0x80001002 | The component name string wasinvalid. |
-|OMX_ErrorComponentNotFound | 0x80001003 | No component with the specified name string was found. |
+|OMX_ErrorNone| 0 | 函数返回正确|
+|OMX_ErrorInsufficientResources | 0x80001000 |执行请求操作没有足够的资源|
+|OMX_ErrorUndefined | 0x80001001 | 未知原因的错误 |
+|OMX_ErrorInvalidComponentName |0x80001002 | 组件名错误 |
+|OMX_ErrorComponentNotFound | 0x80001003 | 没有找到指定名称的组件 |
 |OMX_ErrorInvalidComponent | 0x80001004 | The component specified did not have a OMX_ComponentInit entry point, or the component did not correctly complete the OMX_ComponentInit call. |
 |OMX_ErrorBadParameter | 0x80001005 | One or more parameters were invalid.|
 |OMX_ErrorNotImplemented | 0x80001006 | The requested function is notimplemented. |
-|OMX_ErrorUnderflow | 0x80001007 | The buffer was emptied before the next buffer was ready. |
-|OMX_ErrorOverflow | 0x80001008 | The buffer was not available when it was needed.|
+|OMX_ErrorUnderflow | 0x80001007 | 下一个buffer准备好之前目前的buffer已空 |
+|OMX_ErrorOverflow | 0x80001008 | The buffer was not available when it was needed. |
 |OMX_ErrorHardware | 0x80001009 | The hardware failed to respond as expected. |
 |OMX_ErrorInvalidState | 0x8000100A | The component is in the OMX_StateInvalid state. |
 |OMX_ErrorStreamCorrupt | 0x8000100B |The stream is found to be corrupt. |
 |OMX_ErrorPortsNotCompatible | 0x8000100C | Ports being set up for tunneled communication are incompatible. |
 |OMX_ErrorResourcesLost | 0x8000100D | Resources allocated to a component inthe OMX_StateIdle state have been lost, which has resulted in the component returning to the OMX_StateLoaded state. |
 |OMX_ErrorNoMore | 0x8000100E | No more indices can be enumerated. |
-|OMX_ErrorVersionMismatch | 0x8000100F |The component detected a versionmismatch. |
-|OMX_ErrorNotReady | 0x80001010 |The component is not ready to returndata at this time. |
-|OMX_ErrorTimeout | 0x80001011 | A timeout occurred. |
+|OMX_ErrorVersionMismatch | 0x8000100F | 组件检测到版本不匹配。 |
+|OMX_ErrorNotReady | 0x80001010 |组件此时没有准备好返回数据。|
+|OMX_ErrorTimeout | 0x80001011 | 发生超时. |
 |OMX_ErrorSameState | 0x80001012 |The component tried to transition into the state that it is currently in. |
 |OMX_ErrorResourcesPreempted | 0x80001013 |Resources allocated to a component in the OMX_StateExecuting or OMX_Pause states have been pre- empted, causing the component to return to the OMX_StateIdle state. |
 |OMX_ErrorPortUnresponsiveDuringAllocation |0x80001014|The non-supplier port deemed that it had waited an unusually long time for the supplier port to send it an allocated buffer via an OMX_UseBuffer call. A non-supplier port sends this error to the IL client via the EventHandler callback during the allocation of buffers on a transition from the LOADED to the IDLE state or on a port enable.|
@@ -174,14 +174,14 @@ additional error messages of their own as long as they follow these rules:
 |OMX_ErrorBadPortIndex|  0x8000101B|The port index that was supplied is incorrect.|
 |OMX_ErrorPortUnpopulated | 0x8000101C | The port has lost one or more of its buffers and is thus unpopulated.|
 
-**Table 3-4. OpenMAX Error Codes**
+**Table 3-4. OpenMAX 错误代码**
 ####3.1.1.4  OMX_EVENTTYPE
 The OMX_EVENTTYPE enumeration shown in Table 3-5 includes the event types that
 an OpenMAX component can generate. Section 3.1.2.7 describes events that the
 OpenMAX component generates and passes to the IL client by means of the callback
 mechanism. Events have associated parameters that are also passed in the callback.
 
-| Field Name | Description |
+| 字段名 | 说明 |
 | ------------- | ------------- |
 | OMX_EventCmdComplete | Component has completed the execution of a command. |
 | OMX_EventError | Component has detected an error condition. |
@@ -217,20 +217,20 @@ A component generates the `OMX_EventResourcesAcquired` event when it is in the `
 ####3.1.1.5  OMX_BUFFERSUPPLIERTYPE
 The OMX_BUFFERSUPPLIERTYPE enumerative type shown in Table 3-6 specifies the port in the tunnel that is the supplier port. A buffer supplier port either may allocate its buffers or reuse buffers provided by another port within the same component.
 
-| Field Name | Value | Description |
+| 字段名称 | 值 | 说明 |
 | ------------- | ------------- | ------------- |
 | OMX_BufferSupplyUnspecified | 0x0 | The port supplying the buffers is unspecified, or no supplier is preferred. |
 | OMX_BufferSupplyInput | | The input port supplies the buffers. |
 | OMX_BufferSupplyOutput | | The output port supplies the buffer.|
 **Table 3-6. OpenMAX Buffer Supplier Type Used in Tunnel Setup**
 
-###3.1.2 Structures
+###3.1.2 结构
 This section discusses the data structures defined in the OpenMAX core. The first two fields of each OpenMAX data structure denote the size of the structure and the version of type `OMX_VERSIONTYPE`, which is defined in section 3.1.2.4. The entity that allocates an OpenMAX structure is responsible for filling in these two values.
 
 ####3.1.2.1  OMX_COMPONENTREGISTERTYPE
 The `OMX_COMPONENTREGISTERTYPE` structure is used in the case of static linking of components to the core. The core optionally uses it to load the component and run the specific component initialization functions.
 
-`OMX_COMPONENTREGISTERTYPE` is defined as follows.
+`OMX_COMPONENTREGISTERTYPE`定义如下.
 
 ``` C
 typedef struct OMX_COMPONENTREGISTERTYPE
@@ -259,7 +259,7 @@ Any core that statically links its components shall define this global array con
 ####3.1.2.4  OMX_VERSIONTYPE
 The `OMX_VERSIONTYPE` type indicates the version of a component or structure. Each structure uses an `OMX_VERSIONTYPE` field to indicate the OpenMAX specification version under which the structure is defined. For OpenMAX IL version 1.0, the specification version is 1.0.0.0. The component structure also includes an `OMX_VERSIONTYPE` field to indicate a vendor-specific component version.
 
-OMX_VERSIONTYPE is defined as follows.
+OMX_VERSIONTYPE定义如下：
 
 ``` C
 typedef union OMX_VERSIONTYPE
@@ -276,29 +276,29 @@ typedef union OMX_VERSIONTYPE
 ```
 
 #####3.1.2.4.1  nVersionMajor
-`nVersionMajor` identifies the major version number.
+`nVersionMajor` 标识主要版本号.
 
 #####3.1.2.4.2  nVersionMinor
-`nVersionMinor` identifies the minor version number.
+`nVersionMinor` 标识次要版本号.
 
 #####3.1.2.4.3  nRevision
-`nRevision` identifies the revision number.
+`nRevision` 标识修订号.
 
 #####3.1.2.4.4  nStep
-`nStep` identifies the step number.]
+`nStep` 步骤号。
 
 ####3.1.2.5  OMX_PRIORITYMGMTTYPE
 The `OMX_PRIORITYMGMTTYPE` type describes the priority assigned to a set of components. A component group identifies a set of co-dependent components associated with the same feature. All components in the same group share the same group ID and
 priority. If one component in a group loses resources and stops running, the entire feature they collectively contribute to is lost. In this case, all of the other components in the same group shall transition to `OMX_StateLoaded`. A component that is the only one with a certain `nGroupID` acts atomically.
 
-`OMX_PRIORITYMGMTTYPE` is defined as follows.
+`OMX_PRIORITYMGMTTYPE`定义如下：
 
 ``` C
 typedef struct OMX_PRIORITYMGMTTYPE {
-OMX_U32 nSize;
-OMX_VERSIONTYPE nVersion;
-OMX_U32 nGroupPriority;
-OMX_U32 nGroupID;
+  OMX_U32 nSize;
+  OMX_VERSIONTYPE nVersion;
+  OMX_U32 nGroupPriority;
+  OMX_U32 nGroupID;
 } OMX_PRIORITYMGMTTYPE;
 ```
 
@@ -317,23 +317,23 @@ In the context of a single port, each data buffer has a header associated with i
 ``` C
 typedef struct OMX_BUFFERHEADERTYPE
 {
-OMX_U32 nSize;
-OMX_VERSIONTYPE nVersion;
-OMX_U8* pBuffer;
-OMX_U32 nAllocLen;
-OMX_U32 nFilledLen;
-OMX_U32 nOffset;
-OMX_PTR pAppPrivate;
-OMX_PTR pPlatformPrivate;
-OMX_U32 nOutputPortPrivate;
-OMX_U32 nInputPortPrivate;
-OMX_HANDLETYPE hMarkTargetComponent;
-OMX_PTR pMarkData;
-OMX_U32 nTickCount;
-OMX_TICKS nTimeStamp;
-OMX_U32 nFlags;
-OMX_U32 nOutputPortIndex;
-OMX_U32 nInputPortIndex;
+  OMX_U32 nSize;
+  OMX_VERSIONTYPE nVersion;
+  OMX_U8* pBuffer;
+  OMX_U32 nAllocLen;
+  OMX_U32 nFilledLen;
+  OMX_U32 nOffset;
+  OMX_PTR pAppPrivate;
+  OMX_PTR pPlatformPrivate;
+  OMX_U32 nOutputPortPrivate;
+  OMX_U32 nInputPortPrivate;
+  OMX_HANDLETYPE hMarkTargetComponent;
+  OMX_PTR pMarkData;
+  OMX_U32 nTickCount;
+  OMX_TICKS nTimeStamp;
+  OMX_U32 nFlags;
+  OMX_U32 nOutputPortIndex;
+  OMX_U32 nInputPortIndex;
 } OMX_BUFFERHEADERTYPE;
 ```
 
@@ -421,14 +421,14 @@ nInputPortIndex contains the port index of the input port that uses the buffer. 
 ####3.1.2.7  OMX_PORT_PARAM_TYPE
 A component uses the OMX_PORT_PARAM_TYPE structure to identify the number and starting index of ports of a particular domain.
 
-`OMX_PORT_PARAM_TYPE` is defined as follows.
+`OMX_PORT_PARAM_TYPE`定义如下：
 
 ``` C
 typedef struct OMX_PORT_PARAM_TYPE {
-OMX_U32 nSize;
-OMX_VERSIONTYPE nVersion;
-OMX_U32 nPorts;
-OMX_U32 nStartPortNumber;
+  OMX_U32 nSize;
+  OMX_VERSIONTYPE nVersion;
+  OMX_U32 nPorts;
+  OMX_U32 nStartPortNumber;
 } OMX_PORT_PARAM_TYPE;
 ```
 
@@ -448,7 +448,7 @@ To accomplish a callback, the OpenMAX IL has three callback functions defined: a
 
 The IL client is responsible for filling in an `OMX_CALLBACKTYPE` structure with itscallback entry points and passing the structure to the OpenMAX core at initialization(init) time, usually in the `OMX_GetHandle` function.
 
-`OMX_CALLBACKTYPE` is defined as follows.
+`OMX_CALLBACKTYPE`定义如下：
 
 ```C
 typedef struct OMX_CALLBACKTYPE
@@ -474,7 +474,7 @@ OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 #####3.1.2.8.1  EventHandler
 A component uses the EventHandler method to notify the IL client when an event of interest occurs within the component. The OMX_EVENTTYPE enumeration defines the set of OpenMAX IL events; refer to the definition of this enumeration for the meaning of each event. nData1 carries the value of `OMX_COMMANDTYPE` that has been completed or `OMX_ERRORTYPE`. nData2 carries further event parameters, e.g., `OMX_STATETYPE`. pEventData contains event specific data. The pEventData pointer may contain additional data associated with the event (e.g., mark-specific data). A call to EventHandler is a blocking call, so the IL client should respond within five msec to avoid blocking the component for an excessively long time period.
 
-The `EventHandler` method is defined as follows.
+方法`EventHandler`定义如下：
 ``` C
 OMX_ERRORTYPE(* OMX_CALLBACKTYPE::EventHandler)(
 OMX_IN OMX_HANDLETYPE hComponent,
@@ -486,9 +486,9 @@ OMX_IN OMX_PTR pEventData)
 ```
 The parameters are as follows.
 
-| Parameter | Description |
-| -------- |
-| hComponent | The handle of the component that calls this function. |
+| 参数 | 说明 |
+| -------- | -------- |
+| *hComponent* | The handle of the component that calls this function. |
 | eEvent | The event that the component is communicating to the IL client. |
 | nData1 | The first integer event-specific parameter. See Table 3-7 for the meaning in the context of each event. |
 | nData2 | The second integer event-specific parameter. See Table 3-7 for the meaning in the context of each event. The default value is 0 if not used. |
@@ -520,22 +520,22 @@ In addition to facilitating normal data flow between an executing component and 
 
 The `EmptyBufferDone` call is a blocking call that should return from within five msec.Therefore, the IL client may elect not to fill the buffers during this call but queue them for processing outside this call.
 
-The `EmptyBufferDone` call is defined as follows.
+方法`EmptyBufferDone`定义如下：
 
 ``` C
 OMX_ERRORTYPE(* OMX_CALLBACKTYPE::EmptyBufferDone)(
-OMX_OUT OMX_HANDLETYPE hComponent,
-OMX_OUT OMX_PTR pAppData,
-OMX_OUT OMX_BUFFERHEADERTYPE* pBuffer)
+  OMX_OUT OMX_HANDLETYPE hComponent,
+  OMX_OUT OMX_PTR pAppData,
+  OMX_OUT OMX_BUFFERHEADERTYPE* pBuffer)
 ```
 
 The parameters are as follows.
 
 | Parameter | Description |
-| ------- |
-| hComponent | The handle of the component that is calling this function. |
-| pAppData | A pointer to IL client-defined data. |
-| pBuffer | A pointer to an OMX_BUFFERHEADERTYPE structure that was consumed or returned. |
+| ------- | ------- |
+| *hComponent* | The handle of the component that is calling this function. |
+| *pAppData* | A pointer to IL client-defined data. |
+| *pBuffer* | A pointer to an OMX_BUFFERHEADERTYPE structure that was consumed or returned. |
 
 #####3.1.2.8.3  FillBufferDone
 A component uses the FillBufferDone callback to pass a buffer from an output port back to the IL client. A component sets the nOffset and nFilledLength of the buffer header to reflect the portion of the buffer it filled; for example, nFilledLength is equal to 0x0 if it contains no data).
@@ -547,34 +547,34 @@ In addition to facilitating normal dataflow between an executing component and t
 
 The `FillBufferDone` call is a blocking call that should return from within five msec. The IL client may elect not to empty the buffers during this call but queue them for consumption outside this call.
 
-`FillBufferDone` is defined as follows.
+`FillBufferDone`定义如下：
 
 ``` C
 OMX_ERRORTYPE(* OMX_CALLBACKTYPE::FillBufferDone)(
-OMX_OUT OMX_HANDLETYPE hComponent,
-OMX_OUT OMX_PTR pAppData,
-OMX_OUT OMX_BUFFERHEADERTYPE* pBuffer)
+  OMX_OUT OMX_HANDLETYPE hComponent,
+  OMX_OUT OMX_PTR pAppData,
+  OMX_OUT OMX_BUFFERHEADERTYPE* pBuffer)
 ```
 
 The parameters are as follows.
 
 | Parameter | Description |
 | ------- |
-| hComponent | The handle of the component to access. This handle is the component handle returned by the call to the GetHandle function. |
-| pAppData | A pointer to IL client-defined data |
-| pBuffer | A pointer to an OMX_BUFFERHEADERTYPE structure that was filled or returned. |
+| *hComponent* | The handle of the component to access. This handle is the component handle returned by the call to the GetHandle function. |
+| *pAppData* | A pointer to IL client-defined data |
+| *pBuffer* | A pointer to an OMX_BUFFERHEADERTYPE structure that was filled or returned. |
 
 ####3.1.2.9  OMX_PARAM_BUFFERSUPPLIERTYPE
 The `OMX_PARAM_BUFFERSUPPLIERTYPE` structure is used to communicate buffer supplier settings or buffer supplier preferences.
 
-`OMX_PARAM_BUFFERSUPPLIERTYPE` is defined as follows.
+`OMX_PARAM_BUFFERSUPPLIERTYPE` 定义如下.
 
 ``` C
 typedef struct OMX_PARAM_BUFFERSUPPLIERTYPE {
-OMX_U32 nSize;
-OMX_VERSIONTYPE nVersion;
-OMX_U32 nPortIndex;
-OMX_BUFFERSUPPLIERTYPE eBufferSupplier;
+  OMX_U32 nSize;
+  OMX_VERSIONTYPE nVersion;
+  OMX_U32 nPortIndex;
+  OMX_BUFFERSUPPLIERTYPE eBufferSupplier;
 } OMX_PARAM_BUFFERSUPPLIERTYPE;
 ```
 
@@ -588,7 +588,7 @@ output.
 ####3.1.2.10  OMX_TUNNELSETUPTYPE
 The ComponentTunnelRequest function uses the `OMX_TUNNELSETUPTYPE` structure to pass data between two ports when an IL client connects these ports via an `OMX_SetupTunnel` call.
 
-`OMX_TUNNELSETUPTYPE` is defined as follows.
+`OMX_TUNNELSETUPTYPE` 定义如下.
 
 ``` C
 typedef struct OMX_TUNNELSETUPTYPE
@@ -612,25 +612,25 @@ The `eSupplier` field defines whether the input port or the output port provides
 ####3.1.2.11  OMX_PARAM_PORTDEFINITIONTYPE
 The `OMX_PARAM_PORTDEFINITIONTYPE` structure contains a set of generic fields that characterize each port of the component. Some of these fields are common to all domains while other fields are specific to their respective domains. The IL client uses this structure to retrieve general information from each port.
 
-`OMX_PARAM_PORTDEFINITIONTYPE` is defined as follows.
+`OMX_PARAM_PORTDEFINITIONTYPE` 定义如下.
 
 ``` C
 typedef struct OMX_PARAM_PORTDEFINITIONTYPE {
-OMX_U32 nSize;
-OMX_VERSIONTYPE nVersion;
-OMX_U32 nPortIndex;
-OMX_DIRTYPE eDir;
-OMX_U32 nBufferCountActual;
-OMX_U32 nBufferCountMin;
-OMX_U32 nBufferSize;
-OMX_BOOL bEnabled;
-OMX_BOOL bPopulated;
-union {
-OMX_AUDIO_PORTDEFINITIONTYPE audio;
-OMX_VIDEO_PORTDEFINITIONTYPE video;
-OMX_IMAGE_PORTDEFINITIONTYPE image;
-OMX_OTHER_PORTDEFINITIONTYPE other;
-} format;
+  OMX_U32 nSize;
+  OMX_VERSIONTYPE nVersion;
+  OMX_U32 nPortIndex;
+  OMX_DIRTYPE eDir;
+  OMX_U32 nBufferCountActual;
+  OMX_U32 nBufferCountMin;
+  OMX_U32 nBufferSize;
+  OMX_BOOL bEnabled;
+  OMX_BOOL bPopulated;
+  union {
+    OMX_AUDIO_PORTDEFINITIONTYPE audio;
+    OMX_VIDEO_PORTDEFINITIONTYPE video;
+    OMX_IMAGE_PORTDEFINITIONTYPE image;
+    OMX_OTHER_PORTDEFINITIONTYPE other;
+  } format;
 } OMX_PARAM_PORTDEFINITIONTYPE;
 ```
 
@@ -719,20 +719,20 @@ Table 3-10. Valid Component Calls
 ####3.2.2.1  OMX_GetComponentVersion
 The GetComponentVersion macro will query the component and returns information about it. This is a blocking call. The component should return from this call within five msec.
 
-The macro is defined as follows.
+The macro 定义如下.
 ``` C
 #define OMX_GetComponentVersion (
-hComponent,
-pComponentName,
-pComponentVersion,
-pSpecVersion,
-pComponentUUID )
-((OMX_COMPONENTTYPE*)hComponent)->GetComponentVersion( \
-hComponent, \
-pComponentName, \
-pComponentVersion, \
-pSpecVersion, \
-pComponentUUID)
+  hComponent,
+  pComponentName,
+  pComponentVersion,
+  pSpecVersion,
+  pComponentUUID )
+  ((OMX_COMPONENTTYPE*)hComponent)->GetComponentVersion( \
+    hComponent, \
+    pComponentName, \
+    pComponentVersion, \
+    pSpecVersion, \
+    pComponentUUID)
 ```
 
 The parameters are as follows.
@@ -746,7 +746,7 @@ The parameters are as follows.
 | *pComponentUUID* [out] |A pointer to the universal unique identifier (UUID) of the component, which the component will fill in. The UUID is a unique identifier that is set at run time for the component and is unique to each instance of the component.|
 
 #####3.2.2.1.1  Prerequisites for This Method
-This method has no prerequisites.
+这种方法没有先决条件。
 
 #####3.2.2.1.2  Sample Code Showing Calling Sequence
 The following sample code shows a calling sequence.
@@ -857,7 +857,8 @@ A buffer header includes pMarkTargetComponent and the pMarkData fields, whose me
 When a component receives a buffer, it shall compare its own pointer to the pMarkTargetComponent. If the pointers match, the component shall send a mark event, including pMarkData as a parameter, immediately after the buffer exits the component or has been completely processed in the case where it does not exit the component.
 
 #####3.2.2.7.1  Prerequisites for This Method
-This method has no prerequisites.
+这种方法没有先决条件。
+
 
 #####3.2.2.7.2  Sample Code Showing Calling Sequence
 The following sample code shows the calling sequence.
@@ -912,11 +913,11 @@ The following sample code shows the calling sequence.
 /* disable every audio port of a component*/
 OMX_GetParameter(hComp, OMX_IndexParamAudioInit, &oParam);
 for (i=0;i<oParam.nPorts;i++) {
-OMX_SendCommand(
-hComp,
-OMX_CommandPortDisable,
-oParam.nStartPortNumber + i,
-0);
+  OMX_SendCommand(
+    hComp,
+    OMX_CommandPortDisable,
+    oParam.nStartPortNumber + i,
+    0);
 }
 ```
 
@@ -933,13 +934,13 @@ The OMX_SetParameter macro is defined as follows.
 
 ```C
 #define OMX_SetParameter (
-hComponent,
-nParamIndex,
-ComponentParameterStructure)
-((OMX_COMPONENTTYPE*)hComponent)->SetParameter( \
-hComponent, \
-nParamIndex, \
-ComponentParameterStructure)
+  hComponent,
+  nParamIndex,
+  ComponentParameterStructure)
+  ((OMX_COMPONENTTYPE*)hComponent)->SetParameter( \
+    hComponent, \
+    nParamIndex, \
+    ComponentParameterStructure)
 ```
 
 The parameters are as follows.
@@ -1021,7 +1022,7 @@ Some configuration structures contain read-only fields. The OMX_SetConfig method
 
 This call is a blocking call. The component should return from this call within five msec.
 
-The OMX_SetConfig macro is defined as follows.
+宏`OMX_SetConfig`定义如下：
 
 ```C
 #define OMX_SetConfig (
@@ -1141,7 +1142,7 @@ The OMX_UseBuffer macro shall be executed under the following conditions:
 
 This is a blocking call. The component should return from this call within 20 msec.
 
-The OMX_UseBuffer macro is defined as follows.
+宏`OMX_UseBuffer`定义如下：
 ```C
 #define OMX_UseBuffer(\
 hComponent,\
@@ -1202,7 +1203,7 @@ The OMX_AllocateBuffer macro allocates buffers on a specific port for communicat
 
 The component should return from this call within five msec.
 
-The OMX_AllocateBuffer macro is defined as follows.
+宏`OMX_AllocateBuffer`定义如下：
 
 ```C
 #define OMX_AllocateBuffer (
@@ -1312,7 +1313,7 @@ OMX_StatePaused state to the OMX_StateIdle state.
 
 This call is a non-blocking call since the component will queue the buffer and return immediately. The buffer will be emptied later at the proper time. If the parameter nInputPortIndex in the buffer header does not specify a valid input port, the component returns OMX_ErrorBadPortIndex. The component should return from this call within five msec.
 
-The OMX_EmptyThisBuffer macro is defined as follows.
+宏`OMX_EmptyThisBuffer`定义如下：
 ```C
 #define OMX_EmptyThisBuffer (
 hComponent,
@@ -1355,7 +1356,7 @@ When a port is tunneled, buffers sent to OMX_FillThisBuffer are sent to the tunn
 
 This call is a non-blocking call since the component will queue the buffer and return immediately. The buffer will be filled later at the proper time. If the parameter nOutputPortIndex in the buffer header does not specify a valid output port, the component returns OMX_ErrorBadPortIndex. The component should return from this call within five msec.
 
-The OMX_FillThisBuffer macro is defined as follows.
+宏`OMX_FillThisBuffer`定义如下：
 
 ```C
 #define OMX_FillThisBuffer (
@@ -1458,7 +1459,7 @@ return OMX_FALSE;
 ####3.2.3.3  OMX_ComponentNameEnum
 The OMX_ComponentNameEnum method will enumerate through all the names of recognized components in the system to detect all the components in the system run-time. There is no strict ordering to the enumeration of component names, although each name shall be enumerated only once. If the OpenMAX core supports run-time installation of new components, it is required to detect newly installed components only when the first call to enumerate component names occurs (i.e., when the value of nIndex is 0x0).
 
-The OMX_ComponentNameEnum method is defined as follows.
+方法`OMX_ComponentNameEnum`定义如下：
 
 ```C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_ComponentNameEnum(
@@ -1507,7 +1508,7 @@ Since components are requested by name, a naming convention is defined. OpenMAX 
 
 No standardization among component names is dictated across different vendors.
 
-OMX_GetHandle is defined as follows.
+`OMX_GetHandle`定义如下：
 
 ```C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_GetHandle(
@@ -1540,10 +1541,10 @@ The following sample code shows the calling sequence.
 eError = OMX_ErrorNone;
 for (i=0; OMX_ErrorNone == eError; i++)
 {
-eError = OMX_GetHandle(&hComp[i],
-szComponentName,
-pAppData,
-pCallbacks);
+  eError = OMX_GetHandle(&hComp[i],
+  szComponentName,
+  pAppData,
+  pCallbacks);
 }
 printf("Created %i instantiations.\n",i);
 ```
@@ -1551,11 +1552,11 @@ printf("Created %i instantiations.\n",i);
 ####3.2.3.5  OMX_FreeHandle
 The OMX_FreeHandle method will free a handle allocated by the OMX_GetHandle method. The component should return from this call within 20 msec. The IL client should call OMX_FreeHandle only when the component is in the OMX_StateLoaded or the OMX_StateInvalid state; calling OMX_FreeHandle from any other state may result in the component taking longer than the recommended 20 msec execution time, and is provided only as a failure recovery mechanism.
 
-OMX_FreeHandle is defined as follows.
+`OMX_FreeHandle`定义如下：
 
 ```C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_FreeHandle(
-OMX_IN OMX_HANDLETYPE hComponent )
+  OMX_IN OMX_HANDLETYPE hComponent )
 ```
 
 The single parameter is as follows.
@@ -1650,7 +1651,7 @@ pApplicationPrivate is a pointer to the application private data area. The compo
 ###3.3.5 GetComponentVersion
 The IL client calls the GetComponentVersion component method via the OMX_GetComponentVersion core macro. See the definition of OMX_GetComponentVersion in section 3.2.2.1 for a description of its semantics.
 
-GetComponentVersion is defined as follows.
+`GetComponentVersion`定义如下：
 
 ```C
 OMX_ERRORTYPE (*GetComponentVersion)(
@@ -1663,7 +1664,7 @@ OMX_OUT OMX_UUIDTYPE* pComponentUUID);
 ###3.3.6 SendCommand
 The IL client calls the SendCommand component method via the OMX_SendCommand core macro. See the definition of OMX_SendCommand in section 3.2.2.2 for a description of its semantics.
 
-SendCommand is defined as follows.
+`SendCommand`定义如下：
 ```C
 OMX_ERRORTYPE (*SendCommand)(
 OMX_IN OMX_HANDLETYPE hComponent,
@@ -1685,7 +1686,7 @@ OMX_INOUT OMX_PTR ComponentParameterStructure);
 ###3.3.8 SetParameter
 The IL client or a tunneled component calls the SetParameter component method via the OMX_SetParameter core macro. See the definition of OMX_SetParameter in section 3.2.2.9 for a description of its semantics.
 
-SetParameter is defined as follows.
+`SetParameter`定义如下：
 ```C
 OMX_ERRORTYPE (*SetParameter)(
 OMX_IN OMX_HANDLETYPE hComponent,
@@ -1695,7 +1696,7 @@ OMX_IN OMX_PTR ComponentParameterStructure);
 
 ###3.3.9 GetConfig
 The IL client calls the GetConfig component method via the OMX_GetConfig core macro. See the definition of OMX_GetConfig in section 3.2.2.10 for a description of its semantics.
-GetConfig is defined as follows.
+`GetConfig`定义如下：
 
 ```C
 OMX_ERRORTYPE (*GetConfig)(
@@ -1707,7 +1708,7 @@ OMX_INOUT OMX_PTR pComponentConfigStructure);
 ###3.3.10  SetConfig
 The IL client calls the SetConfig component method via the OMX_SetConfig core macro. See the definition of OMX_SetConfig in section 3.2.2.11 for a description of its semantics.
 
-SetConfig is defined as follows.
+`SetConfig`定义如下：
 
 ```C
 OMX_ERRORTYPE (*SetConfig)(
@@ -1719,7 +1720,7 @@ OMX_IN OMX_PTR pComponentConfigStructure);
 The IL client calls the GetExtenstionIndex component method via the OMX_GetExtensionIndex core macro. See the definition of
 OMX_GetExtensionIndex in section 3.2.2.12 for a description of its semantics.
 
-GetExtensionIndex is defined as follows.
+`GetExtensionIndex`定义如下：
 
 ```C
 OMX_ERRORTYPE (*GetExtensionIndex)(
@@ -1731,7 +1732,7 @@ OMX_OUT OMX_INDEXTYPE* pIndexType);
 ###3.3.12  GetState
 The IL client calls the GetState component method via the OMX_GetState core macro. See the definition of OMX_GetState in section 3.2.2.13 for a description of its semantics.
 
-GetState is defined as follows.
+`GetState`定义如下：
 ```C
 OMX_ERRORTYPE (*GetState)(
 OMX_IN OMX_HANDLETYPE hComponent,
@@ -1757,7 +1758,7 @@ If this method is invoked with a NULL parameter for the pTunnelComp parameter, t
 
 The component should return from this call within five msec. 
 
-ComponentTunnelRequest is defined as follows.
+`ComponentTunnelRequest`定义如下：
 ``` C
 OMX_ERRORTYPE (*ComponentTunnelRequest)(
 OMX_IN OMX_HANDLETYPE hComp,
@@ -1795,7 +1796,7 @@ nPortOutput, &oTunnelSetup);
 ###3.3.14  UseBuffer
 The IL client or a tunneled component calls the UseBuffer component method via the OMX_UseBuffer core macro. See the definition of OMX_UseBuffer in section 3.2.2.14 for a description of its semantics.
 
-UseBuffer is defined as follows.
+`UseBuffer`定义如下：
 
 ```C
 OMX_ERRORTYPE (*UseBuffer)(
@@ -1810,7 +1811,7 @@ OMX_IN OMX_U8* pBuffer);
 ###3.3.15  AllocateBuffer
 The IL client calls the AllocateBuffer component method via the OMX_AllocateBuffer core macro. See the definition of OMX_AllocateBuffer in section 3.2.2.15 for a description of its semantics.
 
-AllocateBuffer is defined as follows.
+`AllocateBuffer`定义如下：
 ```C
 OMX_ERRORTYPE (*AllocateBuffer)(
 OMX_IN OMX_HANDLETYPE hComponent,
@@ -1823,7 +1824,7 @@ OMX_IN OMX_U32 nSizeBytes);
 ###3.3.16  FreeBuffer
 The IL client or a tunneled component calls the FreeBuffer component method via the OMX_FreeBuffer core macro. See the definition of OMX_FreeBuffer in section 3.2.2.16 for a description of its semantics.
 
-FreeBuffer is defined as follows.
+`FreeBuffer`定义如下：
 
 ```C
 OMX_ERRORTYPE (*FreeBuffer)(
@@ -1835,7 +1836,7 @@ OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 ###3.3.17  EmptyThisBuffer
 The IL client or a tunneled component calls the EmptyThisBuffer component method via the OMX_EmptyThisBuffer core macro. See the definition of OMX_EmptyThisBuffer in section 3.2.2.17 for a description of its semantics.
 
-EmptyThisBuffer is defined as follows.
+`EmptyThisBuffer`定义如下：
 ```C
 OMX_ERRORTYPE (*EmptyThisBuffer)(
 OMX_IN OMX_HANDLETYPE hComponent,
@@ -1844,7 +1845,7 @@ OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 ###3.3.18  FillThisBuffer
 The IL client or a tunneled component calls the FillThisBuffer component method via the OMX_FillThisBuffer core macro. See the definition of OMX_FillThisBuffer in section 3.2.2.18 for a description of its semantics.
 
-FillThisBuffer is defined as follows.
+`FillThisBuffer`定义如下：
 
 ```C
 OMX_ERRORTYPE (*FillThisBuffer)(
@@ -1855,7 +1856,7 @@ OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 ###3.3.19  SetCallbacks
 The SetCallbacks method will allow the core to transfer the callback structure from the IL client to the component. This is a blocking call. The component should return from this call within five msec.
 
-SetCallbacks is defined as follows.
+`SetCallbacks`定义如下：
 ```C
 OMX_ERRORTYPE (*SetCallbacks)(
 OMX_IN OMX_HANDLETYPE hComponent,
@@ -1890,7 +1891,7 @@ pComp->SetCallbacks(hHandle, pCallBacks, pAppData);
 ###3.3.20  ComponentDeinit
 The core calls the ComponentDeinit function when the core needs to dispose of a component. 
 
-ComponentDeinit is defined as follows.
+`ComponentDeinit`定义如下：
 
 ```C
 OMX_ERRORTYPE (*ComponentDeInit)(
