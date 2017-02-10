@@ -128,16 +128,13 @@ IL客户端可以选择一个处于`OMX_StateLoaded`的组件转移到`OMX_State
 #####3.1.1.2.6  OMX_StateInvalid
 在这个状态时，组件发现内部损坏或遇到无法恢复的错误。当它检测到这个情况是，组件将自己转移到`OMX_StateInvalid`并通知IL客户端产生一个值为`OMX_ErrorInvalidState`的`OMX_ErrorEvent`事件。 但客户端收到这个时间。它应该释放组件关联的所有资源并且最后调用`OMX_FreeHandle`释放组件关联的句柄。
 
-A component in the `OMX_StateInvalid` state shall fail every call made upon it and return an `OMX_ErrorStateInvalid` error message except for `OMX_GetState`, `OMX_FreeBuffer`, or `OMX_ComponentDeinit`. The IL client may also command a transition to the `OMX_StateInvalid` state explicitly via `OMX_SendCommand`. A component may transition between any state and the `OMX_StateInvalid` state.
+位于`OMX_StateInvalid`状态的组件应该除了 `OMX_GetState`, `OMX_FreeBuffer`, 或`OMX_ComponentDeinit`方法调用外，其他的调用都失败并返回`OMX_ErrorStateInvalid`错误信息。IL组件应该同样明确的通过`OMX_SendCommand`将组件转移到`OMX_StateInvalid`状态。组件可以从任意状态转移到`OMX_StateInvalid`。
 
 ####3.1.1.3  OMX_ERRORTYPE
-The OMX_ERRORTYPE enumeration shown in Table 3-4 defines the standard
-OpenMAX errors that all functions defined in the OpenMAX IL API return. These errors
-should cover most of the common failure cases. However, vendors are free to add
-additional error messages of their own as long as they follow these rules:
+表3-4描述了枚举类型`OMX_ERRORTYPE`，它定义了每一个OpenMAX IL API返回的OpenMAX的标准错误。这些错误可以覆盖大多数的普通错误。但是硬件厂商可以根据下面的原则自由的加入额外的错误类型：
 
--  Vendor error messages shall be in the range of 0x90000000 to 0x9000FFFF.
--  Vendor error messages shall be defined in a header file provided with the component. No error messages are allowed that are not defined.
+-  厂商的错误消息范围是0x90000000到0x9000FFFF。
+-  厂商错误消息应该定义在和组件一起提供的头文件中。未定义的错误消息是不允许的。
 
 |字段名称| 值 | 描述 |
 |------------- |:-------------:|  ------------- |
@@ -146,33 +143,34 @@ additional error messages of their own as long as they follow these rules:
 |OMX_ErrorUndefined | 0x80001001 | 未知原因的错误 |
 |OMX_ErrorInvalidComponentName |0x80001002 | 组件名错误 |
 |OMX_ErrorComponentNotFound | 0x80001003 | 没有找到指定名称的组件 |
-|OMX_ErrorInvalidComponent | 0x80001004 | The component specified did not have a OMX_ComponentInit entry point, or the component did not correctly complete the OMX_ComponentInit call. |
-|OMX_ErrorBadParameter | 0x80001005 | One or more parameters were invalid.|
-|OMX_ErrorNotImplemented | 0x80001006 | The requested function is notimplemented. |
+|OMX_ErrorInvalidComponent | 0x80001004 | 指定组件没有`OMX_ComponentInit`入口，或者组件没有完成`OMX_ComponentInit`调用 |
+|OMX_ErrorBadParameter | 0x80001005 | 一个或多个参数非法|
+|OMX_ErrorNotImplemented | 0x80001006 | 请求功能未实现 |
 |OMX_ErrorUnderflow | 0x80001007 | 下一个buffer准备好之前目前的buffer已空 |
-|OMX_ErrorOverflow | 0x80001008 | The buffer was not available when it was needed. |
-|OMX_ErrorHardware | 0x80001009 | The hardware failed to respond as expected. |
-|OMX_ErrorInvalidState | 0x8000100A | The component is in the OMX_StateInvalid state. |
-|OMX_ErrorStreamCorrupt | 0x8000100B |The stream is found to be corrupt. |
-|OMX_ErrorPortsNotCompatible | 0x8000100C | Ports being set up for tunneled communication are incompatible. |
-|OMX_ErrorResourcesLost | 0x8000100D | Resources allocated to a component inthe OMX_StateIdle state have been lost, which has resulted in the component returning to the OMX_StateLoaded state. |
-|OMX_ErrorNoMore | 0x8000100E | No more indices can be enumerated. |
+|OMX_ErrorOverflow | 0x80001008 | 需要buffer的时候不可用|
+|OMX_ErrorHardware | 0x80001009 | 硬件响应错误 |
+|OMX_ErrorInvalidState | 0x8000100A | 组件处于`OMX_StateInvalid`状态 |
+|OMX_ErrorStreamCorrupt | 0x8000100B | 发现流损坏 |
+|OMX_ErrorPortsNotCompatible | 0x8000100C | 建立管道的端口不兼容 |
+|OMX_ErrorResourcesLost | 0x8000100D | 处于`OMX_StateIdle` 状态的组件丢失了分配的资源， 导致组件回到`OMX_StateLoaded`状态 |
+|OMX_ErrorNoMore | 0x8000100E | 没有更多的索引可以枚举。 |
 |OMX_ErrorVersionMismatch | 0x8000100F | 组件检测到版本不匹配。 |
 |OMX_ErrorNotReady | 0x80001010 |组件此时没有准备好返回数据。|
 |OMX_ErrorTimeout | 0x80001011 | 发生超时. |
-|OMX_ErrorSameState | 0x80001012 |The component tried to transition into the state that it is currently in. |
-|OMX_ErrorResourcesPreempted | 0x80001013 |Resources allocated to a component in the OMX_StateExecuting or OMX_Pause states have been pre- empted, causing the component to return to the OMX_StateIdle state. |
-|OMX_ErrorPortUnresponsiveDuringAllocation |0x80001014|The non-supplier port deemed that it had waited an unusually long time for the supplier port to send it an allocated buffer via an OMX_UseBuffer call. A non-supplier port sends this error to the IL client via the EventHandler callback during the allocation of buffers on a transition from the LOADED to the IDLE state or on a port enable.|
-|OMX_ErrorPortUnresponsiveDuringDeallocation|0x80001015|The non-supplier port deemed that it had waited an unusually long time for the supplier port to request the de-allocation of a buffer header via a OMX_FreeBuffer call. A non-supplier port sends this error to the IL client via the EventHandler callback during the de-allocation of buffers on a transition from the IDLE to LOADED state or on a port disablement.|
-|OMX_ErrorPortUnresponsiveDuringStop |0x80001016|The supplier port deemed that it had waited an unusually long time for the non-supplier port to return a buffer via an EmptyThisBuffer or FillThisBuffer call. A supplier port sent this error to the IL client via the EventHandler callback during the disabling of a port, either on a transition from the IDLE to LOADED state or on a port disablement.|
-|OMX_ErrorIncorrectStateTransition|0x80001017|A state transition was attempted that is not allowed.|
-|OMX_ErrorIncorrectStateOperation|0x80001018|A command or method was attempted that is not allowed during the present state. |
-|OMX_ErrorUnsupportedSetting| 0x80001019|One or more values encapsulated in the parameter or configuration structure are unsupported.|
-|OMX_ErrorUnsupportedIndex|  0x8000101A|The parameter or configuration indicated by the given index is unsupported.|
-|OMX_ErrorBadPortIndex|  0x8000101B|The port index that was supplied is incorrect.|
-|OMX_ErrorPortUnpopulated | 0x8000101C | The port has lost one or more of its buffers and is thus unpopulated.|
+|OMX_ErrorSameState | 0x80001012 | 组件试图切换至当前正处于的状态|
+|OMX_ErrorResourcesPreempted | 0x80001013 |处于 `OMX_StateExecuting`或 `OMX_Pause`状态的组件所分配的资源被抢占，导致组件回到`OMX_StateIdle`状态|
+|OMX_ErrorPortUnresponsiveDuringAllocation |0x80001014|非供应端口认为等待供应端口调用`OMX_UseBuffer`来分配buffer时间过长。非供应端口在loaded向idle进行状态切换时或启用某一端口时通过`EventHandler`回调发送此错误给IL客户端|
+|OMX_ErrorPortUnresponsiveDuringDeallocation|0x80001015|非供应端口认为等待供应端口调用`OMX_FreeBuffer`来释放buffer时间过长。非供应端口在idle向loaded进行状态切换时或禁用某一端口时通过`EventHandler`回调发送此错误给IL客户端|
+|OMX_ErrorPortUnresponsiveDuringStop |0x80001016|供应端口认为等待非供应端口调用`EmptyThisBuffer`或`FillThisBuffer`返回时间过长。供应端口在idle向loaded进行状态切换时或禁用某一端口时通过`EventHandler`回调发送此错误给IL客户端|
+|OMX_ErrorIncorrectStateTransition|0x80001017|试图进行不允许的状态转移|
+|OMX_ErrorIncorrectStateOperation|0x80001018|试图调用的命令和方法在当前状态是不支持的|
+|OMX_ErrorUnsupportedSetting| 0x80001019|一个或多个参数或配置结构不正确|
+|OMX_ErrorUnsupportedIndex|  0x8000101A|给出的索引参数或配置不支持|
+|OMX_ErrorBadPortIndex|  0x8000101B|给出得端口索引不正确|
+|OMX_ErrorPortUnpopulated | 0x8000101C | 端口丢失了一个或多个buffer|
 
 **Table 3-4. OpenMAX 错误代码**
+
 ####3.1.1.4  OMX_EVENTTYPE
 The OMX_EVENTTYPE enumeration shown in Table 3-5 includes the event types that
 an OpenMAX component can generate. Section 3.1.2.7 describes events that the
