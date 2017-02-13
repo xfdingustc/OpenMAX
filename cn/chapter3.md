@@ -172,7 +172,7 @@ IL客户端可以选择一个处于`OMX_StateLoaded`的组件转移到`OMX_State
 **Table 3-4. OpenMAX 错误代码**
 
 ####3.1.1.4  OMX_EVENTTYPE
-枚举类型｀OMX_EVENTTYPE｀如表3-5所示，它包括了OpenMAX组件产生的事件类型。3.1.2.7小节描述了OpenMAX组件产生事件并通过回调传送给IL客户端。与事件关联的参数也一并通过回调传递。
+枚举类型`OMX_EVENTTYPE`如表3-5所示，它包括了OpenMAX组件产生的事件类型。3.1.2.7小节描述了OpenMAX组件产生事件并通过回调传送给IL客户端。与事件关联的参数也一并通过回调传递。
 
 | 字段名 | 说明 |
 | ------------- | ------------- |
@@ -181,28 +181,28 @@ IL客户端可以选择一个处于`OMX_StateLoaded`的组件转移到`OMX_State
 | OMX_EventMark | 一个标记的buffer到达目标组件，IL客户端收到此带有指向私有数据指针的事件。|
 | OMX_EventPortSettingsChanged | 组件改变了端口设置。例如，组件根据比特流的解析相应的改变了端口设置。|
 | OMX_EventBufferFlag | 组件检测到码流结束（EOS）时发送的事件。|
-| OMX_EventResourcesAcquired | 组件得到资源并将从｀OMX_StateWaitForResources｀ 切换到｀OMX_StateIdle ｀|
+| OMX_EventResourcesAcquired | 组件得到资源并将从`OMX_StateWaitForResources`切换到`OMX_StateIdle`|
 
 **表 3-5. OpenMAX 事件类型**
 
 #####3.1.1.4.1  OMX_EventCmdComplete
-组件完成命令执行后会立刻产生`OMX_EventCmdComplete`事件传递给IL客户端。如果是组件状态改变，新状态会作为事件的参数。组件转移到｀OMX_StateInvalid｀不会产生此事件。
+组件完成命令执行后会立刻产生`OMX_EventCmdComplete`事件传递给IL客户端。如果是组件状态改变，新状态会作为事件的参数。组件转移到`OMX_StateInvalid`不会产生此事件。
 
 #####3.1.1.4.2  OMX_EventError
-组件检测到下面的情况的错误时会产生｀OMX_EventError｀事件，错误事件类型会放在事件参数中，并使用｀OMX_ERRORTYPE｀中定义的值。组件应该通过`OMX_EventError`发送下面的错误：
+组件检测到下面的情况的错误时会产生｀OMX_EventError｀事件，错误事件类型会放在事件参数中，并使用`OMX_ERRORTYPE`中定义的值。组件应该通过`OMX_EventError`发送下面的错误：
 
 -  组件转移到`OMX_StateInvalid`状态时会发送`OMX_ErrorInvalidState`错误。
 -  组件由于资源不足时从`OMX_StateExecuting` 或 `OMX_StatePause` 切换到 `OMX_StateIdle`时会发送`OMX_ErrorResourcesPreempted`错误。
 -  组件由于资源丢失而从`OMX_StateIdle` 切换到 `OMX_StateLoaded`时会发送`OMX_ErrorResourcesLost`错误。
 
 #####3.1.1.4.3  OMX_EventMark
-组件受到一块标记过的buffer时会产生`OMX_EventMark`事件。组件收到buffer时，他应该比较自身指针和buffer中｀pMarkTargetComponent｀字段。如果指针相等，组件处理完buffer后应该立即发送一个包含｀pMarkData｀参数的标记事件。IL客户端可以使用使用此标记事件来计算组件链上的传输延时，或通知组件一个快特殊的buffer已经到达目的地。
+组件受到一块标记过的buffer时会产生`OMX_EventMark`事件。组件收到buffer时，他应该比较自身指针和buffer中`pMarkTargetComponent`字段。如果指针相等，组件处理完buffer后应该立即发送一个包含`pMarkData`参数的标记事件。IL客户端可以使用使用此标记事件来计算组件链上的传输延时，或通知组件一个快特殊的buffer已经到达目的地。
 
 #####3.1.1.4.4  OMX_EventPortSettingsChanged
-组件改变端口设置时会立刻产生｀OMX_EventPortSettingsChanged｀事件。例如，视频解码器可能不知道输出视频的帧大小和帧率，因为这些参数在输入比特流中编码。一旦这些组件被解析了，组件改变输出组件上的配置结构并且传递｀OMX_EventPortSettingsChanged｀事件给IL客户端。
+组件改变端口设置时会立刻产生`OMX_EventPortSettingsChanged`事件。例如，视频解码器可能不知道输出视频的帧大小和帧率，因为这些参数在输入比特流中编码。一旦这些组件被解析了，组件改变输出组件上的配置结构并且传递`OMX_EventPortSettingsChanged`事件给IL客户端。
 
 #####3.1.1.4.5  OMX_EventBufferFlag
-当一个输出端口发出一个在字段`nFlags`带有`OMX_BUFFERFLAG_EOS`标识的buffer时，组件产生`OMX_EventBufferFlag`事件。事件处理程序中的`nData1`字段指示了输出端口的索引， ｀nData2｀字段指示了包含码流结束（EOS）标志的不可变的｀nFlags｀字段。如果组件不再传递流（例如，组件时一个视频或视频sink），组件处理完带有｀OMX_BUFFERFLAG_EOS｀的buffer后，应该为此流发送一个｀OMX_EventBufferFlag｀事件。事件处理程序的｀nData1｀字段指定了接受buffer的输入端口，｀nData2｀字段指定了含有EOS标志的不可变的｀nFlags｀字段。
+当一个输出端口发出一个在字段`nFlags`带有`OMX_BUFFERFLAG_EOS`标识的buffer时，组件产生`OMX_EventBufferFlag`事件。事件处理程序中的`nData1`字段指示了输出端口的索引， `nData2`字段指示了包含码流结束（EOS）标志的不可变的｀nFlags｀字段。如果组件不再传递流（例如，组件时一个视频或视频sink），组件处理完带有`OMX_BUFFERFLAG_EOS`的buffer后，应该为此流发送一个`OMX_EventBufferFlag`事件。事件处理程序的`nData1`字段指定了接受buffer的输入端口，｀nData2｀字段指定了含有EOS标志的不可变的`nFlags`字段。
 
 #####3.1.1.4.6  OMX_EventResourcesAcquired
 组件处于`OMX_StateWaitForResources`状态时，资源管理器检测到所需资源可用时，组件产生`OMX_EventResourcesAcquired`事件。组件收到这个事件时，它便可以转移状态到`OMX_StateIdle`，并且会所有端口上的buffer分配。
@@ -253,7 +253,7 @@ typedef OMX_ERRORTYPE (* OMX_COMPONENTINITTYPE)(OMX_IN OMX_HANDLETYPE hComponent
 `OMX_VERSIONTYPE`类型指示了组件或结构的版本。每个结构使用`OMX_VERSIONTYPE`字段指定了结构的OpenMAX版本。对OpenMAX IL 1.0版本，协议版本时1.0.0.0。组件结构也包含了一个厂商特定的组件版本号的`OMX_VERSIONTYPE`字段。
 
 
-｀OMX_VERSIONTYPE｀定义如下：
+`OMX_VERSIONTYPE`定义如下：
 
 ``` C
 typedef union OMX_VERSIONTYPE
@@ -330,44 +330,44 @@ typedef struct OMX_BUFFERHEADERTYPE
 ```
 
 #####3.1.2.6.1  pBuffer
-｀pBuffer｀为buffer中数据存储的真实指针，但并不一定时是有效数据的起始位置。更多信息参考3.1.2.6.4描述的｀nOffset｀。
+`pBuffer`为buffer中数据存储的真实指针，但并不一定时是有效数据的起始位置。更多信息参考3.1.2.6.4描述的`nOffset`。
 
 #####3.1.2.6.2  nAllocLen
-｀nAllocLen｀为buffer中分配的总大小，包括有效的和未用的字节。
+`nAllocLen`为buffer中分配的总大小，包括有效的和未用的字节。
 
 #####3.1.2.6.3  nFilledLen
-｀nFilledLen｀为buffer中有效数据的总大小，从｀pBuffer｀和｀nOffset｀指定的位置开始。
+`nFilledLen`为buffer中有效数据的总大小，从`pBuffer`和`nOffset`指定的位置开始。
 
 #####3.1.2.6.4  nOffset
-｀nOffset｀为从buffer开始计算的有效数据的偏移位置。有效数据的指针可以从｀nOffset｀和｀pBuffer｀相加得到。
+`nOffset`为从buffer开始计算的有效数据的偏移位置。有效数据的指针可以从`nOffset`和`pBuffer`相加得到。
 
 #####3.1.2.6.5  pAppPrivate
-｀pAppPrivate｀为指向IL客户端私有结构的指针。
+`pAppPrivate`为指向IL客户端私有结构的指针。
 
 #####3.1.2.6.6  pPlatformPrivate
-｀pPlatformPrivate｀为指向平台私有结构的指针。分配buffer头结构的core使用这个指针。
+`pPlatformPrivate`为指向平台私有结构的指针。分配buffer头结构的core使用这个指针。
 
 #####3.1.2.6.7  pOutputPortPrivate
-｀pOutputPortPrivate｀为使用buffer的输出端口的私有指针。如果buffer头用于输入端口与IL客户端之间的通信，buffer的｀pOutputPortPrivate｀则不用定义。
+`pOutputPortPrivate`为使用buffer的输出端口的私有指针。如果buffer头用于输入端口与IL客户端之间的通信，buffer的`pOutputPortPrivate`则不用定义。
 
 #####3.1.2.6.8  pInputPortPrivate
-｀pInputPortPrivate｀为使用buffer的输入端口的私有指针。如果buffer头用于输出端口与IL客户端之间的通信，buffer的｀pInputPortPrivate｀则不用定义。
+`pInputPortPrivate`为使用buffer的输入端口的私有指针。如果buffer头用于输出端口与IL客户端之间的通信，buffer的`pInputPortPrivate`则不用定义。
 
 #####3.1.2.6.9  hMarkTargetComponent
-｀hMarkTargetComponent｀为处理buffer时需要发出｀OMX_EventMark｀消息的组件的句柄。一个空的句柄表面buffer没有携带任何标记。`OMX_CommandMarkBuffer`命令将次句柄传递给标记的组件。标记的组件，将此句柄复制到标记的buffer中。每个处理此buffer的组件应该使用这个句柄和自己向比较，如果相同，则发出标记消息。组件应该在输入buffer和相应的输出buffer中传递这个字段。
+`hMarkTargetComponent`为处理buffer时需要发出｀OMX_EventMark｀消息的组件的句柄。一个空的句柄表面buffer没有携带任何标记。`OMX_CommandMarkBuffer`命令将次句柄传递给标记的组件。标记的组件，将此句柄复制到标记的buffer中。每个处理此buffer的组件应该使用这个句柄和自己向比较，如果相同，则发出标记消息。组件应该在输入buffer和相应的输出buffer中传递这个字段。
 
 #####3.1.2.6.10  pMarkData
-｀pMarkData｀指针指向IL客户端特定的数据，与｀OMX_EventMark｀发出的消息标志相关联。当收到这个标记时，IL客户端可以使用这个数据来和其他的标记相区别。命令`OMX_CommandMarkBuffer`提供此指针来标记组件。标记的组件，将此句柄复制到标记的buffer中。组件应该在输入buffer和相应的输出buffer中传递这个字段。
+`pMarkData`指针指向IL客户端特定的数据，与`OMX_EventMark`发出的消息标志相关联。当收到这个标记时，IL客户端可以使用这个数据来和其他的标记相区别。命令`OMX_CommandMarkBuffer`提供此指针来标记组件。标记的组件，将此句柄复制到标记的buffer中。组件应该在输入buffer和相应的输出buffer中传递这个字段。
 
 #####3.1.2.6.11  nTickCount
-｀nTickCount｀为一个组件和IL客户端可以更新的计时器，为可选条目，不是所有的组件会更新它。｀nTickCount｀的值以微秒为单位。由于这个值是一个任意起始点的相对值，它不能用于确定绝对时间。
+`nTickCount`为一个组件和IL客户端可以更新的计时器，为可选条目，不是所有的组件会更新它。｀nTickCount｀的值以微秒为单位。由于这个值是一个任意起始点的相对值，它不能用于确定绝对时间。
 
 
 #####3.1.2.6.12  nTimeStamp
-｀nTimeStamp｀为buffer中第一个逻辑单元的时间戳。Buffer中后续数据的时间戳可以通过buffer的持续时间和此时间戳相加得到。组件应该在输入buffer和相应的输出buffer中传递这个字段。
+`nTimeStamp`为buffer中第一个逻辑单元的时间戳。Buffer中后续数据的时间戳可以通过buffer的持续时间和此时间戳相加得到。组件应该在输入buffer和相应的输出buffer中传递这个字段。
 
 #####3.1.2.6.13  nFlags
-｀nFlags｀字段包含了buffer的特定的标志，例如EOS标志。组件应该在输入buffer和相应的输出buffer中传递这个字段。标志的列表如下：
+`nFlags`字段包含了buffer的特定的标志，例如EOS标志。组件应该在输入buffer和相应的输出buffer中传递这个字段。标志的列表如下：
 
 
 ```C
@@ -379,25 +379,24 @@ typedef struct OMX_BUFFERHEADERTYPE
 ```
 
 ######3.1.2.6.13.1  OMX_BUFFERFLAG_EOS
-A component sets EOS when it has no more data to emit on a particular output port. Thus, an output port shall set EOS on the last buffer it emits. The determination by a component of when an output port should cease sending data is implementation specific.
+如果组件的输出端口没有更多的数据发出，则会设置EOS。因此，一个输出端口应该在最后一个发出的buffer上设置EOS，输出端口什么时候停止发送数据由具体的实现决定。
 
 ######3.1.2.6.13.2  OMX_BUFFERFLAG_STARTTIME
-The source of a stream (e.g., a de-multiplexing component) sets the `OMX_BUFFERFLAG_STARTTIME` flag on the buffer that contains the starting timestamp for the stream. The starting timestamp corresponds to the first data that should be displayed at startup or after a seek operation.
+流的源（例如，分离器组件）设置包含流的起始时间戳的buffer`OMX_BUFFERFLAG_STARTTIME`标志。起始时间戳对应了起始或跳转操作后第一帧数据显示时间。
 
-The first timestamp of the stream is not necessarily the start time. For instance, in the case of a seek to a particular video frame, the target frame may be an interframe. Thus the first buffer of the stream will be the intraframe preceding the target frame, and the start time will occur with the target frame along with any other required frames required to reconstruct the target intervening.
+流的第一个时间戳不一定是起始时间。例如，在搜索一个特定视频帧的情况下，目标帧可能是一个帧间帧。因此，流的第一帧应该是在目标帧之前的帧内帧。在目标帧所依赖的帧重建完毕后，才能发生目标帧的起始时间。
 
-The `OMX_BUFFERFLAG_STARTTIME` flag is directly associated with the buffer timestamp. Thus, the association of the OMX_BUFFERFLAG_STARTTIME flag to buffer data and its propagation is identical to that of the timestamp.
+`OMX_BUFFERFLAG_STARTTIME`标志直接和buffer的时间戳向关联。因此，buffer数据和`OMX_BUFFERFLAG_STARTTIME`标志的关系和传输和时间戳完全一致。
 
-
-A clock component client that receives a buffer with the STARTTIME flag shall perform an OMX_SetConfig call on its sync port using `OMX_ConfigTimeClientStartTime` and pass the timestamp for the buffer.
+时钟组件收到一个带有`STARTTIME`标志的buffer应该在它的同步端口上使用`OMX_ConfigTimeClientStartTime`调用`OMX_SetConfig`来传递buffer的时间戳。
 
 ######3.1.2.6.13.3  OMX_BUFFERFLAG_DECODEONLY
-The source of a stream (e.g., a de-multiplexing component) sets the `OMX_BUFFERFLAG_DECODEONLY` flag on any buffer that should be decoded but not rendered. This flag is used, for instance, when a source seeks to a target interframe that requires decoding of frames preceding the target to facilitate reconstruction of the target. In this case, the source would emit the frames preceding the target downstream but mark them as decode only.
+流的源头（例如，一个分离器组件）设置一个只解码不显示的buffer`OMX_BUFFERFLAG_DECODEONLY` 标志。这个标志用于，源跳转到一个帧间帧时，需要首先解出目标所依赖的帧。在这个例子中，源需要将目标所依赖的帧发出但标记他们只能被解码。
 
-The `OMX_BUFFERFLAG_DECODEONLY` flag is associated with buffer data and propagated in a manner identical to that of the buffer timestamp. A component that renders data should ignore all buffers with the `OMX_BUFFERFLAG_DECODEONLY` flag set.
+`OMX_BUFFERFLAG_DECODEONLY`标记和buffer数据相关联，传输的行为和时间戳完全一致。显示数据的组件应该忽略所有设置了`OMX_BUFFERFLAG_DECODEONLY`标志的buffer。
 
 ######3.1.2.6.13.4  OMX_BUFFERFLAG_DATACORRUPT
-The `OMX_BUFFERFLAG_DATACORRUPT` flag is set when the IL client identifies the data in the associated buffer as corrupt.
+当IL客户端识别buffer相关的数据损坏时设置`OMX_BUFFERFLAG_DATACORRUPT`标志位。
 
 ######3.1.2.6.13.5  OMX_BUFFERFLAG_ENDOFFRAME
 `OMX_BUFFERFLAG_ENDOFFRAME` is an optional flag that is set by an output port when the last byte that a buffer payload contains is an end-of-frame. Any component that implements setting the `OMX_BUFFERFLAG_ENDOFFRAME` flag on an output port
