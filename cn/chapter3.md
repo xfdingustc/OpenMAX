@@ -401,16 +401,16 @@ typedef struct OMX_BUFFERHEADERTYPE
 ######3.1.2.6.13.5  OMX_BUFFERFLAG_ENDOFFRAME
 `OMX_BUFFERFLAG_ENDOFFRAME`是一个可选的标志位，buffer playload中包含帧结束的最后一个字节时由输出端口设置。任何一个在输出端口上实现了设置`OMX_BUFFERFLAG_ENDOFFRAME`标志的组件应该为输出端口发出的每一个包含EOF的buffer设置这个标志。没有buffer payload可以包含两个独立的帧。
 
-These restrictions enable input ports that receive data from the output port to detect an end-of-frame without requiring additional processing. These restrictions also enable an input port to easily detect if an output port supports this flag by its presence or absence on completion of the first frame.
+这些限制保证了从输出端口接受到数据的输入端口能够不通过额外的处理检测到EOF。也保证了如果输出端口支持这个标志的话，输入端口能轻易的通过标志位的有或无检测第一帧是否传输完。
 
 ####3.1.2.6.14  nOutputPortIndex
-nOutputPortIndex contains the port index of the output port that uses the buffer. If a buffer header is used on an input port that is communicating with the IL client, the value of nOutputPortIndex is undefined.
+`nOutputPortIndex`包含了使用buffer的输出端口的索引。如果一个buffer头用于和IL端口上的输入端口通信的话，此值不用定义。
 
 #####3.1.2.6.15  nInputPortIndex
-nInputPortIndex contains the port index of the input port that uses the buffer. If a buffer header is used on an input port that is communicating with the IL client, the value of nInputPortIndex is undefined.
+`nInputPortIndex`包含了使用buffer的输入端口的索引。如果buffer头用于和IL客户端通信的输出端口，此值不用定义。
 
 ####3.1.2.7  OMX_PORT_PARAM_TYPE
-A component uses the OMX_PORT_PARAM_TYPE structure to identify the number and starting index of ports of a particular domain.
+组件用`OMX_PORT_PARAM_TYPE`结构来定义特定域上的端口数量和起始端口索引。
 
 `OMX_PORT_PARAM_TYPE`定义如下：
 
@@ -424,20 +424,21 @@ typedef struct OMX_PORT_PARAM_TYPE {
 ```
 
 #####3.1.2.7.1  nPorts
-nPorts is the number of ports of a given port domain (audio, video, image, or other) for the component.
+`nPorts`为组件给定端口域（音频，视频，图像或其他）上的端口数。
 
 #####3.1.2.7.2  nStartPortNumber
-nStartPortNumber is the index of the first port of a given port domain (audio, video, image, or other) for the component . Subsequent ports of the given domain are numbered sequentially from nStartNumber.
+`nStartPortNumber`为组件给定端口域（音频，视频，图像或其他）上的端口索引。给定域的后续端口按顺序编号从`nStartNumber`开始。
 
 #####3.1.2.8  OMX_CALLBACKTYPE
-The OpenMAX IL includes a callback mechanism that allows a component to communicate the following with the IL client:
+OpenMAX IL包含了一个回调机制，允许组件可以和IL客户端进行下面的通信：
 
--  An asynchronous command triggered by the IL client has completed successfully or failed and generated an error. Commands include those sent by OMX_SendCommand and those implied by IL client calls to EmptyThisBuffer or FillThisBuffer.
--  An error unassociated with a command triggered by the IL client has occurred. For example, the component has suffered an unrecoverable error and is transitioning to the `OMX_StateInvalid` state.
+-  IL客户端发出的异步命令成功，失败或产生错误。命令包括通过`OMX_SendCommand`和IL客户端发出的`EmptyThisBuffer`和`FillThisBuffer`。
+-  和命令无关的错误发生。例如，组件进入了无法回复的错误并且转移到`OMX_StateInvalid`状态。
 
-To accomplish a callback, the OpenMAX IL has three callback functions defined: a generic event handler and two callbacks related to the dataflow (`EmptyBufferDone` and `FillBufferDone`).
+为了实现回调，OpenMAX IL定义了3个回调函数：一个通用的事件处理程序和两个和数据流相关的回调（`EmptyBufferDone`和`FillBufferDone`）
 
-The IL client is responsible for filling in an `OMX_CALLBACKTYPE` structure with itscallback entry points and passing the structure to the OpenMAX core at initialization(init) time, usually in the `OMX_GetHandle` function.
+IL客户端负责用回调函数入口填充`OMX_CALLBACKTYPE`结构并在初始化的时候传递给OpenMAX core，通常在函数`OMX_GetHandle`中。
+
 
 `OMX_CALLBACKTYPE`定义如下：
 
@@ -445,20 +446,20 @@ The IL client is responsible for filling in an `OMX_CALLBACKTYPE` structure with
 typedef struct OMX_CALLBACKTYPE
 {
   OMX_ERRORTYPE (*EventHandler)(
-  OMX_IN OMX_HANDLETYPE hComponent,
-  OMX_IN OMX_PTR pAppData,
-  OMX_IN OMX_EVENTTYPE eEvent,
-  OMX_IN OMX_U32 nData1,
-  OMX_IN OMX_U32 nData2,
-  OMX_IN OMX_PTR pEventData);
+  	OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_PTR pAppData,
+    OMX_IN OMX_EVENTTYPE eEvent,
+    OMX_IN OMX_U32 nData1,
+    OMX_IN OMX_U32 nData2,
+    OMX_IN OMX_PTR pEventData);
   OMX_ERRORTYPE (*EmptyBufferDone)(
-  OMX_IN OMX_HANDLETYPE hComponent,
-  OMX_IN OMX_PTR pAppData,
-  OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_PTR pAppData,
+    OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
   OMX_ERRORTYPE (*FillBufferDone)(
-  OMX_IN OMX_HANDLETYPE hComponent,
-  OMX_IN OMX_PTR pAppData,
-  OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_PTR pAppData,
+    OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 } OMX_CALLBACKTYPE;
 ```
 
