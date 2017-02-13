@@ -172,34 +172,31 @@ IL客户端可以选择一个处于`OMX_StateLoaded`的组件转移到`OMX_State
 **Table 3-4. OpenMAX 错误代码**
 
 ####3.1.1.4  OMX_EVENTTYPE
-The OMX_EVENTTYPE enumeration shown in Table 3-5 includes the event types that
-an OpenMAX component can generate. Section 3.1.2.7 describes events that the
-OpenMAX component generates and passes to the IL client by means of the callback
-mechanism. Events have associated parameters that are also passed in the callback.
+枚举类型｀OMX_EVENTTYPE｀如表3-5所示，它包括了OpenMAX组件产生的事件类型。3.1.2.7小节描述了OpenMAX组件产生事件并通过回调传送给IL客户端。与事件关联的参数也一并通过回调传递。
 
 | 字段名 | 说明 |
 | ------------- | ------------- |
-| OMX_EventCmdComplete | Component has completed the execution of a command. |
-| OMX_EventError | Component has detected an error condition. |
-| OMX_EventMark | A buffer mark has reached the target component, and the IL client has received this event with the private data pointer of the mark. |
-| OMX_EventPortSettingsChanged | Component has changed port settings. For example, the component has changed port settings resulting from bit stream parsing. |
-| OMX_EventBufferFlag | The event that a component sends when it detects the end of a stream. |
-| OMX_EventResourcesAcquired | The component has been granted resources and is transitioning from the OMX_StateWaitForResources state to the OMX_StateIdle state. |
-**Table 3-5. OpenMAX Event Types**
+| OMX_EventCmdComplete | 组件完成命令执行。 |
+| OMX_EventError | 组件检测到错误。|
+| OMX_EventMark | 一个标记的buffer到达目标组件，IL客户端收到此带有指向私有数据指针的事件。|
+| OMX_EventPortSettingsChanged | 组件改变了端口设置。例如，组件根据比特流的解析相应的改变了端口设置。|
+| OMX_EventBufferFlag | 组件检测到码流结束（EOS）时发送的事件。|
+| OMX_EventResourcesAcquired | 组件得到资源并将从｀OMX_StateWaitForResources｀ 切换到｀OMX_StateIdle ｀|
+
+**表 3-5. OpenMAX 事件类型**
 
 #####3.1.1.4.1  OMX_EventCmdComplete
-A component generates an OMX_EventCmdComplete event as soon as a command sent by the IL client has completed its execution. In case of a component state change, the new state that the component has entered is returned as an event parameter. A component that transitions to the OMX_StateInvalid state does not generate this event.
+组件完成命令执行后会立刻产生`OMX_EventCmdComplete`事件传递给IL客户端。如果是组件状态改变，新状态会作为事件的参数。组件转移到｀OMX_StateInvalid｀不会产生此事件。
 
 #####3.1.1.4.2  OMX_EventError
-A component generates the OMX_EventError event when the component detects an error condition; the type of error detected is returned as an event parameter and will use values defined in `OMX_ERRORTYPE`. A component shall send the following errors via `OMX_EventError`:
+组件检测到下面的情况的错误时会产生｀OMX_EventError｀事件，错误事件类型会放在事件参数中，并使用｀OMX_ERRORTYPE｀中定义的值。组件应该通过`OMX_EventError`发送下面的错误：
 
--  A component sends the `OMX_ErrorInvalidState` error if the component transitions to the `OMX_StateInvalid` state.
--  A component sends the `OMX_ErrorResourcesPreempted` error if the component transitions from `OMX_StateExecuting` or `OMX_StatePause` to `OMX_StateIdle` due to the loss of a resource.
--  A component sends the `OMX_ErrorResourcesLost` error if the component transitions from `OMX_StateIdle` to `OMX_StateLoaded` due to the loss of a resource.]
+-  组件转移到`OMX_StateInvalid`状态时会发送`OMX_ErrorInvalidState`错误。
+-  组件由于资源不足时从`OMX_StateExecuting` 或 `OMX_StatePause` 切换到 `OMX_StateIdle`时会发送`OMX_ErrorResourcesPreempted`错误。
+-  组件由于资源丢失而从`OMX_StateIdle` 切换到 `OMX_StateLoaded`时会发送`OMX_ErrorResourcesLost`错误。
 
 #####3.1.1.4.3  OMX_EventMark
-A component generates the `OMX_EventMark` event when it receives a marked buffer. When a component receives a buffer, it shall compare its own pointer to the pMarkTargetComponent field contained in the buffer. If the pointers match, then the
-component shall send a mark event including pMarkData as a parameter, immediately after the component has finished processing the buffer. The IL client can use the mark event to measure the propagation delay of a data buffer through a chain of components, or to notify a component that a particular buffer has reached the given destination.
+组件受到一块标记过的buffer时会产生`OMX_EventMark`事件。组件收到buffer时，他应该比较自身指针和buffer中｀pMarkTargetComponent｀字段。如果指针相等，组件处理完buffer后应该立即发送一个包含｀pMarkData｀参数的标记事件。IL客户端可以使用使用此标记事件来计算组件链上的传输延时，或通知组件一个快特殊的buffer已经到达目的地。
 
 #####3.1.1.4.4  OMX_EventPortSettingsChanged
 A component generates the `OMX_EventPortSettingsChanged` event as soon as component port settings change. For example, a video decoder may not know a priori the output frame size and frame rate, as these parameters are coded in the input bit stream. As soon as such parameters are parsed, the component changes the values of the configuration structures of its output port and sends the `OMX_EventPortSettingsChanged` event to the IL client.
@@ -218,6 +215,7 @@ The OMX_BUFFERSUPPLIERTYPE enumerative type shown in Table 3-6 specifies the por
 | OMX_BufferSupplyUnspecified | 0x0 | The port supplying the buffers is unspecified, or no supplier is preferred. |
 | OMX_BufferSupplyInput | | The input port supplies the buffers. |
 | OMX_BufferSupplyOutput | | The output port supplies the buffer.|
+
 **Table 3-6. OpenMAX Buffer Supplier Type Used in Tunnel Setup**
 
 ###3.1.2 结构
@@ -266,7 +264,7 @@ typedef union OMX_VERSIONTYPE
     OMX_U8 nVersionMinor;
     OMX_U8 nRevision;
     OMX_U8 nStep;
-  } s;
+  } ;
   OMX_U32 nVersion;
 } OMX_VERSIONTYPE;
 ```
@@ -449,21 +447,21 @@ The IL client is responsible for filling in an `OMX_CALLBACKTYPE` structure with
 ```C
 typedef struct OMX_CALLBACKTYPE
 {
-OMX_ERRORTYPE (*EventHandler)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_PTR pAppData,
-OMX_IN OMX_EVENTTYPE eEvent,
-OMX_IN OMX_U32 nData1,
-OMX_IN OMX_U32 nData2,
-OMX_IN OMX_PTR pEventData);
-OMX_ERRORTYPE (*EmptyBufferDone)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_PTR pAppData,
-OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
-OMX_ERRORTYPE (*FillBufferDone)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_PTR pAppData,
-OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
+  OMX_ERRORTYPE (*EventHandler)(
+  OMX_IN OMX_HANDLETYPE hComponent,
+  OMX_IN OMX_PTR pAppData,
+  OMX_IN OMX_EVENTTYPE eEvent,
+  OMX_IN OMX_U32 nData1,
+  OMX_IN OMX_U32 nData2,
+  OMX_IN OMX_PTR pEventData);
+  OMX_ERRORTYPE (*EmptyBufferDone)(
+  OMX_IN OMX_HANDLETYPE hComponent,
+  OMX_IN OMX_PTR pAppData,
+  OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
+  OMX_ERRORTYPE (*FillBufferDone)(
+  OMX_IN OMX_HANDLETYPE hComponent,
+  OMX_IN OMX_PTR pAppData,
+  OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 } OMX_CALLBACKTYPE;
 ```
 
@@ -471,28 +469,29 @@ OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 A component uses the EventHandler method to notify the IL client when an event of interest occurs within the component. The OMX_EVENTTYPE enumeration defines the set of OpenMAX IL events; refer to the definition of this enumeration for the meaning of each event. nData1 carries the value of `OMX_COMMANDTYPE` that has been completed or `OMX_ERRORTYPE`. nData2 carries further event parameters, e.g., `OMX_STATETYPE`. pEventData contains event specific data. The pEventData pointer may contain additional data associated with the event (e.g., mark-specific data). A call to EventHandler is a blocking call, so the IL client should respond within five msec to avoid blocking the component for an excessively long time period.
 
 方法`EventHandler`定义如下：
+
 ``` C
 OMX_ERRORTYPE(* OMX_CALLBACKTYPE::EventHandler)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_PTR pAppData,
-OMX_IN OMX_EVENTTYPE eEvent,
-OMX_IN OMX_U32 nData1,
-OMX_IN OMX_U32 nData2,
-OMX_IN OMX_PTR pEventData)
+  OMX_IN OMX_HANDLETYPE hComponent,
+  OMX_IN OMX_PTR pAppData,
+  OMX_IN OMX_EVENTTYPE eEvent,
+  OMX_IN OMX_U32 nData1,
+  OMX_IN OMX_U32 nData2,
+  OMX_IN OMX_PTR pEventData)
 ```
-The parameters are as follows.
+参数定义如下：
 
 | 参数 | 说明 |
 | -------- | -------- |
 | *hComponent* | The handle of the component that calls this function. |
-| eEvent | The event that the component is communicating to the IL client. |
-| nData1 | The first integer event-specific parameter. See Table 3-7 for the meaning in the context of each event. |
-| nData2 | The second integer event-specific parameter. See Table 3-7 for the meaning in the context of each event. The default value is 0 if not used. |
-| pEventData | A pointer to additional event-specific data. See Table 3-7 for the meaning in the context of each event. |
-**Table 3-7 lists the parameters used in each event.**
+| ̛*eEvent* | The event that the component is communicating to the IL client. |
+| *nData1* | The first integer event-specific parameter. See Table 3-7 for the meaning in the context of each event. |
+| *nData2* | The second integer event-specific parameter. See Table 3-7 for the meaning in the context of each event. The default value is 0 if not used. |
+| *pEventData* | A pointer to additional event-specific data. See Table 3-7 for the meaning in the context of each event. |
+**表 3-7 每一种事件所用的参数列表**
 
 | eEvent | nData1 | nData2 | pEventData |
-| ------- |
+| ------- | ------- | ------- | ------- |
 | OMX_EventCmdComplete | OMX_CommandStateSet | State reached | Null |
 | | OMX_CommandFlush | Portindex | Null |
 | | OMX_CommandPortDisable | Portindex | Null |
@@ -555,10 +554,10 @@ OMX_ERRORTYPE(* OMX_CALLBACKTYPE::FillBufferDone)(
 The parameters are as follows.
 
 | Parameter | Description |
-| ------- |
+| ------- | ------- | 
 | *hComponent* | The handle of the component to access. This handle is the component handle returned by the call to the GetHandle function. |
 | *pAppData* | A pointer to IL client-defined data |
-| *pBuffer* | A pointer to an OMX_BUFFERHEADERTYPE structure that was filled or returned. |
+| *pBuffer* | A pointer to an `OMX_BUFFERHEADERTYPE` structure that was filled or returned. |
 
 ####3.1.2.9  OMX_PARAM_BUFFERSUPPLIERTYPE
 The `OMX_PARAM_BUFFERSUPPLIERTYPE` structure is used to communicate buffer supplier settings or buffer supplier preferences.
@@ -589,13 +588,14 @@ The ComponentTunnelRequest function uses the `OMX_TUNNELSETUPTYPE` structure to 
 ``` C
 typedef struct OMX_TUNNELSETUPTYPE
 {
-OMX_U32 nTunnelFlags;
-OMX_BUFFERSUPPLIERTYPE eSupplier;
+  OMX_U32 nTunnelFlags;
+  OMX_BUFFERSUPPLIERTYPE eSupplier;
 } OMX_TUNNELSETUPTYPE;
 ```
 
 #####3.1.2.10.1  nTunnelFlags
 The nTunnelFlags integer parameter contains one or more bit flags applied to the port that receives this structure. Flags include:
+
 ``` C
 #define OMX_PORTTUNNELFLAG_READONLY 0x00000001
 ```
@@ -2322,4 +2322,4 @@ The IL client may decide to stop waiting at a certain time. In this case, it sha
 component to change state back to Loaded, as shown in Figure 3-20.
 
 ![](img/3_20.png)
-Figure 3-20. Remove Component from Waiting Status
+Figure 3-20. Remove Component from Waiting Status		
