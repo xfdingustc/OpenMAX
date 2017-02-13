@@ -23,7 +23,7 @@ OpenMAX IL API定义了一组头文件，他们的名称是：
 -  <参数名> [输出] 指定一个输出参数，由函数本身设置并返回给调用者。当函数返回时，调用者读取通过引用传递的参数的新值。
 -  <参数名> [输入输出] 指定一个输入/输出参数，由函数调用者设置。函数改变这个参数的值并返回给调用者。
 
-参数的分类可以在OpenMAX的头文件中找到，里面定义了空的宏： `OMX_IN`, `OMX_OUT` 和 `OMX_INOUT`。`OMX_IN`对应 <参数名> [输入]， `OMX_OUT`对应<参数名> [输出]， `OMX_INOUT` 对应<参数名> [输入输出] 
+参数的分类可以在OpenMAX的头文件中找到，里面定义了空的宏： `OMX_IN`, `OMX_OUT` 和 `OMX_INOUT`。`OMX_IN`对应 <参数名> [输入]， `OMX_OUT`对应<参数名> [输出]， `OMX_INOUT` 对应<参数名> [输入输出]
 
 ##3.1  OpenMAX 类型
 ###3.1.1 枚举
@@ -32,7 +32,7 @@ OpenMAX IL API定义了一组头文件，他们的名称是：
 - `OMX_ERRORTYPE` 为每一个OpenMAX IL API方法的返回值（见3.1.1.3小节）
 - `OMX_COMMANDTYPE` 包含了所有IL客户端发往组件的命令（见小节3.1.1.1）
 - `OMX_EVENTTYPE` 包括了OpenMAX组件产生并传递给IL客户端的消息（见3.1.1.4节）。
-- `OMX_BUFFERSUPPLIERTYPE` 包括了管道端口中所有可能的buffer供应者。3.1.1.5小节可以看到这个枚举类型用法的描述。 
+- `OMX_BUFFERSUPPLIERTYPE` 包括了管道端口中所有可能的buffer供应者。3.1.1.5小节可以看到这个枚举类型用法的描述。
 - `OMX_STATETYPE`, 在3.1.1.2中描述。
 
 图 3-1 显示了`OMX_Core.h`定义的枚举类型
@@ -235,25 +235,25 @@ typedef struct OMX_COMPONENTREGISTERTYPE
 ```
 
 ####3.1.2.2  OMX_COMPONENTINITTYPE Type Definition
-The `OMX_COMPONENTINITTYPE` type definition is the type of function pointer for the
-component initialization entry point. The definition is as follows:
+`OMX_COMPONENTINITTYPE`类型定义了组件初始化入口的程序指针。定义如下：
 
 ```C
 typedef OMX_ERRORTYPE (* OMX_COMPONENTINITTYPE)(OMX_IN OMX_HANDLETYPE hComponent);
 ```
 #####3.1.2.2.1  pName
-`pName` contains the string name of the component and has limit of 128 bytes (including‘\0’).
+`pName`包含了组件的名称，最大不超过128个字节（包括‘\0’）
 
 #####3.1.2.2.2  pInitialize
-`pInitialize` contains the pointer to the initialization function of the component.
+`pInitialize`包括了组件初始化函数的指针。
 
 ####3.1.2.3  OMX_ComponentRegistered[]
-Any core that statically links its components shall define this global array containing the list of all registered components in the form of `OMX_COMPONENTREGISTERTYPE` fields.
+任何静态链接组件的core应该在`OMX_COMPONENTREGISTERTYPE`字段中声明它所有注册的全局组件列表。
 
 ####3.1.2.4  OMX_VERSIONTYPE
-The `OMX_VERSIONTYPE` type indicates the version of a component or structure. Each structure uses an `OMX_VERSIONTYPE` field to indicate the OpenMAX specification version under which the structure is defined. For OpenMAX IL version 1.0, the specification version is 1.0.0.0. The component structure also includes an `OMX_VERSIONTYPE` field to indicate a vendor-specific component version.
+`OMX_VERSIONTYPE`类型指示了组件或结构的版本。每个结构使用`OMX_VERSIONTYPE`字段指定了结构的OpenMAX版本。对OpenMAX IL 1.0版本，协议版本时1.0.0.0。组件结构也包含了一个厂商特定的组件版本号的`OMX_VERSIONTYPE`字段。
 
-OMX_VERSIONTYPE定义如下：
+
+｀OMX_VERSIONTYPE｀定义如下：
 
 ``` C
 typedef union OMX_VERSIONTYPE
@@ -282,8 +282,7 @@ typedef union OMX_VERSIONTYPE
 `nStep` 步骤号。
 
 ####3.1.2.5  OMX_PRIORITYMGMTTYPE
-The `OMX_PRIORITYMGMTTYPE` type describes the priority assigned to a set of components. A component group identifies a set of co-dependent components associated with the same feature. All components in the same group share the same group ID and
-priority. If one component in a group loses resources and stops running, the entire feature they collectively contribute to is lost. In this case, all of the other components in the same group shall transition to `OMX_StateLoaded`. A component that is the only one with a certain `nGroupID` acts atomically.
+`OMX_PRIORITYMGMTTYPE`类型指示了组件组的被指定的优先级。组件组指的是与一个相同的功能关联的相互依赖的一组组件。组里的所有组件使用相同的组ID和优先级。如果组里的一个组件丢失了资源并停止运行，他们所共同提供的功能也会结束。这种情况下，同一组的所有其他组件应该转移到`OMX_StateLoaded`。组件仅有一个特定的`nGroupID`的行为时原子的。
 
 `OMX_PRIORITYMGMTTYPE`定义如下：
 
@@ -297,16 +296,15 @@ typedef struct OMX_PRIORITYMGMTTYPE {
 ```
 
 #####3.1.2.5.1  nGroupPriority
-The value of nGroupPriority is the priority value associated with a group of components. If a parameter of this type is assigned to a component, that component belongs to the group identified with nGroupID and has a priority equal to
-nGroupPriority. By definition, the value 0 represents the highest priority for a group of components.
+｀nGroupPriority｀的值为组件组的优先级。如果组件被指定了这个类型的参数，那么组件所在的组的组件优先级也是这个值。根据定义，0代表了组件组的最高优先级。
 
-The exact mechanism to assign priorities to groups of components is outside the scope of this document.
+指定组件组的具体机制不再本文档讨论范围。
 
 #####3.1.2.5.2  nGroupID
-The value for nGroupID is a unique ID for all components in the same component group.
+｀nGroupID｀的值是同一个组件组里所有组件的唯一ID。
 
 ####3.1.2.6  OMX_BUFFERHEADERTYPE
-In the context of a single port, each data buffer has a header associated with it that contains meta-information about the buffer. The IL client shares buffer headers with each port with which it is communicating. Likewise, each pair of tunneling ports share buffer headers; otherwise, the same buffer transferred over multiple ports will have distinct buffer headers associated with it for each port. The definition of the buffer header is shown as follows.
+在一个单一端口的上下文中，每一个数据buffer拥有一个相关联的头，包括了buffer的元信息。IL客户端与每一个与之通信的端口共享buffer头。同理，每一个管道两头的两个端口共享buffer头。另外，如果一个buffer传输到多个端口将buffer头分到每一个端口上去。buffer头的定义如下。
 
 ``` C
 typedef struct OMX_BUFFERHEADERTYPE
@@ -332,44 +330,45 @@ typedef struct OMX_BUFFERHEADERTYPE
 ```
 
 #####3.1.2.6.1  pBuffer
-pBuffer is a pointer to the actual buffer where data is stored but not necessarily the start of valid data; for more information, see the description of nOffset in section 3.1.2.6.4.
+｀pBuffer｀为buffer中数据存储的真实指针，但并不一定时是有效数据的起始位置。更多信息参考3.1.2.6.4描述的｀nOffset｀。
 
 #####3.1.2.6.2  nAllocLen
-nAllocLen is the total size of the allocated buffer in bytes, including valid and unused byte.
+｀nAllocLen｀为buffer中分配的总大小，包括有效的和未用的字节。
 
 #####3.1.2.6.3  nFilledLen
-nFilledLen is the total size of valid bytes currently in the buffer starting from the location specified by pBuffer and nOffset.
+｀nFilledLen｀为buffer中有效数据的总大小，从｀pBuffer｀和｀nOffset｀指定的位置开始。
 
 #####3.1.2.6.4  nOffset
-nOffset is the start offset of valid data in bytes from the start of the buffer. A pointer to the valid data may be obtained by adding nOffset to pBuffer.
+｀nOffset｀为从buffer开始计算的有效数据的偏移位置。有效数据的指针可以从｀nOffset｀和｀pBuffer｀相加得到。
 
 #####3.1.2.6.5  pAppPrivate
-pAppPrivate is a pointer to an IL client private structure.
+｀pAppPrivate｀为指向IL客户端私有结构的指针。
 
 #####3.1.2.6.6  pPlatformPrivate
-pPlatformPrivate is a pointer to a platform private structure. The core that allocated this buffer header structure uses this pointer.
+｀pPlatformPrivate｀为指向平台私有结构的指针。分配buffer头结构的core使用这个指针。
 
 #####3.1.2.6.7  pOutputPortPrivate
-pOutputPortPrivate is a private pointer of the output port that uses the buffer. If a buffer header is used on an input port communicating with the IL client, the value of the buffer’s pOutputPortPrivate is undefined.
+｀pOutputPortPrivate｀为使用buffer的输出端口的私有指针。如果buffer头用于输入端口与IL客户端之间的通信，buffer的｀pOutputPortPrivate｀则不用定义。
 
 #####3.1.2.6.8  pInputPortPrivate
-pInputPortPrivate is a private pointer of the input port that uses the buffer. If a buffer header is used on an output port communicating with the IL client, the value of the buffer’s pInputPortPrivate is undefined.
+｀pInputPortPrivate｀为使用buffer的输入端口的私有指针。如果buffer头用于输出端口与IL客户端之间的通信，buffer的｀pInputPortPrivate｀则不用定义。
 
 #####3.1.2.6.9  hMarkTargetComponent
-hMarkTargetComponent is the handle of the component that should emit an `OMX_EventMark` event upon processing this buffer. A NULL handle indicates that the buffer carries no mark. The `OMX_CommandMarkBuffer` command provides this handle to the marking component. The marking component, in turn, copies this handle to the marked buffer. Each component that is processing a buffer should compare its own handle to this handle and emit the mark if the handles match. A component should
-propagate this field from an input buffer to its associated output buffer.
+｀hMarkTargetComponent｀为处理buffer时需要发出｀OMX_EventMark｀消息的组件的句柄。一个空的句柄表面buffer没有携带任何标记。`OMX_CommandMarkBuffer`命令将次句柄传递给标记的组件。标记的组件，将此句柄复制到标记的buffer中。每个处理此buffer的组件应该使用这个句柄和自己向比较，如果相同，则发出标记消息。组件应该在输入buffer和相应的输出buffer中传递这个字段。
 
 #####3.1.2.6.10  pMarkData
-The pMarkData pointer refers to IL client-specific data associated with the mark that is sent on `OMX_EventMark` when emitted. Upon receipt of a mark, the IL client may use this data to disambiguate this mark from others. The `OMX_CommandMarkBuffer` command provides this pointer to the marking component. The marking component, in turn, copies this pointer to the marked buffer. A component should propagate this field from an input buffer to its associated output buffer.
+｀pMarkData｀指针指向IL客户端特定的数据，与｀OMX_EventMark｀发出的消息标志相关联。当收到这个标记时，IL客户端可以使用这个数据来和其他的标记相区别。命令`OMX_CommandMarkBuffer`提供此指针来标记组件。标记的组件，将此句柄复制到标记的buffer中。组件应该在输入buffer和相应的输出buffer中传递这个字段。
 
 #####3.1.2.6.11  nTickCount
-nTickCount is an optional entry that the component and IL client can update with a tick count when they access the component; not all components will update it. The value of nTickCount is in microseconds. Since this is a value relative to an arbitrary starting point, nTickCount cannot be used to determine absolute time.
+｀nTickCount｀为一个组件和IL客户端可以更新的计时器，为可选条目，不是所有的组件会更新它。｀nTickCount｀的值以微秒为单位。由于这个值是一个任意起始点的相对值，它不能用于确定绝对时间。
+
 
 #####3.1.2.6.12  nTimeStamp
-nTimeStamp is a timestamp corresponding to the sample starting at the first logical sample boundary in the buffer. Timestamps of successive samples within the buffer may be inferred by adding the duration of the preceding buffer to the timestamp of the preceding buffer. A component should propagate this field from an input buffer to its associated output buffer.
+｀nTimeStamp｀为buffer中第一个逻辑单元的时间戳。Buffer中后续数据的时间戳可以通过buffer的持续时间和此时间戳相加得到。组件应该在输入buffer和相应的输出buffer中传递这个字段。
 
 #####3.1.2.6.13  nFlags
-The nFlags field contains buffer specific flags, such as the EOS flag. A component should propagate this field from an input buffer to its associated output buffer. The list of flags is as follows:
+｀nFlags｀字段包含了buffer的特定的标志，例如EOS标志。组件应该在输入buffer和相应的输出buffer中传递这个字段。标志的列表如下：
+
 
 ```C
 #define OMX_BUFFERFLAG_EOS 0x00000001
@@ -554,7 +553,7 @@ OMX_ERRORTYPE(* OMX_CALLBACKTYPE::FillBufferDone)(
 The parameters are as follows.
 
 | Parameter | Description |
-| ------- | ------- | 
+| ------- | ------- |
 | *hComponent* | The handle of the component to access. This handle is the component handle returned by the call to the GetHandle function. |
 | *pAppData* | A pointer to IL client-defined data |
 | *pBuffer* | A pointer to an `OMX_BUFFERHEADERTYPE` structure that was filled or returned. |
@@ -750,14 +749,14 @@ The following sample code shows a calling sequence.
 ```C
 /* detect mismatch between IL client's and component's spec version */
 OMX_GetComponentVersion(
-hComp,
-&CompName,
-&CompVersion,
-&CompSpecVersion,
-&CompUUID);
-if (CompSpecVersion != IlClientVersion){
-printf("ERROR: version mismatch\n");
-}
+  hComp,
+  &CompName,
+  &CompVersion,
+  &CompSpecVersion,
+  &CompUUID);
+  if (CompSpecVersion != IlClientVersion){
+    printf("ERROR: version mismatch\n");
+  }
 ```
 
 ####3.2.2.2  OMX_SendCommand
@@ -771,15 +770,15 @@ The macro is defined as follows.
 
 ``` C
 #define OMX_SendCommand (
-hComponent,
-Cmd,
-nParam,
-pCmdData)
-((OMX_COMPONENTTYPE*)hComponent)->SendCommand( \
-hComponent, \
-Cmd, \
-nParam,
-pCmdData)
+  hComponent,
+  Cmd,
+  nParam,
+  pCmdData)
+  ((OMX_COMPONENTTYPE*)hComponent)->SendCommand( \
+    hComponent, \
+    Cmd, \
+    nParam,
+    pCmdData)
 ```
 
 The parameters are as follows.
@@ -863,11 +862,11 @@ The following sample code shows the calling sequence.
 /* disable every audio port of a component*/
 OMX_GetParameter(hComp, OMX_IndexParamAudioInit, &oParam);
 for (i=0;i<oParam.nPorts;i++) {
-OMX_SendCommand(
-hComp,
-OMX_CommandPortDisable,
-oParam.nStartPortNumber + i,
-0);
+  OMX_SendCommand(
+    hComp,
+    OMX_CommandPortDisable,
+    Param.nStartPortNumber + i,
+    0);
 }
 ```
 
@@ -960,13 +959,14 @@ The following sample code shows the calling sequence.
 /* force a port to be the supplier */
 OMX_GetParameter(hComp, OMX_IndexParamPortDefinition, &oPortDef);
 if (oPortDef.eDir == OMX_DirInput){
-oSupplier.eBufferSupplier = OMX_BufferSupplyInput;
+  oSupplier.eBufferSupplier = OMX_BufferSupplyInput;
 } else {
-oSupplier.eBufferSupplier = OMX_BufferSupplyOutput;
+  oSupplier.eBufferSupplier = OMX_BufferSupplyOutput;
 }
 oSupplier.nPortIndex = nPortIndex;
 OMX_SetParameter(hComp, OMX_IndexParamCompBufferSupplier, &oSupplier);
 ```
+
 ####3.2.2.10  OMX_GetConfig
 The OMX_GetConfig macro will get a configuration structure from a component. This macro can be invoked at any time after the component has been loaded. The nParamIndex parameter indicates which structure is being requested from the component. The caller shall provide the memory for the structure and populate the nSize and nVersion fields before invoking this macro. If the configuration settings are for a port, the caller shall also provide a valid port number in the nPortIndex field before invoking this macro. All components shall support a set of defaults for each configuration so that the caller can obtain the structure populated with valid values.
 
@@ -988,7 +988,7 @@ ComponentConfigStructure)
 The parameters are as follows.
 
 | Parameters | Description |
-| ------- |
+| ------- | ------- |
 | hComponent[in] | he handle of the component that executes the call. |
 | nIndex[in] | The index of the structure to be filled. This value is from the OMX_INDEXTYPE enumeration. |
 | ComponentConfigStructure[in,out] |A pointer to the IL client-allocated structure that the component fills.|
@@ -1005,10 +1005,11 @@ The following sample code shows the calling sequence.
 ```C
 /* Wait until a certain playback position */
 do {
-OMX_GetConfig(hClockComp, OMX_IndexConfigTimeCurrentMediaTime,
-oMediaTime);
+  OMX_GetConfig(hClockComp, OMX_IndexConfigTimeCurrentMediaTime,
+    oMediaTime);
 } while (oMediaStamp.nTimestamp < nTargetTimeStamp);
 ```
+
 ####3.2.2.11  OMX_SetConfig
 The OMX_SetConfig macro will set a component configuration value. This macro can be invoked anytime after the component has been loaded.
 
@@ -1155,9 +1156,10 @@ pAppPrivate,\
 nSizeBytes,\
 pBuffer)
 ```
-The parameters are as follows.
 
-| Parameter | Description |
+参数定义如下：
+
+| 参数 | 说明 |
 |--------| ------- |
 | hComponent [in] |The handle of that component that executes the call.|
 | ppBufferHdr[out] |A pointer to a pointer of an OMX_BUFFERHEADERTYPE structure that receives the pointer to the buffer header.|
@@ -1497,7 +1499,7 @@ The OMX_GetHandle method will locate the component specified by the component na
 and set up the callbacks. The OMX_GetHandle method will allocate the actual OMX_HANDLETYPE structure, ensures it is populated correctly, and then updates the value of *pHandle with a pointer to the newly created handle. The component should return from this call within 20 msec.
 
 Each time the OMX_GetHandle function returns successfully, a new component instance is created. The IL client shall configure the newly created component, which is in the OMX_StateLoaded state, before the component can be used.
- 
+
 Since components are requested by name, a naming convention is defined. OpenMAX component names are NULL terminated strings with the following format:
 
 “OMX.<vendor_name>.<vendor_specified_convention>”.
@@ -1521,7 +1523,7 @@ The parameters are as follows.
 | ------ | ------ |
 | pHandle [out] | A pointer to OMX_HANDLETYPE to be filled in by this method. |
 | cComponentName [in] | A pointer to a null-terminated string with the component name. Component names are strings limited to less than 128 bytes in length plus the trailing null for a maximum length of 128 bytes. An example of a valid component name is "OMX.<vendor_name>.AUDIO.DSP.MIXER\0". The name shall start with "OMX." concatenated to a vendor-specified string. |
-| pAppData [in] | A pointer to an IL client-defined value that will be returned during callbacks so that the IL client can identify the source of the callback. | 
+| pAppData [in] | A pointer to an IL client-defined value that will be returned during callbacks so that the IL client can identify the source of the callback. |
 | pCallBacks [in] |A pointer to an OMX_CALLBACKTYPE structure containing the  callbacks that the component will use for this IL client.|
 
 #####3.2.3.4.1  Prerequisites for This Method
@@ -1636,7 +1638,7 @@ OpenMAX components are defined in the OMX_Component.h header file. The structure
 nSize is the size of the structure in bytes. This value shall be specified when this structure is used as either an input to or an output from a function.
 
 ###3.3.2 nVersion
-nVersion is the version of the OpenMAX specification that the structure is built against. The creator of this structure is responsible for initializing this value. Every user of this structure should verify that it knows how to use the exact version of this structure. 
+nVersion is the version of the OpenMAX specification that the structure is built against. The creator of this structure is responsible for initializing this value. Every user of this structure should verify that it knows how to use the exact version of this structure.
 
 ###3.3.3 pComponentPrivate
 pComponentPrivate is a pointer to the component private data area. The component allocates and initializes this member when the component is first loaded. The application should not access this data area.
@@ -1735,7 +1737,7 @@ OMX_IN OMX_HANDLETYPE hComponent,
 OMX_OUT OMX_STATETYPE* pState);
 ```
 ###3.3.13  ComponentTunnelRequest
-The OMX_ComponentTunnelRequest method will interact with another OpenMAX component to determine if tunneling is possible and to set up the tunneling if it is possible. The return codes for this method can determine if tunneling is not possible or if proprietary communication or tunneling is used. 
+The OMX_ComponentTunnelRequest method will interact with another OpenMAX component to determine if tunneling is possible and to set up the tunneling if it is possible. The return codes for this method can determine if tunneling is not possible or if proprietary communication or tunneling is used.
 
 The interop profile-conformant component shall support tunneling to a component with compatible parameters. The component may also support proprietary communication. If proprietary communication is supported, the negotiation of proprietary communication is performed in a vendor-specific way. The only requirement is that the proper result be returned. The details of the proprietary communication setup are left to the vendor’s component implementer.
 
@@ -1743,7 +1745,7 @@ The interop profile-conformant component shall support tunneling to a component 
 The ComponentTunnelRequest method is invoked on both components that support the tunneling communication. When this method is invoked on the component that provides the output port, the component will do the following:
 
 1. Indicate its supplier preference in pTunnelSetup.
-2. Set the OMX_PORTTUNNELFLAG_READONLY flag to indicate that buffers from this output port are read-only and that the buffers cannot be shared through components or modified. 
+2. Set the OMX_PORTTUNNELFLAG_READONLY flag to indicate that buffers from this output port are read-only and that the buffers cannot be shared through components or modified.
 
 When this method is invoked on the component that provides the input port, the component will do the following:
 
@@ -1752,7 +1754,7 @@ When this method is invoked on the component that provides the input port, the c
 
 If this method is invoked with a NULL parameter for the pTunnelComp parameter, the port should be set up for non-tunneled communication with the IL client.
 
-The component should return from this call within five msec. 
+The component should return from this call within five msec.
 
 `ComponentTunnelRequest`定义如下：
 ``` C
@@ -1885,7 +1887,7 @@ pComp->SetCallbacks(hHandle, pCallBacks, pAppData);
 ```
 
 ###3.3.20  ComponentDeinit
-The core calls the ComponentDeinit function when the core needs to dispose of a component. 
+The core calls the ComponentDeinit function when the core needs to dispose of a component.
 
 `ComponentDeinit`定义如下：
 
@@ -1934,14 +1936,14 @@ The IL client shall configure the component and its ports. For this purpose, the
 
 When the client has completed the configuration phase, it can request the component to make the state transition to OMX_StateIdle. Only after this request shall the IL client set up buffers for the component to use for all of its ports. The IL client shall use either OMX_AllocateBuffer or OMX_UseBuffer to set up buffers. If the IL client asks components for a tunnel, it does not allocate setup buffers because the tunneled components allocate any buffers. See section 3.4.1.2 for more details on tunneling.
 
-This process may be repeated multiple times, depending on the number of ports and the total number of buffers needed on each port. If OMX_UseBuffer is used, the IL client shall have allocated a buffer and passed it to the component. Alternatively, the IL client may ask the component to allocate a buffer and a buffer header using the OMX_AllocateBuffer method. In the latter case, the component will allocate both a buffer and its related header and return it to the IL client by reference. 
+This process may be repeated multiple times, depending on the number of ports and the total number of buffers needed on each port. If OMX_UseBuffer is used, the IL client shall have allocated a buffer and passed it to the component. Alternatively, the IL client may ask the component to allocate a buffer and a buffer header using the OMX_AllocateBuffer method. In the latter case, the component will allocate both a buffer and its related header and return it to the IL client by reference.
 
 As soon as these initial configuration steps are completed, the component shall complete the state transition and return an event to the client for the SendCommand request completion (step 2.8).
 
 The component is now ready to be used by the IL client.
 
 ####3.4.1.2  Tunneled Initialization
-To avoid moving data buffers back and forth among the IL client and OpenMAX components, data tunnels can be set up so that the output buffer of one component is passed directly to the input port of the next component in the chain. 
+To avoid moving data buffers back and forth among the IL client and OpenMAX components, data tunnels can be set up so that the output buffer of one component is passed directly to the input port of the next component in the chain.
 
 Consider the example shown in Figure 3-4, where an IL client generates data for a chain of three tunneled components identified as A, B, and C. Component C is a sink and does not return data to the IL client.
 
@@ -2049,7 +2051,7 @@ the needed buffers.
 OpenMAX defines two means of data communication:
 
 - Tunneled communication, where a port exchanges data directly with a port on another component
-- Non-tunneled communication, where a port exchanges data only with the IL client 
+- Non-tunneled communication, where a port exchanges data only with the IL client
 
 A port may implement data tunneling via proprietary communication, taking advantage of platform-specific features. The following sections describe the data flow inherent to each means of communication.
 
@@ -2198,7 +2200,7 @@ The following examples show where this functionality is typically needed:
 
 - A video decoder parses a sequence header and discovers the frame size of the output pictures, so buffers associated with its output ports shall be rearranged.
 - The parameters of an audio stream vary dynamically, and a decoder should change its port settings.
- 
+
 Figure 3-16 shows how a video decoder and a video renderer, both of which exchange
 data through the IL client, should dynamically change their port settings.
 
