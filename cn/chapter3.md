@@ -500,18 +500,17 @@ OMX_ERRORTYPE(* OMX_CALLBACKTYPE::EventHandler)(
 | OMX_EventPortSettingsChanged | 端口索引 | 0 | 无 |
 | OMX_EventBufferFlag | 端口索引 |`nFlags`不可变 | 无 |
 | OMX_EventResourcesAcquired | 0 | 0 | 无 |
-**Table 3-7. Event Parameter Usage**
+**表 3-7. 事件参数用法**
 
 #####3.1.2.8.2  EmptyBufferDone
-A component uses the EmptyBufferDone callback to pass a buffer from an input port back to the IL client. A component sets the nOffset and nFilledLength values of the buffer header to reflect the portion of the buffer it consumed; for example,
-nFilledLength is set equal to 0x0 if completely consumed.
+组件使用回调`EmptyBufferDone`从一个输入端口返回传递一个buffer给IL客户端。组件设置buffer头中的`nOffset`和`nFilledLength`值来反应buffer中被消耗的部位。例如，如果完全被消耗，则`nFilledLength`设置为0。
 
-In addition to facilitating normal data flow between an executing component and the ILclient, a component uses the EmptyBufferDone function to return input buffers to the IL client in the following cases:
+为了加快执行组件和IL客户端之间的数据流动，组件在下面情况下使用`EmptyBufferDone`方法把输入buffer返回给IL客户端：
 
-- The IL client commands a transition from `OMX_StateExecuting` or `OMX_StatePause` to `OMX_StateIdle` or to `OMX_StateInvalid`.
-- The IL client flushes or disables a port.
+- IL客户端命令状态由`OMX_StateExecuting`或`OMX_StatePause`转移到`OMX_StateIdle` 或`OMX_StateInvalid`。
+- IL客户端清空或禁用端口。
 
-The `EmptyBufferDone` call is a blocking call that should return from within five msec.Therefore, the IL client may elect not to fill the buffers during this call but queue them for processing outside this call.
+`EmptyBufferDone`为阻塞方法，应该在5毫秒以内返回。因此， IL客户端在调用期间可能不选择填充缓冲区，而在调用之外排队处理。
 
 方法`EmptyBufferDone`定义如下：
 
@@ -524,21 +523,21 @@ OMX_ERRORTYPE(* OMX_CALLBACKTYPE::EmptyBufferDone)(
 
 The parameters are as follows.
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
-| *hComponent* | The handle of the component that is calling this function. |
-| *pAppData* | A pointer to IL client-defined data. |
-| *pBuffer* | A pointer to an OMX_BUFFERHEADERTYPE structure that was consumed or returned. |
+| *hComponent* | 调用此函数的组件句柄。 |
+| *pAppData* | 指向IL客户端定义数据的指针。 |
+| *pBuffer* | 指向消耗或返回的`OMX_BUFFERHEADERTYPE`结构类型的指针。 |
 
 #####3.1.2.8.3  FillBufferDone
-A component uses the FillBufferDone callback to pass a buffer from an output port back to the IL client. A component sets the nOffset and nFilledLength of the buffer header to reflect the portion of the buffer it filled; for example, nFilledLength is equal to 0x0 if it contains no data).
+组件使用回调`FillBufferDone`从输出端口返回数据给IL客户端。组件设置buffer头中的`nOffset`和`nFilledLength`值来反应buffer中被填充的部位。例如，如果没有数据，则`nFilledLength`设置为0。
 
-In addition to facilitating normal dataflow between an executing component and the IL client, a component uses this function to return output buffers to the IL client in the following cases:
+为了加快执行组件和IL客户端之间的数据流动，组件在下面情况下使用此方法把输出buffer返回给IL客户端：
 
-- The IL client commands a transition from `OMX_StateExecuting` or `OMX_StatePause` to `OMX_StateIdle` or to `OMX_StateInvalid`.
-- The IL client flushes or disables a port.
+- IL客户端命令状态由`OMX_StateExecuting`或`OMX_StatePause`转移到`OMX_StateIdle` 或`OMX_StateInvalid`。
+- IL客户端清空或禁用端口。
 
-The `FillBufferDone` call is a blocking call that should return from within five msec. The IL client may elect not to empty the buffers during this call but queue them for consumption outside this call.
+`FillBufferDone`为阻塞方法，应该在5毫秒以内返回。因此， IL客户端在调用期间可能不选择填充缓冲区，而在调用之外排队处理。
 
 `FillBufferDone`定义如下：
 
@@ -549,16 +548,16 @@ OMX_ERRORTYPE(* OMX_CALLBACKTYPE::FillBufferDone)(
   OMX_OUT OMX_BUFFERHEADERTYPE* pBuffer)
 ```
 
-The parameters are as follows.
+参数定义如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
-| *hComponent* | The handle of the component to access. This handle is the component handle returned by the call to the GetHandle function. |
-| *pAppData* | A pointer to IL client-defined data |
-| *pBuffer* | A pointer to an `OMX_BUFFERHEADERTYPE` structure that was filled or returned. |
+| *hComponent* | 访问组件的句柄。此句柄为方法`GetHandle`返回的组件句柄。 |
+| *pAppData* | 指向IL客户端定义数据的指针。 |
+| *pBuffer* | 指向填充或返回的`OMX_BUFFERHEADERTYPE`结构类型的指针。 |
 
 ####3.1.2.9  OMX_PARAM_BUFFERSUPPLIERTYPE
-The `OMX_PARAM_BUFFERSUPPLIERTYPE` structure is used to communicate buffer supplier settings or buffer supplier preferences.
+`OMX_PARAM_BUFFERSUPPLIERTYPE`结构用于传输buffer提供者的设置或偏好。
 
 `OMX_PARAM_BUFFERSUPPLIERTYPE` 定义如下.
 
@@ -572,14 +571,13 @@ typedef struct OMX_PARAM_BUFFERSUPPLIERTYPE {
 ```
 
 #####3.1.2.9.1  nPortIndex
-`nPortIndex` represents the port that this structure applies to.
+`nPortIndex`为结构适用的组件端口
 
 #####3.1.2.9.2  eBufferSupplier
-`eBufferSupplier` is a field that contains the index of the buffer supplier, if input or
-output.
+`eBufferSupplier`字段包括了buffer提供者的索引，如果是一个输入或输出端口。
 
 ####3.1.2.10  OMX_TUNNELSETUPTYPE
-The ComponentTunnelRequest function uses the `OMX_TUNNELSETUPTYPE` structure to pass data between two ports when an IL client connects these ports via an `OMX_SetupTunnel` call.
+当IL客户端调用`OMX_SetupTunnel`来连接端口时，方法`ComponentTunnelRequest`使用`OMX_TUNNELSETUPTYPE`结构体来在两个端口之间传输数据。
 
 `OMX_TUNNELSETUPTYPE` 定义如下.
 
@@ -592,13 +590,13 @@ typedef struct OMX_TUNNELSETUPTYPE
 ```
 
 #####3.1.2.10.1  nTunnelFlags
-The nTunnelFlags integer parameter contains one or more bit flags applied to the port that receives this structure. Flags include:
+`nTunnelFlags`整型参数包括了接受此结构的端口所适用的一个或多个比特标志，这些标志包括：
 
 ``` C
 #define OMX_PORTTUNNELFLAG_READONLY 0x00000001
 ```
 
-If the flag is set as read only, the input port that receives this structure cannot alter the contents of buffers supplied on the tunnel.
+如果标志设置为只读，接受到结构体的输入端口不能改变管道上buffer的内容。
 
 #####3.1.2.10.2  eSupplier
 The `eSupplier` field defines whether the input port or the output port provides the buffers. The exact sequence of calls to set up a tunnel is specified in section 3.4.1.2.
