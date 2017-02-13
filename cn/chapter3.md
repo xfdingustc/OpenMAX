@@ -199,30 +199,30 @@ IL客户端可以选择一个处于`OMX_StateLoaded`的组件转移到`OMX_State
 组件受到一块标记过的buffer时会产生`OMX_EventMark`事件。组件收到buffer时，他应该比较自身指针和buffer中｀pMarkTargetComponent｀字段。如果指针相等，组件处理完buffer后应该立即发送一个包含｀pMarkData｀参数的标记事件。IL客户端可以使用使用此标记事件来计算组件链上的传输延时，或通知组件一个快特殊的buffer已经到达目的地。
 
 #####3.1.1.4.4  OMX_EventPortSettingsChanged
-A component generates the `OMX_EventPortSettingsChanged` event as soon as component port settings change. For example, a video decoder may not know a priori the output frame size and frame rate, as these parameters are coded in the input bit stream. As soon as such parameters are parsed, the component changes the values of the configuration structures of its output port and sends the `OMX_EventPortSettingsChanged` event to the IL client.
+组件改变端口设置时会立刻产生｀OMX_EventPortSettingsChanged｀事件。例如，视频解码器可能不知道输出视频的帧大小和帧率，因为这些参数在输入比特流中编码。一旦这些组件被解析了，组件改变输出组件上的配置结构并且传递｀OMX_EventPortSettingsChanged｀事件给IL客户端。
 
 #####3.1.1.4.5  OMX_EventBufferFlag
-A component generates the `OMX_EventBufferFlag` event when an output port emits a buffer with the `OMX_BUFFERFLAG_EOS` flag set in the `nFlags` field. The `nData1` field of EventHandler specifies the value of the output port’s portindex field. The nData2 field of `EventHandler` specifies the unaltered nFlags field containing the end-of-stream (EOS) flag. If a component does not propagate a stream further (e.g., the component is an audio or video sink), then the component shall send an OMX_EventBufferFlag event for that stream when it has finished processing a buffer with OMX_BUFFERFLAG_EOS set. The nData1 field of EventHandler specifies the input port that received the buffer. The nData2 field of EventHandler specifies the unaltered nFlags field containing the EOS flag.
+当一个输出端口发出一个在字段`nFlags`带有`OMX_BUFFERFLAG_EOS`标识的buffer时，组件产生`OMX_EventBufferFlag`事件。事件处理程序中的`nData1`字段指示了输出端口的索引， ｀nData2｀字段指示了包含码流结束（EOS）标志的不可变的｀nFlags｀字段。如果组件不再传递流（例如，组件时一个视频或视频sink），组件处理完带有｀OMX_BUFFERFLAG_EOS｀的buffer后，应该为此流发送一个｀OMX_EventBufferFlag｀事件。事件处理程序的｀nData1｀字段指定了接受buffer的输入端口，｀nData2｀字段指定了含有EOS标志的不可变的｀nFlags｀字段。
 
 #####3.1.1.4.6  OMX_EventResourcesAcquired
-A component generates the `OMX_EventResourcesAcquired` event when it is in the `OMX_StateWaitForResources` state, and the resource manager detects that the needed resources are available. When the component receives this event, it is ready to change state into the `OMX_StateIdle`, and it waits for all the buffers to be allocated and assigned to its ports.
+组件处于`OMX_StateWaitForResources`状态时，资源管理器检测到所需资源可用时，组件产生`OMX_EventResourcesAcquired`事件。组件收到这个事件时，它便可以转移状态到`OMX_StateIdle`，并且会所有端口上的buffer分配。
 
 ####3.1.1.5  OMX_BUFFERSUPPLIERTYPE
-The OMX_BUFFERSUPPLIERTYPE enumerative type shown in Table 3-6 specifies the port in the tunnel that is the supplier port. A buffer supplier port either may allocate its buffers or reuse buffers provided by another port within the same component.
+表3-6中的枚举类型｀OMX_BUFFERSUPPLIERTYPE｀指明了管道端口中的供应端口。一个供应端口要么自己分配buffer，要么复用同一组件下的另一个端口的buffer。
 
 | 字段名称 | 值 | 说明 |
 | ------------- | ------------- | ------------- |
-| OMX_BufferSupplyUnspecified | 0x0 | The port supplying the buffers is unspecified, or no supplier is preferred. |
-| OMX_BufferSupplyInput | | The input port supplies the buffers. |
-| OMX_BufferSupplyOutput | | The output port supplies the buffer.|
+| OMX_BufferSupplyUnspecified | 0x0 | 提供buffer的端口未指定，或没有优先的提供者。 |
+| OMX_BufferSupplyInput | | 输入端口提供buffer。 |
+| OMX_BufferSupplyOutput | | 输出端口提供buffer。|
 
-**Table 3-6. OpenMAX Buffer Supplier Type Used in Tunnel Setup**
+**表 3-6. OpenMAX管道建立时Buffer提供类型**
 
 ###3.1.2 结构
-This section discusses the data structures defined in the OpenMAX core. The first two fields of each OpenMAX data structure denote the size of the structure and the version of type `OMX_VERSIONTYPE`, which is defined in section 3.1.2.4. The entity that allocates an OpenMAX structure is responsible for filling in these two values.
+本小节讨论了OpenMAX core中定义的数据结构。每个OpenMAX组件的钱两个字段指明了结构的大小和小节3.1.2.4中定义的版本号`OMX_VERSIONTYPE`。分配OpenMAX结构的实例负责填充着两个值。
 
 ####3.1.2.1  OMX_COMPONENTREGISTERTYPE
-The `OMX_COMPONENTREGISTERTYPE` structure is used in the case of static linking of components to the core. The core optionally uses it to load the component and run the specific component initialization functions.
+`OMX_COMPONENTREGISTERTYPE｀结构用于组件静态链接到core中时。Core使用此结构加载和运行特定的组件初始化方法。
 
 `OMX_COMPONENTREGISTERTYPE`定义如下.
 
