@@ -399,8 +399,7 @@ typedef struct OMX_BUFFERHEADERTYPE
 当IL客户端识别buffer相关的数据损坏时设置`OMX_BUFFERFLAG_DATACORRUPT`标志位。
 
 ######3.1.2.6.13.5  OMX_BUFFERFLAG_ENDOFFRAME
-`OMX_BUFFERFLAG_ENDOFFRAME` is an optional flag that is set by an output port when the last byte that a buffer payload contains is an end-of-frame. Any component that implements setting the `OMX_BUFFERFLAG_ENDOFFRAME` flag on an output port
-shall set this flag for every buffer sent from the output port containing an end-of-frame.No buffer payload can contain data from two separate frames.
+`OMX_BUFFERFLAG_ENDOFFRAME`是一个可选的标志位，buffer playload中包含帧结束的最后一个字节时由输出端口设置。任何一个在输出端口上实现了设置`OMX_BUFFERFLAG_ENDOFFRAME`标志的组件应该为输出端口发出的每一个包含EOF的buffer设置这个标志。没有buffer payload可以包含两个独立的帧。
 
 These restrictions enable input ports that receive data from the output port to detect an end-of-frame without requiring additional processing. These restrictions also enable an input port to easily detect if an output port supports this flag by its presence or absence on completion of the first frame.
 
