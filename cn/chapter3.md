@@ -464,7 +464,7 @@ typedef struct OMX_CALLBACKTYPE
 ```
 
 #####3.1.2.8.1  EventHandler
-A component uses the EventHandler method to notify the IL client when an event of interest occurs within the component. The OMX_EVENTTYPE enumeration defines the set of OpenMAX IL events; refer to the definition of this enumeration for the meaning of each event. nData1 carries the value of `OMX_COMMANDTYPE` that has been completed or `OMX_ERRORTYPE`. nData2 carries further event parameters, e.g., `OMX_STATETYPE`. pEventData contains event specific data. The pEventData pointer may contain additional data associated with the event (e.g., mark-specific data). A call to EventHandler is a blocking call, so the IL client should respond within five msec to avoid blocking the component for an excessively long time period.
+组件使用事件处理函数方法来通知IL客户端什么时候一个所感兴趣的事件在组件内部发生了。枚举类型`OMX_EVENTTYPE`定义了OpenMAX IL事件的集合，可以参看每中事件的定义。`nData1`携带了完成事件的`OMX_COMMANDTYPE` 值或是`OMX_ERRORTYPE`的错误类型。`nData2`携带了更多的事件参数，例如，`OMX_STATETYPE`。`pEventData`包含了事件具体的数据。`pEventData`指针可能包含了额外的与时间有关的数据（例如，标记特定数据）。事件处理函数的调用是阻塞的，所有IL客户端应该在5个毫秒内完成响应，以免长时间阻塞住组件。
 
 方法`EventHandler`定义如下：
 
@@ -481,25 +481,25 @@ OMX_ERRORTYPE(* OMX_CALLBACKTYPE::EventHandler)(
 
 | 参数 | 说明 |
 | -------- | -------- |
-| *hComponent* | The handle of the component that calls this function. |
-| ̛*eEvent* | The event that the component is communicating to the IL client. |
-| *nData1* | The first integer event-specific parameter. See Table 3-7 for the meaning in the context of each event. |
-| *nData2* | The second integer event-specific parameter. See Table 3-7 for the meaning in the context of each event. The default value is 0 if not used. |
-| *pEventData* | A pointer to additional event-specific data. See Table 3-7 for the meaning in the context of each event. |
+| *hComponent* | 调用此函数的组件句柄。 |
+| ̛*eEvent* | 组件和IL客户端通信的事件。 |
+| *nData1* | 第一个事件特定的整型参数。表3-7描述了在每个事件上下文中的意义。|
+| *nData2* | 第二个事件特定的整型参数。表3-7描述了在每个事件上下文中的意义。如果没有用，默认值为0.|
+| *pEventData* | 指向事件特定数据的指针。表3-7描述了在每个事件上下文中的意义。|
 **表 3-7 每一种事件所用的参数列表**
 
 | eEvent | nData1 | nData2 | pEventData |
 | ------- | ------- | ------- | ------- |
-| OMX_EventCmdComplete | OMX_CommandStateSet | State reached | Null |
-| | OMX_CommandFlush | Portindex | Null |
-| | OMX_CommandPortDisable | Portindex | Null |
-| | OMX_CommandPortEnable | Portindex | Null |
-| | OMX_CommandMarkBuffer | Portindex | Null |
-| OMX_EventError | Error code | 0 | Null |
-| OMX_EventMark | 0 | 0 | Data linked to the mark, if any |
-| OMX_EventPortSettings | Changed | port index | 0 | Null |
-| OMX_EventBufferFlag | port index |nFlags unaltered | Null |
-| OMX_EventResourcesAcquired | 0 | 0 | Null |
+| OMX_EventCmdComplete | OMX_CommandStateSet | 状态切换完成 | 无 |
+| | OMX_CommandFlush | 端口索引 | 无 |
+| | OMX_CommandPortDisable | 端口索引 | 无 |
+| | OMX_CommandPortEnable | 端口索引 | 无 |
+| | OMX_CommandMarkBuffer | 端口索引 | 无 |
+| OMX_EventError | 错误代码 | 0 | 无 |
+| OMX_EventMark | 0 | 0 | 标记相连的数据（如果有的话） |
+| OMX_EventPortSettingsChanged | 端口索引 | 0 | 无 |
+| OMX_EventBufferFlag | 端口索引 |`nFlags`不可变 | 无 |
+| OMX_EventResourcesAcquired | 0 | 0 | 无 |
 **Table 3-7. Event Parameter Usage**
 
 #####3.1.2.8.2  EmptyBufferDone
