@@ -599,10 +599,10 @@ typedef struct OMX_TUNNELSETUPTYPE
 如果标志设置为只读，接受到结构体的输入端口不能改变管道上buffer的内容。
 
 #####3.1.2.10.2  eSupplier
-The `eSupplier` field defines whether the input port or the output port provides the buffers. The exact sequence of calls to set up a tunnel is specified in section 3.4.1.2.
+`eSupplier`定义了是输出还是输入端口提供buffer。3.4.1.2小节描述了建立管道的具体调用步骤。
 
 ####3.1.2.11  OMX_PARAM_PORTDEFINITIONTYPE
-The `OMX_PARAM_PORTDEFINITIONTYPE` structure contains a set of generic fields that characterize each port of the component. Some of these fields are common to all domains while other fields are specific to their respective domains. The IL client uses this structure to retrieve general information from each port.
+`OMX_PARAM_PORTDEFINITIONTYPE`结构提包含了组件中每个端口的一些通用的字段。一些字段在每个域上都是通用的而其他的字段是每个域特有的。IL客户端使用这个结构体来获取每个端口的通用信息。
 
 `OMX_PARAM_PORTDEFINITIONTYPE` 定义如下.
 
@@ -627,53 +627,54 @@ typedef struct OMX_PARAM_PORTDEFINITIONTYPE {
 ```
 
 #####3.1.2.11.1  nPortIndex
-`nPortIndex` is a read-only field the identifies the port. The value of nPortIndex is a unique 32-bit number for the component. No two ports on a single component may share the same port number, but ports on different components may have the same port number.
+`nPortIndex` 是一个标识端口的只读字段。他的值为一个组件上唯一的32比特的数。 同一个组件上的两个不同的端口不能拥有相同的端口号。而不同组件上的端口可以有相同的端口号。
 
 #####3.1.2.11.2  eDir
-eDir is a read-only field that indicates the direction (`OMX_DirInput` or `OMX_DirOutput`) for the port.
+`eDir`是一个指明端口方向（`OMX_DirInput`或`OMX_DirOutput`）的只读域。
 
 #####3.1.2.11.3  nBufferCountActual
-`nBufferCountActual` represents the number of buffers that are required on this port before it is populated, as indicated by the bPopulated field of this structure. The component shall set a default value no less than nBufferCountMin for this field.
+`nBufferCountActual` 表明了端口在poplated之前（如字段bPopulated所示）所需要的buffer的数量。组件应该为这个字段设置一个不小于`nBufferCountMin`的缺省值。
 
 #####3.1.2.11.4  nBufferCountMin
-`nBufferCountMin` is a read-only field that specifies the minimum number of buffers that the port requires. The component shall define this non-zero default value.
+`nBufferCountMin` 是一个指定了端口所需最少buffer数的只读字段。组件应定义一个非零的缺省值。
 
 #####3.1.2.11.5  nBufferSize
-`nBufferSize` is a read-only field that specifies the minimum size in bytes for buffers that are allocated for this port. .
+`nBufferSize` 是一个指定了端口所需分配的buffer的最小buffer字节数的只读字段。
 
 #####3.1.2.11.6  bEnabled
-`bEnabled` is a read-only Boolean field that indicates if the port is enabled. Ports default to bEnabled = `OMX_TRUE` and are enabled/disabled by sending the `OMX_CommandPortEnable` and `OMX_CommandPortDisable` commands with the `OMX_SendCommand` method.
+`bEnabled`为指定了端口是否启用的只读布尔型端口。默认值为`OMX_TRUE`，并可以通过`OMX_SendCommand`方法发送`OMX_CommandPortEnable`和`OMX_CommandPortDisable`来启用/禁用。
 
-A port shall not be populated when it is not enabled.
+端口被禁用是不可以被populated。
 
 #####3.1.2.11.7  bPopulated
-`bPopulated` is a read-only Boolean field that indicates if a port is populated. A port is populated when all of the buffers indicated by nBufferCountActual with a size of at least nBufferSize have been allocated on the port. A populated port shall be enabled. Enabled ports shall be populated on a transition to `OMX_StateIdle` and unpopulated on a transition to `OMX_StateLoaded`.
+`bPopulated`为一个指示端口是否populated的只读bool型字段。当端口上所有`nBufferCountActual`指明的数量`nBufferSize`指明的大小的buffer被分配的时候，端口才是populated的。一个populated的端口应该被启用。启用的端口应该通过转移到`OMX_StateIdle`状态populated和切换到`OMX_StateLoaded`来unpopulated。
 
 #####3.1.2.11.8  eDomain
-`eDomain` is a read-only field that indicates the domain of the port. This field determines the contents of the format union explained in section 3.1.2.11.9.
+`eDomain`为指定端口域的只读字段。决定了共同体中的内容，见小节3.1.2.11.9的解释。
 
 #####3.1.2.11.9  format
-The `format` fields are a union of domain-specific parameters. For more information on parameters for audio, video, image, and other domains, see section 4.
+`format`字段为一个域参数的共同体。具体信息可以见第4章。
 
 ###3.1.3 OMX_PORTDOMAINTYPE
-Table 3-8 enumerates the fields used in the `OMX_PARAM_PORTDEFINITIONTYPE` structure to define the domain of the port.
-| Field Name | Description |
-| ------- |
-| OMX_PortDomainAudio | Specifies that the field format is a structure of the OMX_AUDIO_PORTDEFINITIONTYPE type. |
-| OMX_PortDomainVideo | Specifies that the field format is a structure of the OMX_VIDEO_PORTDEFINITIONTYPE type. |
-| OMX_PortDomainImage | Specifies that the field format is a structure of the OMX_IMAGE_PORTDEFINITIONTYPE type. |
-| OMX_PortDomainOther | Specifies that the field format is a structure of the OMX_OTHER_PORTDEFINITIONTYPE type. |
+表3-8枚举了`OMX_PARAM_PORTDEFINITIONTYPE`结构体中使用的字段，用于定义端口的作用域。
 
-**Table 3-8. Port Domain Names**
+| 字段名称 | 说明 |
+| ------- | ------- |
+| OMX_PortDomainAudio | 指定了字段格式类型为`OMX_AUDIO_PORTDEFINITIONTYPE`|
+| OMX_PortDomainVideo | 指定了字段格式类型为`OMX_VIDEO_PORTDEFINITIONTYPE`|
+| OMX_PortDomainImage | 指定了字段格式类型为`OMX_IMAGE_PORTDEFINITIONTYPE`|
+| OMX_PortDomainOther | 指定了字段格式类型为`OMX_OTHER_PORTDEFINITIONTYPE`|
+
+**表 3-8. 端口域名称                                  **
 
 ###3.1.4 OMX_HANDLETYPE
-The `OMX_HANDLETYPE` structure defines the component handle as seen by the IL client. The component handle is used to access all of the public methods of the component. The component handle also contains pointers to the private data area of the component. The OpenMAX core allocates and initializes the component handle with help from the component during the process of loading the component. After the component is successfully loaded, the IL client can safely access any of the public functions of the component, although some may return an error because the state is inappropriate for the access.
+`OMX_HANDLETYPE`结构体定义了IL客户端可见的组件句柄。组件句柄用于访问所有组件的方法。组件句柄也包含了组件私有数据域的指针。OpenMAX core在加载组件的过程中分配并初始化组件。组件加载完毕后，IL客户端可以安全的访问所有组件的公有方法，虽然某些方法会由于状态不对而返回错误。
 
-##3.2  OpenMAX Core Methods/Macros
+##3.2  OpenMAX Core 方法/宏
 The OpenMAX core implements the main interface for an IL client that wants to use OpenMAX components. For efficiency, OpenMAX IL defines a set of OpenMAX core macros that map on one-to-one basis to most OpenMAX component methods. Some macros and methods recommend that the function return within either five milliseconds or 20 milliseconds, depending on the function. The 5-millisecond timeout was deemed by the standards body to be a reasonable response time for commands that
 may not require buffer processing. The standards body identified the 20-millisecond timeout to be a reasonable response time for commands that may require buffer processing to be completed; the assumption here is that the longest buffer processing would be less than 30 milliseconds, which corresponds to 30-frames per second video. These timeouts are intended primarily to enable component integrators to get a good idea of component response latency via conformance testing.
 
-The macros include the following:
+这些宏包含下面的内容：
 
 - Get component information (version, capabilities).
 - Set/Get component parameters at init time.
@@ -700,8 +701,8 @@ Table 3-9 lists all of the possible return error codes for each function. A crit
 
 ![](img/t3_9.png)
 
-###3.2.2 Macros
-This section describes the OpenMAX core macros.
+###3.2.2 宏
+本小节描述了OpenMAX Core中的宏
 
 Table 3-10 defines which macros may be called on a component in each component state.
 
@@ -712,6 +713,7 @@ Table 3-10. Valid Component Calls
 The GetComponentVersion macro will query the component and returns information about it. This is a blocking call. The component should return from this call within five msec.
 
 The macro 定义如下.
+
 ``` C
 #define OMX_GetComponentVersion (
   hComponent,
