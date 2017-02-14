@@ -671,44 +671,45 @@ typedef struct OMX_PARAM_PORTDEFINITIONTYPE {
 `OMX_HANDLETYPE`结构体定义了IL客户端可见的组件句柄。组件句柄用于访问所有组件的方法。组件句柄也包含了组件私有数据域的指针。OpenMAX core在加载组件的过程中分配并初始化组件。组件加载完毕后，IL客户端可以安全的访问所有组件的公有方法，虽然某些方法会由于状态不对而返回错误。
 
 ##3.2  OpenMAX Core 方法/宏
-The OpenMAX core implements the main interface for an IL client that wants to use OpenMAX components. For efficiency, OpenMAX IL defines a set of OpenMAX core macros that map on one-to-one basis to most OpenMAX component methods. Some macros and methods recommend that the function return within either five milliseconds or 20 milliseconds, depending on the function. The 5-millisecond timeout was deemed by the standards body to be a reasonable response time for commands that
-may not require buffer processing. The standards body identified the 20-millisecond timeout to be a reasonable response time for commands that may require buffer processing to be completed; the assumption here is that the longest buffer processing would be less than 30 milliseconds, which corresponds to 30-frames per second video. These timeouts are intended primarily to enable component integrators to get a good idea of component response latency via conformance testing.
+OpenMAX core实现了IL客户端使用组件的主要接口。为了效率，OpenMAX IL定义了一系列的宏来完成对组件方法一对一的映射。一些宏和方法建议函数在5毫秒或20号码内返回，这取决与函数。5毫秒的超时被标准认为是不需要buffer处理的命令的合理的响应事件。标准认为需要处理buffer的命令处理的合理超时时间为20号码。这里的假设是最长的buffer处理应该低于30号码，对应域每秒30帧视频。这些超时的主要目的是为了使组件集成者可以通过一致性测试很容易的得到组件的响应延时。
 
 这些宏包含下面的内容：
 
-- Get component information (version, capabilities).
-- Set/Get component parameters at init time.
-- Set/Get component parameters at run time.
-- Allocate/De-allocate buffers.
-- Send a buffer full of data to an OpenMAX component port.
-- Send an empty buffer to an OpenMAX component port.
-- Send commands to a component.
-- Get the actual state of the component.
-- Get references to OpenMAX component-proprietary parameters.
+- 获取组件信息（版本，能力）
+- 在初始化时设置/获取组件参数。
+- 在运行是设置/获取组件参数。
+- 分配/释放buffer。
+- 发送给OpenMAX组件端口一个充满数据的buffer。
+- 发送给OpenMAX组件端口一个空的buffer。
+- 发送命令给组件。
+- 获得组件的实际状态。
+- 获取OpenMAX组件专有参数的引用。
 
-The OpenMAX Core also implements methods for the following:
+OpenMAX Core也实现了下面的方法：
 
-- Initializing/de-initializing the whole OpenMAX IL Core
-- Getting an OpenMAX component handle
-- Releasing an OpenMAX component handle
-- Detecting all OpenMAX components available on the platform at run time
-- Setting up data tunnels among OpenMAX components
+- 初始化/析构整个OpenMAX IL core。
+- 获得一个OpenMAX组件句柄
+- 释放一个OpenMAX组件句柄
+- 运行时探测系统上所有可用的OpenMAX组件。
+- 在OpenMAX组件之间建立数据管道。
 
-When a time limit for the execution of a method is specified, it is not intended as a hard restriction for the conformance of the component to the standard, but if the limit is not respected, a note shall appear in the description document related to the component.
+当一个方法执行的时间限制被指定时，它并不打算是组件标准一致性的硬性规定。但如果不遵守这个限制，组件文档中应该标明。
 
-###3.2.1 Return Codes for the Functions
-Table 3-9 lists all of the possible return error codes for each function. A critical error denotes an error from which the component cannot recover. The component should transition to the `OMX_StateInvalid` state when a critical error occurs. All columns but the last two correspond to errors returned from a call to the component. The rightmost two columns denote errors sent asynchronously as the result of an internal error.
+
+###3.2.1 方法的返回值
+表3-9列举了每一个方法的所有可能的返回错误值。致命错误指的是组件无法恢复。发生致命错误时组件应该转移到`OMX_StateInvalid`状态。除了最后两列，左右的列对应着调用组件方法的错误返回。最后两列为内部错误时发出的异步错误。
 
 ![](img/t3_9.png)
 
 ###3.2.2 宏
 本小节描述了OpenMAX Core中的宏
 
-Table 3-10 defines which macros may be called on a component in each component state.
+表3-10定义了在每一种状态下哪一个宏应该被调用。
 
 ![](img/t3_10.png)
 
-Table 3-10. Valid Component Calls
+表3-10. 合法的组件调用
+
 ####3.2.2.1  OMX_GetComponentVersion
 The GetComponentVersion macro will query the component and returns information about it. This is a blocking call. The component should return from this call within five msec.
 
