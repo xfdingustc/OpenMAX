@@ -711,7 +711,7 @@ OpenMAX Core也实现了下面的方法：
 表3-10. 合法的组件调用
 
 ####3.2.2.1  OMX_GetComponentVersion
-The GetComponentVersion macro will query the component and returns information about it. This is a blocking call. The component should return from this call within five msec.
+宏`OMX_StateInvalid`查询组件并返回具体信息。这是一个阻塞调用。组件应该在5毫秒内返回这个调用。
 
 The macro 定义如下.
 
@@ -730,21 +730,21 @@ The macro 定义如下.
     pComponentUUID)
 ```
 
-The parameters are as follows.
+参数定义如下：
 
-| Parameter | Description |
-| ------- |
-| *hComponent* [in] | The handle of the component that executes the command. |
-| *pComponentName* [out] |A pointer to a component name string. Component names are strings limited to a length of less than 127 bytes plus the trailing null for a maximum length of 128 bytes. An example of a valid component name is "OMX.<vendor_name>.AUDIO.DSP.MIXER\0". Names are assigned by the vendor, but shall start with "OMX." concatenated to the vendor specified string. |
-| *pComponentVersion* [out] | A pointer to an OpenMAX version structure that the component will populate. The component will fill in a value that indicates the component version. Note that the component version is not the same as the OpenMAX specification version, which is found in all structures. The vendor of the component defines the component version and establishes its value.|
-| *pSpecVersion* [out] | A pointer to an OpenMAX version structure that the component will populate. SpecVersion is the version of the specification that the component was built against. Note that this value may or may not match the version of the structure. For example, if the component was built against the version 2.0 specification but the IL client, which creates the structure, was built against the version 1.0 specification, the versions would be different. |
-| *pComponentUUID* [out] |A pointer to the universal unique identifier (UUID) of the component, which the component will fill in. The UUID is a unique identifier that is set at run time for the component and is unique to each instance of the component.|
+| 参数 | 输入 |
+| ------- | ------- |
+| *hComponent* [输入] | 执行命令的组件句柄。|
+| *pComponentName* [输出] | 组件名字符串的指针。组件名必须是小于127字节加结尾即最大长度为128字节的字符串。例如，一个合法的组件名可以是"OMX.<厂商名>.AUDIO.DSP.MIXER\0"。名字由厂商指定，但需要以"OMX."开始加上厂商指定的字符串。|
+| *pComponentVersion* [输出] | 组件所填充的OpenMAX版本结构体的指针。组件会填入版本值。注意组件的版本和在所有结构中的OpenMAX协议的版本不是一样的。厂商组件自行定义组件的版本来确定这个值。|
+| *pSpecVersion* [输出] | 组件所填充的OpenMAX版本结构体的执政。`SpecVersion`是组件对应的协议的版本。注意这个版本和结构体的版本可能一样也可能不一样。例如，如果组件是根据2.0版本的协议实现的，但创建IL的客户端是由1.0版本的协议建立的，两者是不同的。|
+| *pComponentUUID* [输出] | 组件通用唯一识别码（UUID）的指针，由组件填入。UUID是一个唯一的识别码，由组件在运行期间设置，并且每个组件实例都是唯一的。|
 
-#####3.2.2.1.1  Prerequisites for This Method
+#####3.2.2.1.1  先决条件2
 这种方法没有先决条件。
 
-#####3.2.2.1.2  Sample Code Showing Calling Sequence
-The following sample code shows a calling sequence.
+#####3.2.2.1.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
 
 ```C
 /* detect mismatch between IL client's and component's spec version */
@@ -766,7 +766,7 @@ appropriate error as a parameter.
 
 The component may elect to queue commands for later execution. The only restriction is that the completion shall be done in the same order as the requests arrived.
 
-The macro is defined as follows.
+宏定义如下：
 
 ``` C
 #define OMX_SendCommand (
@@ -781,7 +781,7 @@ The macro is defined as follows.
     pCmdData)
 ```
 
-The parameters are as follows.
+参数如下：
 
 | Parameter | Description |
 | ------- |
