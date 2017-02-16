@@ -760,11 +760,9 @@ OMX_GetComponentVersion(
 ```
 
 ####3.2.2.2  OMX_SendCommand
-The `OMX_SendCommand` macro will invoke a command on the component. This is a non-blocking call that should, at a minimum, validate command parameters but return within five msec. The component normally executes the command outside the context of the call, though a solution without threading may elect to execute it in context. In either case, the component uses an event callback to notify the IL client of the results of the command once completed. If the component executes the command successfully, the component generates an OMX_EventCmdComplete callback. If the component fails to
-execute the command, the component generates an OMX_EventError and passes the
-appropriate error as a parameter.
+宏`OMX_SendCommand`会调用组件上的一个命令。这是一个非阻塞的调用，有效的命令参数应该在最小5毫秒内返回。通常来说，组件并不在此调用的上下文中执行命令，但如果方案中没有多线程的话可能会选择在上下文中执行。在这两种情况下，组件使用事件回调来通知IL客户端命令执行完毕的结果。如果组件成功执行命令，组件会生成`OMX_EventCmdComplete`回调。如果组件执行命令失败，则生成`OMX_EventError`并将适当的错误以参数传回。
 
-The component may elect to queue commands for later execution. The only restriction is that the completion shall be done in the same order as the requests arrived.
+组件可能选择将命令传入队列以便后续执行。唯一的限制就是完成的顺序应该和请求的顺序一致。
 
 宏定义如下：
 
@@ -783,23 +781,23 @@ The component may elect to queue commands for later execution. The only restrict
 
 参数如下：
 
-| Parameter | Description |
-| ------- |
-| *hComponent* [in] | The handle of the component that executes the command |
-| *Cmd* [in] | Command for the component to execute |
-| *nParam* [in] | Integer parameter for the command that is to be executed |
-| *pCmdData*[in] |A pointer that contains implementation-specific data that cannot be represented with the numeric parameter nParam |
+| 参数 | 说明 |
+| ------- | ------- |
+| *hComponent* [输入] | 执行命令的组件句柄 |
+| *Cmd* [输入] | 待组件执行的命令 |
+| *nParam* [输入] | 待执行命令的整型参数 |
+| *pCmdData*[输入] | 一个指针，包含具体实现的无法用数值型参数来描述的数据|
 
-Section 3.3.6.describes the corresponding function that each component implements.
+3.3.6小节描述了每个组件实现的对应的方法。
 
 ####3.2.2.3  OMX_CommandStateSet
-The IL client calls this command to request that the component transition into the state given in nParam. The component shall make the transition between the old state and the new state successfully only if it is a legal transition and all prerequisites for this transition are met. For more information on component states, see section 3.1.1.2.
+IL客户端调用此命令来请求组件切换到`nParam`指定的状态中。只有合法的状态转移并且所有先决条件都已满足，组件才可以完成老状态到新状态之间的成功切换。更多信息参见3.1.1.2小节。
 
-If the component successfully transitions to the new state, it notifies the IL client of the new state via the `OMX_EventCmdComplete` event, indicating `OMX_CommandStateSet` for nData1 and the new state for `nData2`. If a state transition fails, the component shallnotify the IL client of the error that prevented it via `OMX_EventError` event. Relevant errors include but are not limited to the following:
+如果组件成功转移到新的状态，他会通过事件`OMX_EventCmdComplete` 来通知IL客户端，`nData1`中存放`OMX_CommandStateSet`，`nData2`放入新的状态。如果转移失败，组件应该通过事件`OMX_EventError`通知IL客户端错误。相关错误包括但不限于以下内容：
 
-- `OMX_ErrorSameState`: The component is already in the state requested.
-- `OMX_ErrorIncorrectStateTransition`: The transition requested is not legal.
-- `OMX_ErrorInsufficientResources`: The transition required the allocation of resources and the component failed to acquire the resources.
+- `OMX_ErrorSameState`: 组件已经在此状态
+- `OMX_ErrorIncorrectStateTransition`: 转移请求非法
+- `OMX_ErrorInsufficientResources`: 组件获取转移所需的资源失败
 
 ####3.2.2.4  OMX_CommandFlush
 This IL client calls this command to flush one or more component ports. nParam specifies the index of the port to flush. If the value of nParam is -1, the component shall flush all ports.
