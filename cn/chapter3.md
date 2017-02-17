@@ -1096,25 +1096,25 @@ OMX_GetExtensionIndex(
 OMX_SetParameter(hComp, eIndexParamFilename, &oFileName);
 ```
 ####3.2.2.13  OMX_GetState
-The OMX_GetState macro will invoke the component to get the current state of the component and place the state value into the location pointed to by pState. The component should return from this call within five msec.
+宏`OMX_GetState`将调用组件来获得组件的当前状态并将组件值放入`pState`指向的地址。组件应该在5毫秒内返回。
 
 宏`OMX_GetState`定义如下：
 
 ```C
 #define OMX_GetState (
-hComponent,
-pState )
-((OMX_COMPONENTTYPE*)hComponent)->GetState( \
-hComponent, \
-pState)
+  hComponent,
+  pState )
+  ((OMX_COMPONENTTYPE*)hComponent)->GetState( \
+    hComponent, \
+    pState)
 ```
 
 参数定义如下：
 
-| Parameter | Definition |
+| 参数 | 定义 |
 | ------- | ------- |
-| hComponent [in] | The handle of the component that executes the call.|
-| pState[out]|A pointer to the location that receives the state. The value returned is one of the OMX_STATETYPE members.|
+| *hComponent* [输入] | The 执行调用的组件句柄|
+| *pState*[输出]| 指向接受状态的指针。返回的值应该是`OMX_STATETYPE`成员之一。|
 
 3.3.12小节描述了每个组件实现的相应方法。
 
@@ -1128,38 +1128,37 @@ pState)
 ```C
 OMX_SendCommand(hComp, OMX_CommandStateSet, OMX_StateIdle, 0);
 do {
-OMX_GetState(hComp, &eState);
+  OMX_GetState(hComp, &eState);
 } while (OMX_StateIdle != eState);
 ```
 
 ####3.2.2.14  OMX_UseBuffer
-The OMX_UseBuffer macro requests the component to use a buffer already allocated by the IL client or a buffer already supplied by a tunneled component. The OMX_UseBuffer implementation shall allocate the buffer header, populate it with the
-given input parameters, and pass it back via the ppBufferHdr output parameter.
+宏`OMX_UseBuffer`请求组件使用IL客户端已经分配好或一个管道的组件提供的buffer。`OMX_UseBuffer`的实现应该分配buffer头，填充给定的参数，并通过输出参数ppBufferHdr传递回来。
 
-The OMX_UseBuffer macro shall be executed under the following conditions:
+宏`OMX_UseBuffer`应该在下面的情况下执行：
 
-- While the component is in the OMX_StateLoaded state and has already sent a request for the state transition to OMX_StateIdle
-- While the component is in the OMX_StateWaitForResources state, the resources needed are available, and the component is ready to go to the OMX_StateIdle state
-- On a disabled port when the component is in the OMX_StateExecuting, the OMX_StatePause, or the OMX_StateIdle state
+- 当组件在`OMX_StateLoaded`并已经发送了转移到`OMX_StateIdle`的请求。
+- 当组件在`OMX_StateWaitForResources`状态，所需求资源可用，并组件已经准备转移到`OMX_StateIdle`状态。
+- 当组件处于`OMX_StateExecuting`, `OMX_StatePause`, 或`OMX_StateIdle`在禁用的端口上
 
-This is a blocking call. The component should return from this call within 20 msec.
+这个调用为一个阻塞调用。组件应该在20毫秒以内返回这个调用。
 
 宏`OMX_UseBuffer`定义如下：
 ```C
 #define OMX_UseBuffer(\
-hComponent,\
-ppBufferHdr,\
-nPortIndex,\
-pAppPrivate,\
-nSizeBytes,\
-pBuffer)\
-((OMX_COMPONENTTYPE*)hComponent->UseBuffer(\
-hComponent,\
-ppBufferHdr,\
-nPortIndex,\
-pAppPrivate,\
-nSizeBytes,\
-pBuffer)
+  hComponent,\
+  ppBufferHdr,\
+  nPortIndex,\
+  pAppPrivate,\
+  nSizeBytes,\
+  pBuffer)\
+  ((OMX_COMPONENTTYPE*)hComponent->UseBuffer(\
+    hComponent,\
+    ppBufferHdr,\
+    nPortIndex,\
+    pAppPrivate,\
+    nSizeBytes,\
+    pBuffer)
 ```
 
 参数定义如下：
@@ -1186,13 +1185,13 @@ The component shall be in the OMX_StateLoaded or the OMX_StateWaitForResources s
 /* supplier port allocates buffers and pass them to non-supplier */
 for (i=0;i<pPort->nBufferCount;i++)
 {
-pPort->pBuffer[i] = malloc(pPort->nBufferSize);
-OMX_UseBuffer(pPort->hTunnelComponent,
-&pPort->pBufferHdr[i],
-pPort->nTunnelPort,
-pPort,
-pPort->nBufferSize,
-pPort->pBuffer[j]);
+  pPort->pBuffer[i] = malloc(pPort->nBufferSize);
+  OMX_UseBuffer(pPort->hTunnelComponent,
+                &pPort->pBufferHdr[i],
+                pPort->nTunnelPort,
+                pPort,
+                pPort->nBufferSize,
+                pPort->pBuffer[j]);
 }
 ```
 
