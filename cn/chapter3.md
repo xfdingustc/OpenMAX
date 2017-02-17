@@ -1055,33 +1055,34 @@ OMX_SetConfig(hClockComp, OMX_IndexConfigTimeScale, (OMX_PTR)&oScale);
 ####3.2.2.12  OMX_GetExtensionIndex
 The OMX_GetExtensionIndex macro will invoke a component to translate from a standardized OpenMAX or vendor-specific extension string for a configuration or a parameter into an OpenMAX structure index. The vendor is not required to support this command for the indexes already found in the OMX_INDEXTYPE enumeration, which reduces the memory footprint. The component may support any standardized OpenMAX or vendor-specific extension indexes that are not found in the master OMX_INDEXTYPE enumeration.
 
+
 这个调用为一个阻塞调用。组件应该在5毫秒以内返回这个调用。
 
 宏`OMX_GetExtensionIndex`定义如下：
 
 ```C
 #define OMX_GetExtensionIndex (
-hComponent,
-cParameterName,
-pIndexType )
-((OMX_COMPONENTTYPE*)hComponent)->GetExtensionIndex( \
-hComponent, \
-cParameterName, \
-pIndexType)
+  hComponent,
+  cParameterName,
+  pIndexType )
+  ((OMX_COMPONENTTYPE*)hComponent)->GetExtensionIndex( \
+    hComponent, \
+    cParameterName, \
+    pIndexType)
 ```
 
 参数定义如下：
 
 | Parameter | Description|
 | ------- | ------- |
-| hComponent [in] |The handle of the component that executes the call.|
+| hComponent [in] |执行调用的组件句柄|
 | cParameterName[in] |An OMX_STRING value that shall be less than 128 characters long including the trailing null byte. The component will translate this string into a configuration index.|
 | pIndexType [out] | A pointer to the OMX_INDEXTYPE structure that is to receive the index value.|
 
-Section 3.3.11 describes the corresponding function that each component implements.
+3.3.11小节描述了每个组件实现的相应方法。
 
 #####3.2.2.12.1  先决条件
-The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
+此宏可以当组件在除了`OMX_StateInvalid`外的任意状态被调用。
 
 #####3.2.2.12.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1097,7 +1098,7 @@ OMX_SetParameter(hComp, eIndexParamFilename, &oFileName);
 ####3.2.2.13  OMX_GetState
 The OMX_GetState macro will invoke the component to get the current state of the component and place the state value into the location pointed to by pState. The component should return from this call within five msec.
 
-The OMX_GetState macro is defined as follows.
+宏`OMX_GetState`定义如下：
 
 ```C
 #define OMX_GetState (
@@ -1115,7 +1116,7 @@ pState)
 | hComponent [in] | The handle of the component that executes the call.|
 | pState[out]|A pointer to the location that receives the state. The value returned is one of the OMX_STATETYPE members.|
 
-Section 3.3.12 describes the corresponding function that each component implements.
+3.3.12小节描述了每个组件实现的相应方法。
 
 #####3.2.2.13.1  先决条件
 这种方法没有先决条件。
@@ -1172,7 +1173,7 @@ pBuffer)
 | nSizeBytes [in] |The buffer size in bytes.|
 |pBuffer [in]| A pointer to the memory buffer area to be used.|
 
-Section 3.3.14 describes the corresponding function that each component implements.
+3.3.14小节描述了每个组件实现的相应方法。
 
 #####3.2.2.14.1  先决条件
 The component shall be in the OMX_StateLoaded or the OMX_StateWaitForResources state, or the port to which the call applies shall be disabled.
@@ -1233,7 +1234,7 @@ nSizeBytes)
 | pAppPrivate [in] | Initializes the pAppPrivate member of the buffer header structure. |
 | nSizeBytes [in] |The size of the buffer to allocate. |
 
-Section 3.3.15 describes the corresponding function that each component implements.
+3.3.15小节描述了每个组件实现的相应方法。
 
 #####3.2.2.15.1  先决条件
 The component shall be in the OMX_StateLoaded or the OMX_StateWaitForResources state, or the port to which the call applies shall be disabled.
@@ -1286,7 +1287,7 @@ pBuffer)
 | nPortIndex [in] | The index of the port that is using the specified buffer |
 | pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure used to provide or receive the pointer to the buffer header.|
 
-Section 3.3.16 describes the corresponding function that each component implements.
+3.3.16小节描述了每个组件实现的相应方法。
 
 #####3.2.2.16.1  先决条件
 The component should be in the OMX_StateIdle state or the port should be disabled.
@@ -1334,7 +1335,7 @@ pBuffer)
 | hComponent [in] | The handle of the component that executes the call.|
 | pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure that is used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer |
 
-Section 3.3.17 describes the corresponding function that each component implements.
+3.3.17小节描述了每个组件实现的相应方法。
 
 #####3.2.2.17.1  先决条件
 The component must be in the appropriate state as shown in Table 3-10.
@@ -1380,7 +1381,7 @@ pBuffer)
 | hComponent [in] | The handle of the component that executes the call.|
 | pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer. |
 
-Section 3.3.18 describes the corresponding function that each component implements.
+3.3.18小节描述了每个组件实现的相应方法。
 
 #####3.2.2.18.1  先决条件
 The component must be in the appropriate state as shown in Table 3-10.
@@ -1436,7 +1437,9 @@ preferable to have the core command each of the components back to the loaded st
 
 The OMX_Deinit method usage is as follows.
 
+``` C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_Deinit()
+```
 
 #####3.2.3.2.1  先决条件
 The use of OMX_Deinit requires that all component handles in the system have been released, implying that all resources associated with components have been freed.
