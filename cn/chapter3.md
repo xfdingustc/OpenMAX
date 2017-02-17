@@ -1053,7 +1053,7 @@ OMX_SetConfig(hClockComp, OMX_IndexConfigTimeScale, (OMX_PTR)&oScale);
 ```
 
 ####3.2.2.12  OMX_GetExtensionIndex
-The OMX_GetExtensionIndex macro will invoke a component to translate from a standardized OpenMAX or vendor-specific extension string for a configuration or a parameter into an OpenMAX structure index. The vendor is not required to support this command for the indexes already found in the OMX_INDEXTYPE enumeration, which reduces the memory footprint. The component may support any standardized OpenMAX or vendor-specific extension indexes that are not found in the master OMX_INDEXTYPE enumeration.
+宏`OMX_GetExtensionIndex`将调用组件从一个标准OpenMAX或厂商扩展的配置或参数翻译为OpenMAX结构体索引。厂商不需要在那些已经在OMX_INDEXTYPE中定义的索引支持这个命令，从而可以降低内存占用。组件可以支持`OMX_INDEXTYPE`中没有的任何标准OpenMAX或厂商扩展的索引。
 
 
 这个调用为一个阻塞调用。组件应该在5毫秒以内返回这个调用。
@@ -1073,11 +1073,11 @@ The OMX_GetExtensionIndex macro will invoke a component to translate from a stan
 
 参数定义如下：
 
-| Parameter | Description|
+| 参数 | 说明|
 | ------- | ------- |
-| hComponent [in] |执行调用的组件句柄|
-| cParameterName[in] |An OMX_STRING value that shall be less than 128 characters long including the trailing null byte. The component will translate this string into a configuration index.|
-| pIndexType [out] | A pointer to the OMX_INDEXTYPE structure that is to receive the index value.|
+| *hComponent* [输入] |执行调用的组件句柄|
+| *cParameterName*[输入] | 一个OMX_STRING值，小于128个字符（包括了结尾的null字节）。组件将把这个字符串翻译为一个配置索引|
+| *pIndexType* [输出] | 指向OMX_INDEXTYPE结构体的指针，用于接受索引值|
 
 3.3.11小节描述了每个组件实现的相应方法。
 
