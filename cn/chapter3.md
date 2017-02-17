@@ -1175,7 +1175,7 @@ do {
 3.3.14小节描述了每个组件实现的相应方法。
 
 #####3.2.2.14.1  先决条件
-组件应该处于`OMX_StateLoaded`或`OMX_StateWaitForResources`状态，或调用的组件被禁用。
+组件应该处于`OMX_StateLoaded`或`OMX_StateWaitForResources`状态，或调用的端口被禁用。
 
 #####3.2.2.14.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1204,7 +1204,7 @@ for (i=0;i<pPort->nBufferCount;i++)
 
 The OMX_AllocateBuffer macro allocates buffers on a specific port for communication with the IL client only. This macro cannot be used to allocate buffers for tunneled ports. Buffers allocated before a port was configured for tunneling will result in the component failing OMX_SetupTunnel calls to the port.
 
-The component should return from this call within five msec.
+组件应该在5毫秒以内返回这个调用。
 
 宏`OMX_AllocateBuffer`定义如下：
 
@@ -1236,7 +1236,7 @@ The component should return from this call within five msec.
 3.3.15小节描述了每个组件实现的相应方法。
 
 #####3.2.2.15.1  先决条件
-The component shall be in the OMX_StateLoaded or the OMX_StateWaitForResources state, or the port to which the call applies shall be disabled.
+组件应该处于`OMX_StateLoaded`或`OMX_StateWaitForResources`状态，或调用的端口被禁用。
 
 #####3.2.2.15.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
