@@ -888,7 +888,7 @@ for (i=0;i<oParam.nPorts;i++) {
 | 参数 | 说明 |
 | ------- | ------- |
 | *hComponent* [输入] | 执行调用的组件句柄 |
-| *nParamIndex* [输入] | 填充的结构体索引。 这个值来自OMX_INDEXTYPE结构体 |
+| *nParamIndex* [输入] | 填充的结构体索引。 这个值来自`OMX_INDEXTYPE`结构体 |
 | *ComponentParameterStructure* [输入,输出] | 指向IL客户端分配的结构体的指针，由组件填充 |
 
 3.3.7小节描述了每个组件实现的相应的方法。
@@ -912,15 +912,15 @@ for (i=0;i<oParam.nPorts;i++) {
 ```
 
 ####3.2.2.9  OMX_SetParameter
-The OMX_SetParameter macro will send a parameter structure to a component. ThenParamIndex parameter indicates which structure is passed to the component.
+宏`OMX_SetParameter`将发送一个参数结构体给组件。参数`nParamIndex`指示了传递给组件的是哪一个结构体。
 
-The caller shall provide the memory for the correct structure and shall fill in the structure nSize and nVersion fields in addition to all other fields before invoking this macro. The caller is free to dispose of this structure after the call, as the component is required to copy any data it shall retain.
+调用者应该提供正确的结构体的内存，并在调用宏之前填充结构体中`nSize`和`nVersion`字段。调用者可以在调用之后可以自由的处理该结构，因为组件需要拷贝它需要保留的任何数据。
 
-Some parameter structures contain read-only fields. The OMX_SetParameter method will preserve read-only fields, and shall not generate an error when the caller attempts to change the value of a read-only field.
+一些参数结构体包含了只读字段。`OMX_SetParameter`方法将保留只读字段，并且调用者试图改变只读字段时也不会产生错误。
 
-This call is a blocking call. The component should return from this call within 20 msec.
+此调用为阻塞调用。组件应该在20毫秒以内返回。
 
-The OMX_SetParameter macro is defined as follows.
+宏`OMX_SetParameter`定义如下：
 
 ```C
 #define OMX_SetParameter (
@@ -935,20 +935,20 @@ The OMX_SetParameter macro is defined as follows.
 
 参数定义如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
-| hComponent[in] | The handle of the component that executes the call.|
-| nIndex [in] |The index of the structure that is to be sent. This value isfrom the OMX_INDEXTYPE enumeration. |
-| ComponentParameterStructure [in] |A pointer to the IL client-allocated structure that the component uses for initialization.|
+| *hComponent* [输入] | 执行调用的组件句柄|
+| *nIndex* [输入] | 发送的结构体缩影。这个值来自`OMX_INDEXTYPE`枚举类型|
+| *ComponentParameterStructure* [输入] | 指向IL客户端分配的结构体的指针，组件用于初始化|
 
 
-Section 3.3.8 describes the corresponding function that each component implements.
+3.3.8小节描述了每个组件实现的相应方法。
 
 #####3.2.2.9.1  先决条件
-The OMX_SetParameter macro can be invoked only when the component is in the OMX_StateLoaded state or on a port that is disabled.
+宏`OMX_SetParameter`仅当组件在`OMX_StateLoaded`或组件被禁用时被调用。
 
-#####3.2.2.9.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.9.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
 
 ```C
 /* force a port to be the supplier */
@@ -1082,9 +1082,9 @@ The following sample code shows the calling sequence.
 ```C
 /* Set the vendor-specific filename parameter on a reader */
 OMX_GetExtensionIndex(
-hFileReaderComp,
-"OMX.CompanyXYZ.index.param.filename",
-&eIndexParamFilename);
+  hFileReaderComp,
+  "OMX.CompanyXYZ.index.param.filename",
+  &eIndexParamFilename);
 OMX_SetParameter(hComp, eIndexParamFilename, &oFileName);
 ```
 ####3.2.2.13  OMX_GetState
@@ -1100,6 +1100,7 @@ pState )
 hComponent, \
 pState)
 ```
+
 参数定义如下：
 
 | Parameter | Definition |
