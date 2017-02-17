@@ -868,7 +868,7 @@ for (i=0;i<oParam.nPorts;i++) {
 ####3.2.2.8  OMX_GetParameter
 宏`OMX_GetParameter`取得组件的一个参数。参数`nParamIndex`指示了请求组件的哪一个结构体。调用者在调用此宏之前应该提供结构体的内存并填充`nSize`和`nVersion`字段。如果参数是来自一个端口，调用者也应该在调用此宏之前在`nPortIndex`字段中提供一个有效的端口号。所有组件应该支持每个参数的一组默认值，这样调用者可以得到有效值的结构体。
 
-这个调用为一个阻塞调用。组件应该在20毫秒以内返回这个调用
+这个调用为一个阻塞调用。组件应该在20毫秒以内返回这个调用。
 
 宏OMX_GetParameter定义如下：
 
@@ -963,39 +963,41 @@ OMX_SetParameter(hComp, OMX_IndexParamCompBufferSupplier, &oSupplier);
 ```
 
 ####3.2.2.10  OMX_GetConfig
-The OMX_GetConfig macro will get a configuration structure from a component. This macro can be invoked at any time after the component has been loaded. The nParamIndex parameter indicates which structure is being requested from the component. The caller shall provide the memory for the structure and populate the nSize and nVersion fields before invoking this macro. If the configuration settings are for a port, the caller shall also provide a valid port number in the nPortIndex field before invoking this macro. All components shall support a set of defaults for each configuration so that the caller can obtain the structure populated with valid values.
+宏`OMX_GetConfig`将从一个组件获得一个配置结构体。此红可以在组件被加载后任何事件被调用。参数`nParamIndex`指示了组件的哪一个结构体被请求。调用者应该在调用这个宏之前提供此结构体的内存并填充`nSize`和`nVersion`字段。如果是配置一个端口，调用者也应该在调用之前在`nPortIndex`字段提供一个有效的端口号。所有的组件应该支持每个配置的默认值，这样调用者可以获得填充正确值的结构体。
 
-This call is a blocking call. The component should return from this call within five msec.
+此调用为一个阻塞调用。组件应该在5毫秒内返回。
 
-The OMX_GetConfig macro is defined as follows.
+宏`OMX_GetConfig`定义如下：
 
 ```C
 #define OMX_GetConfig (
-hComponent,
-nConfigIndex,
-ComponentConfigStructure)
-((OMX_COMPONENTTYPE*)hComponent)->GetConfig( \
-hComponent, \
-nConfigIndex, \
-ComponentConfigStructure)
+  hComponent,
+  nConfigIndex,
+  ComponentConfigStructure)
+  ((OMX_COMPONENTTYPE*)hComponent)->GetConfig( \
+    hComponent, \
+    nConfigIndex, \
+    ComponentConfigStructure)
 ```
 
 参数定义如下：
 
-| Parameters | Description |
+| 参数 | 说明 |
 | ------- | ------- |
-| hComponent[in] | he handle of the component that executes the call. |
-| nIndex[in] | The index of the structure to be filled. This value is from the OMX_INDEXTYPE enumeration. |
-| ComponentConfigStructure[in,out] |A pointer to the IL client-allocated structure that the component fills.|
-
-Section 3.3.9 describes the corresponding function that each component implements.
+| *hComponent*[输入] | 执行调用的组件句柄 |
+| *nIndex*[输入] | 需要填充的结构体索引。此值来自OMX_INDEXTYPE枚举类型|
+| *ComponentConfigStructure*[输入,输出] | 指向IL客户端分配的结构体指针，由组件填充 |
 
 
-#####3.2.2.10.1  Prerequisites for This Method
-The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
+3.3.9小节描述了每个组件实现的相应方法。
 
-#####3.2.2.10.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+
+#####3.2.2.10.1  先决条件
+此宏可以当组件在除了`OMX_StateInvalid`外的任意状态被调用。
+
+#####3.2.2.10.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* Wait until a certain playback position */
@@ -1006,42 +1008,43 @@ do {
 ```
 
 ####3.2.2.11  OMX_SetConfig
-The OMX_SetConfig macro will set a component configuration value. This macro can be invoked anytime after the component has been loaded.
+宏`OMX_SetConfig`将给组件一个配置值。组件加载完后，这个宏可以在任何时间被调用。
 
-The caller shall provide the memory for the correct structure and fill in the structure nSize and nVersion fields in addition to all other fields before invoking this macro. The caller can dispose of this structure after the call, as the component is required to copy any data it shall retain.
+调用者应该在调用宏之前提供正确的结构体的内存，并填充结构体中`nSize`和`nVersion`字段。调用者可以在调用之后可以自由的处理该结构，因为组件需要拷贝它需要保留的任何数据。
 
-Some configuration structures contain read-only fields. The OMX_SetConfig method will preserve read-only fields in configuration structures that contain them, and shall not generate an error when the caller attempts to change the value of a read-only field.
+一些配置结构体包含了只读字段。`OMX_SetConfig`方法将保留只读字段，并且调用者试图改变只读字段时也不会产生错误。
 
-This call is a blocking call. The component should return from this call within five msec.
+这个调用为一个阻塞调用。组件应该在5毫秒以内返回这个调用。
 
 宏`OMX_SetConfig`定义如下：
 
 ```C
 #define OMX_SetConfig (
-hComponent,
-nConfigIndex,
-ComponentConfigStructure )
-((OMX_COMPONENTTYPE*)hComponent)->SetConfig( \
-hComponent, \
-nConfigIndex, \
-ComponentConfigStructure)
+  hComponent,
+  nConfigIndex,
+  ComponentConfigStructure )
+  ((OMX_COMPONENTTYPE*)hComponent)->SetConfig( \
+    hComponent, \
+    nConfigIndex, \
+    ComponentConfigStructure)
 ```
 
 参数定义如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
-| hComponent [in] |The handle of the component that executes the call.|
-| nIndex[in] | The index of the structure that is to be sent. This value is from the OMX_INDEXTYPE enumeration.|
-| ComponentConfigStructure[in] |A pointer to the IL client-allocated structure that the component uses for initialization.|
+| *hComponent* [输入] |执行调用的组件句柄|
+| *nIndex* [输入] | 发送的结构体索引。此值来自OMX_INDEXTYPE枚举类型|
+| *ComponentConfigStructure* [输入] | 指向IL客户端分配的结构体的指针，组件用于初始化 |
 
-Section 3.3.10 describes of the corresponding function that each component implements.
+3.3.10小节描述了每个组件实现的相应方法。
 
-#####3.2.2.11.1  Prerequisites for This Method
-The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
+#####3.2.2.11.1  先决条件
+此宏可以当组件在除了`OMX_StateInvalid`外的任意状态被调用。
 
-#####3.2.2.11.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.11.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* Change the time scale of the clock component*/
@@ -1052,7 +1055,9 @@ OMX_SetConfig(hClockComp, OMX_IndexConfigTimeScale, (OMX_PTR)&oScale);
 ####3.2.2.12  OMX_GetExtensionIndex
 The OMX_GetExtensionIndex macro will invoke a component to translate from a standardized OpenMAX or vendor-specific extension string for a configuration or a parameter into an OpenMAX structure index. The vendor is not required to support this command for the indexes already found in the OMX_INDEXTYPE enumeration, which reduces the memory footprint. The component may support any standardized OpenMAX or vendor-specific extension indexes that are not found in the master OMX_INDEXTYPE enumeration.
 
-This call is a blocking call. The component should return from this call within five msec. The OMX_GetExtensionIndex macro is defined as follows.
+这个调用为一个阻塞调用。组件应该在5毫秒以内返回这个调用。
+
+宏`OMX_GetExtensionIndex`定义如下：
 
 ```C
 #define OMX_GetExtensionIndex (
@@ -1074,11 +1079,13 @@ pIndexType)
 | pIndexType [out] | A pointer to the OMX_INDEXTYPE structure that is to receive the index value.|
 
 Section 3.3.11 describes the corresponding function that each component implements.
-#####3.2.2.12.1  Prerequisites for This Method
+
+#####3.2.2.12.1  先决条件
 The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
 
-#####3.2.2.12.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.12.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 ```C
 /* Set the vendor-specific filename parameter on a reader */
 OMX_GetExtensionIndex(
@@ -1110,11 +1117,12 @@ pState)
 
 Section 3.3.12 describes the corresponding function that each component implements.
 
-#####3.2.2.13.1  Prerequisites for This Method
-This method has no prerequisites.
+#####3.2.2.13.1  先决条件
+这种方法没有先决条件。
 
-#####3.2.2.13.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.13.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 OMX_SendCommand(hComp, OMX_CommandStateSet, OMX_StateIdle, 0);
@@ -1166,11 +1174,12 @@ pBuffer)
 
 Section 3.3.14 describes the corresponding function that each component implements.
 
-#####3.2.2.14.1  Prerequisites for This Method
+#####3.2.2.14.1  先决条件
 The component shall be in the OMX_StateLoaded or the OMX_StateWaitForResources state, or the port to which the call applies shall be disabled.
 
-#####3.2.2.14.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.14.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* supplier port allocates buffers and pass them to non-supplier */
@@ -1226,11 +1235,12 @@ nSizeBytes)
 
 Section 3.3.15 describes the corresponding function that each component implements.
 
-#####3.2.2.15.1  Prerequisites for This Method
+#####3.2.2.15.1  先决条件
 The component shall be in the OMX_StateLoaded or the OMX_StateWaitForResources state, or the port to which the call applies shall be disabled.
 
-#####3.2.2.15.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.15.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* IL client asks component to allocate buffers */
@@ -1278,11 +1288,12 @@ pBuffer)
 
 Section 3.3.16 describes the corresponding function that each component implements.
 
-#####3.2.2.16.1  Prerequisites for This Method
+#####3.2.2.16.1  先决条件
 The component should be in the OMX_StateIdle state or the port should be disabled.
 
-#####3.2.2.16.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.16.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* supplier port frees buffers */
@@ -1325,11 +1336,12 @@ pBuffer)
 
 Section 3.3.17 describes the corresponding function that each component implements.
 
-#####3.2.2.17.1  Prerequisites for This Method
+#####3.2.2.17.1  先决条件
 The component must be in the appropriate state as shown in Table 3-10.
 
-#####3.2.2.17.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.17.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* deliver full buffer */
@@ -1370,11 +1382,12 @@ pBuffer)
 
 Section 3.3.18 describes the corresponding function that each component implements.
 
-#####3.2.2.18.1  Prerequisites for This Method
+#####3.2.2.18.1  先决条件
 The component must be in the appropriate state as shown in Table 3-10.
 
-#####3.2.2.18.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.18.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* On a port enable, if tunneling and an input and not supplier */
@@ -1400,14 +1413,15 @@ The usage of OMX_Init() is as follows.
 
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_Init()
 
-#####3.2.3.1.1  Prerequisites for This Method
+#####3.2.3.1.1  先决条件
 This method has no prerequisites.
 
 #####3.2.3.1.2  Results/Outputs for This Method
 If the command successfully executes, the return code will be OMX_ErrorNone. Otherwise, the appropriate OpenMAX error will be returned. The OpenMAX core functions are ready to be used when this function returns successfully.
 
-#####3.2.3.1.3  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.3.1.3  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* Initialize OpenMax and create some components */
@@ -1424,14 +1438,15 @@ The OMX_Deinit method usage is as follows.
 
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_Deinit()
 
-#####3.2.3.2.1  Prerequisites for This Method
+#####3.2.3.2.1  先决条件
 The use of OMX_Deinit requires that all component handles in the system have been released, implying that all resources associated with components have been freed.
 
 ####3.2.3.2.2  Results/Outputs for This Method
 The use of OMX_Deinit returns OMX_ERRORTYPE. If the command successfully executes, the return code will be OMX_ErrorNone. Otherwise, the appropriate OpenMAX error will return.
 
-#####3.2.3.2.3  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.3.2.3  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* Determine if a component of a particular name exists. */
@@ -1471,14 +1486,15 @@ OMX_IN OMX_U32 nIndex
 | nNameLength [in] | The number of characters in the cComponentName string. Since all component name strings are restricted to less than 128 characters, not including the trailing null, the caller should provide an input string of at least 128 characters.|
 | nIndex [in] | A number containing the enumeration index for the component. Multiple calls to OMX_ComponentNameEnum with increasing values of nIndex will enumerate through the component names in the system until OMX_ErrorNoMore returns. The value of nIndex is 0 to N-1, where N is the number of installed components in the system. |
 
-#####3.2.3.3.1  Prerequisites for This Method
+#####3.2.3.3.1  先决条件
 OMX_ComponentNameEnum can be called after the OMX_Init function.
 
 #####3.2.3.3.2  Results/Outputs for This Method
 If OMX_ComponentNameEnum successfully executes, the return code will be OMX_ErrorNone. When the value of nIndex exceeds the number of components in the system minus 1, OMX_ErrorNoMore will be returned. Otherwise, the appropriate OpenMAX error will be returned.
 
-#####3.2.3.3.3  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.3.3.3  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 ```C
 /* print a list of all components */
 eError = OMX_ErrorNone;
@@ -1522,14 +1538,15 @@ OMX_IN OMX_CALLBACKTYPE * pCallBacks
 | pAppData [in] | A pointer to an IL client-defined value that will be returned during callbacks so that the IL client can identify the source of the callback. |
 | pCallBacks [in] |A pointer to an OMX_CALLBACKTYPE structure containing the  callbacks that the component will use for this IL client.|
 
-#####3.2.3.4.1  Prerequisites for This Method
+#####3.2.3.4.1  先决条件
 The OpenMAX core shall be initialized.
 
 #####3.2.3.4.2  Results/Outputs for This Method
 If successful, the function returns a valid component handle to the IL client.
 
-#####3.2.3.4.3  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.3.4.3  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 ```C
 /* determine maximum number of instantiations of a component */
 eError = OMX_ErrorNone;
@@ -1559,14 +1576,15 @@ The single parameter is as follows.
 | ------ | ------ |
 | hComponent [in] | The handle of the component to freed. |
 
-#####3.2.3.5.1  Prerequisites for This Method
+#####3.2.3.5.1  先决条件
 The component should be in the OMX_StateLoaded or the OMX_StateInvalid state when this method is called.
 
 #####3.2.3.5.2  Results/Outputs for This Method
 All resources associated with the components are freed.
 
-#####3.2.3.5.3  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.3.5.3  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* stop executing component and clean up component */
@@ -1611,14 +1629,15 @@ OMX_IN OMX_U32 nPortInput
 | hInput [in] |The handle of the component containing the input port used in the tunnel, where the input port is identified by the nPortInput parameter. By definition, an input port has the direction OMX_DirInput. If the value of this parameter is 0x0, the hPortOutput port on the hOutput component will be set up for non-tunneled communication. |
 | nPortInput [in] | Indicates the input port of the component specified by hInput that is to be used for tunneled or proprietary communication. |
 
-#####3.2.3.6.1  Prerequisites for This Method
+#####3.2.3.6.1  先决条件
 Each component that is being tunneled shall be in the OMX_StateLoaded state, or its port shall be disabled.
 
 #####3.2.3.6.2  Results/Outputs for This Method
 If the method returns successfully when both an output and input component are supplied, tunneled or proprietary communication has been set up between the specified output and input ports. When only an output or an input component is supplied or if an error occurs during processing, the ports are set up for non-tunneled communication.
 
-#####3.2.3.6.3  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.3.6.3  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* set up tunnel between two components then transition to idle */
@@ -1771,11 +1790,12 @@ OMX_INOUT OMX_TUNNELSETUPTYPE* pTunnelSetup);
 | nTunneledPort [in] | The index of the port belonging to hTunneledComp that participates in the tunnel.|
 | pTunnelSetup [in,out] | The structure that contains data for the tunneling negotiation between components. The supplier field can be filled by both components; the callbacks field is filled by the output port component. The read-only flag can be applied by both components.|
 
-####3.3.13.1  Prerequisites for This Method
+####3.3.13.1  先决条件
 The component shall be in the OMX_StateLoaded state.
 
-####3.3.13.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+####3.3.13.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* Translate a SetupTunnel call to two ComponentTunnelRequest calls */
@@ -1865,11 +1885,12 @@ OMX_IN OMX_PTR pAppData);
 | pCallbacks [in] | A pointer to an OMX_CALLBACKTYPE structure that is used to provide the callback information to the component. |
 | pAppData [in] | A pointer to a value that the IL client has defined (for example, a pointer to a data structure) that allows the callback in the IL client to determine the context of the call. |
 
-####3.3.19.1  Prerequisites for This Method
+####3.3.19.1  先决条件
 The component shall be in the OMX_StateLoaded state.
 
-####3.3.19.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+####3.3.19.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* On GetHandle (for statically linked components):
@@ -1898,11 +1919,11 @@ The single parameter is as follows.
 | ------ | ------ |
 | hComponent [in] | The handle of the component that executes the call. |
 
-####3.3.20.1  Prerequisites for This Method
 There are no prerequisites for this method. The IL client may execute this function regardless of component state so that de-initialization is guaranteed even on components that are unresponsive to state changes. However, executing ComponentDeinit when the component is in the OMX_StateLoaded state is recommended for proper shutdown.
 
-####3.3.20.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+####3.3.20.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
+
 
 ```C
 /* On FreeHandle: de-initialize component and destroy it */
