@@ -1113,7 +1113,7 @@ OMX_SetParameter(hComp, eIndexParamFilename, &oFileName);
 
 | 参数 | 定义 |
 | ------- | ------- |
-| *hComponent* [输入] | The 执行调用的组件句柄|
+| *hComponent* [输入] | 执行调用的组件句柄 |
 | *pState*[输出]| 指向接受状态的指针。返回的值应该是`OMX_STATETYPE`成员之一。|
 
 3.3.12小节描述了每个组件实现的相应方法。
@@ -1165,17 +1165,17 @@ do {
 
 | 参数 | 说明 |
 | --------| ------- |
-| hComponent [in] |The handle of that component that executes the call.|
-| ppBufferHdr[out] |A pointer to a pointer of an OMX_BUFFERHEADERTYPE structure that receives the pointer to the buffer header.|
-| nPortIndex [in] | The index of the port that will use the specified buffer. This index is relative to the component that owns the port. |
-| pAppPrivate [in] |A pointer that refers to an implementation-specific memory area that is under responsibility of the supplier of the buffer.|
-| nSizeBytes [in] |The buffer size in bytes.|
-|pBuffer [in]| A pointer to the memory buffer area to be used.|
+| *hComponent* [输入] | 执行调用的组件句柄 |
+| *ppBufferHdr* [输出] | 指向一个OMX_BUFFERHEADERTYPE结构体的指针的指针，用于接受buffer头的指针。|
+| *nPortIndex* [输入] | 指定buffer的端口索引。这个索引与拥有端口的组件相对应。 |
+| *pAppPrivate* [输入] | 指针，指向和具体实现内存空间，由buffer提供者负责。|
+| *nSizeBytes* [输入] | buffer大小，由字节标识|
+| *pBuffer* [输入]| 指向使用的内存buffer空间的指针|
 
 3.3.14小节描述了每个组件实现的相应方法。
 
 #####3.2.2.14.1  先决条件
-The component shall be in the OMX_StateLoaded or the OMX_StateWaitForResources state, or the port to which the call applies shall be disabled.
+组件应该处于`OMX_StateLoaded`或`OMX_StateWaitForResources`状态，或调用的组件被禁用。
 
 #####3.2.2.14.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1196,7 +1196,7 @@ for (i=0;i<pPort->nBufferCount;i++)
 ```
 
 ####3.2.2.15  OMX_AllocateBuffer
-The OMX_AllocateBuffer macro will request that the component allocate a new buffer and buffer header. The component will allocate the buffer and the buffer header and return a pointer to the buffer header. This call is a blocking call that shall be performed under the following conditions:
+宏OMX_AllocateBuffer将请求组件分配一块新的buffer和buffer头。组件将分配buffer和buffer头并返回buffer头的指针。这个调用为阻塞调用，并且应该在下列条件下进行：
 
 - While the component is in the OMX_StateLoaded state and has already sent a request for the state transition to OMX_StateIdle
 - While the component it is in the OMX_StateWaitForResources state, the resources needed are available, and the component is ready to go to the OMX_StateIdle state
@@ -1210,17 +1210,17 @@ The component should return from this call within five msec.
 
 ```C
 #define OMX_AllocateBuffer (
-hComponent,
-pBuffer,
-nPortIndex,
-pAppPrivate,
-nSizeBytes )
-((OMX_COMPONENTTYPE*)hComponent)->AllocateBuffer( \
-hComponent, \
-pBuffer, \
-nPortIndex, \
-pAppPrivate, \
-nSizeBytes)
+  hComponent,
+  pBuffer,
+  nPortIndex,
+  pAppPrivate,
+  nSizeBytes )
+  ((OMX_COMPONENTTYPE*)hComponent)->AllocateBuffer( \
+      hComponent, \
+      pBuffer, \
+      nPortIndex, \
+      pAppPrivate, \
+      nSizeBytes)
 ```
 
 参数定义如下：
@@ -1246,11 +1246,11 @@ The component shall be in the OMX_StateLoaded or the OMX_StateWaitForResources s
 /* IL client asks component to allocate buffers */
 for (i=0;i<pClient->nBufferCount;i++)
 {
-OMX_AllocateBuffer(hComp,
-&pClient->pBufferHdr[i],
-pClient->nPortIndex,
-pClient,
-pClient->nBufferSize);
+  OMX_AllocateBuffer(hComp,
+      &pClient->pBufferHdr[i],
+      pClient->nPortIndex,
+      pClient,
+      pClient->nBufferSize);
 }
 ```
 
