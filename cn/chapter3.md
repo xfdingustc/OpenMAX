@@ -800,56 +800,53 @@ IL客户端调用此命令来请求组件切换到`nParam`指定的状态中。�
 - `OMX_ErrorInsufficientResources`: 组件获取转移所需的资源失败
 
 ####3.2.2.4  OMX_CommandFlush
-This IL client calls this command to flush one or more component ports. nParam specifies the index of the port to flush. If the value of nParam is -1, the component shall flush all ports.
+IL调用此命令来清空组件上一个或多个组件。`nParam`指定了待刷新端口的缩影。如果值为-1，则应该清空所有端口。
 
-When the IL client flushes a non-supplier port, that port shall return all buffers it is holding to the supplier port. If the supplier port is the IL client, the flushed port uses `EmptyBufferDone` and `FillBufferDone` (appropriate for an input port or an output port, respectively) to return the buffers. If the supplier port is a tunneled port, the flushed port uses `EmptyThisBuffer` or `FillThisBuffer` (appropriate for an input port or an output port, respectively) to return the buffers.
+当IL客户端清空一个非供应端口时，端口应该返回所有拥有的buffer给供应端口。如果供应端口为IL客户端，被清空的组件使用`EmptyBufferDone` 和`FillBufferDone`（分别对应输入或输入端口）返回buffer。如果供应端口为一个管道端口，被清空的端口使用使用`EmptyThisBuffer` 和`FillThisBuffer`（分别对应输入或输入端口）返回buffer。
 
-
-For each port that the component successfully flushes, the component shall send an `OMX_EventCmdComplete` event, indicating `OMX_CommandFlush` for nData1 and the individual port index for nData2, even if the flush resulted from using a value of -1 for nParam. If a flush fails, the component shall notify the IL client of the error via an `OMX_EventError` event.
+对于每个组件成功清空的端口，组件应该发送一个`OMX_EventCmdComplete`事件， `nData1`中放入`OMX_CommandFlush`，`nData2`中放入独立的端口索引，即使`nParam`使用的是-1。如果清空失败，组件应该使用`OMX_EventError`事件来通知IL客户端错误。
 
 ####3.2.2.5  OMX_CommandPortDisable
-The `OMX_CommandPortDisable` command disables a port. nParam specifies the index of the port to disable. If the value of nParam is -1, the component shall disable all ports. A disabled port has no buffers and is not connected to either the IL client or another port via a tunnel. A disabled port does not allocate buffers on a transition from `OMX_StateLoaded` or `OMX_StateWaitForResources` to `OMX_StateIdle`. An IL client can change the parameters via `OMX_SetParameter` of a disabled port or set up a tunnel on it regardless of the component state. Thus the `OMX_CommandPortDisable` command, in co-operation with `OMX_CommandPortEnable`, is useful for the dynamic reconfiguration or re-tunneling of a port.
+命令`OMX_CommandPortDisable`禁用一个端口。`nParam`指定了禁用端口的索引。如果`nParam`值为-1，组件应该禁用所有的端口。一个被禁用的端口没有buffer也不连接到IL客户端或是通过管道连接到其他端口。一个被禁用的端口从`OMX_StateLoaded`或`OMX_StateWaitForResources` 转移到`OMX_StateIdle`是不分配buffer。IL客户端可以通过`OMX_SetParameter`改变一个禁用端口的设置或是忽略状态来建立一个管道。因此命令`OMX_CommandPortDisable`配合`OMX_CommandPortEnable`，可以用于动态的改变端口配置或重新连接管道。
 
-The port must immediately clear bEnabled in its port definition structure when it receives `OMX_CommandPortDisable`. If the port that the IL client is disabling is a non-supplier port, the IL client shall return any buffers it is holding to the supplier port via `OMX_EmptyThisBuffer`/`OMX_FillThisBuffer` if tunneling or `EmptyBufferDone`/`FillBufferDone` if not tunneling. Then, the IL client shall wait for the supplier port to free the buffers via `OMX_FreeBuffer` before completing
-the disable command. If the port that the IL client is disabling is a supplier port with buffers allocated, the IL client shall wait for the non-supplier port to return all buffers via `OMX_EmptyThisBuffer` or `OMX_FillThisBuffer`. Then, the IL client shall free the buffers via OMX_FreeBuffer before completing the disable command.
+端口收到`OMX_CommandPortDisable`必须立刻清除端口定义结构体上的`bEnabled`字段。如过IL客户端禁用的端口是一个非供应端口，IL客户端应该通过`OMX_EmptyThisBuffer`/`OMX_FillThisBuffer`（管道） 或`EmptyBufferDone`/`FillBufferDone`（非管道）返回所有的拥有的buffer。然后，IL客户端应该等待供应端口通过`OMX_FreeBuffer`释放buffer来完成禁用命令。如果被禁用的端口是一个供应端口，分配了buffer， IL客户端应该等待非供应端口通过`OMX_EmptyThisBuffer`或`OMX_FillThisBuffer`返回buffer。然后，IL客户端应该等待供应端口通过`OMX_FreeBuffer`释放buffer来完成禁用命令。
 
-For each port that the component successfully disables, the component shall send an `OMX_EventCmdComplete` event indicating `OMX_CommandPortDisable` for nData1 and the individual port index for nData2, even if using a value of -1 for nParam caused
-the port to be disabled. If the disable operation fails, the component shall notify the IL client of the error via the `OMX_EventError` event.
+对于每一个组件成功禁用的端口，组件应该发送`OMX_EventCmdComplete`事件，`nData1`中放入`OMX_CommandPortDisable`，`nData2`中放入独立的端口索引，`nParam`使用的是-1。如果禁用失败，组件应该使用`OMX_EventError`事件来通知IL客户端错误。
 
 ####3.2.2.6  OMX_CommandPortEnable
-The `OMX_CommandPortEnable` command enables a port. nParam specifies the index of the port to be enabled. If the value of nParam is -1, the component shall enable all ports. An enabled port shall abide by all the requirements of the component’s state. Thus, the port shall:
+`OMX_CommandPortEnable`命令启用一个端口。`nParam`指定了启用端口的索引。如果`nParam`值为-1，组件应该启用所有的端口。启用端口应该遵循组件状态的所有要求。因此，端口应该：
 
-- Have no buffers allocated if the component is in the `OMX_StateLoaded` state or the `OMX_StateWaitForResources` state and all buffers are allocated otherwise.
-- Allocate buffers on a transition from either the `OMX_StateLoaded` state or the `OMX_WaitForResources` state to the `OMX_IdleState`.
-- Transfer a buffer to facilitate data flow in the `OMX_StateExecuting` state.
-- Disallow modification of its parameters via OMX_SetParameter in all states but `OMX_StateLoaded`.
+- 组件如果在`OMX_StateLoaded`或`OMX_StateWaitForResources`应该没有buffer分配，而在其他状态应该所有buffer都已分配
+- 从 `OMX_StateLoaded`或`OMX_WaitForResources`转移到`OMX_IdleState`时分配buffer。
+- 在`OMX_StateExecuting`状态时传输buffer到数据流
+- 除了 `OMX_StateLoaded`以外所有其他状态不允许通过`OMX_SetParameter`改变参数。
 
-The `OMX_CommandPortEnable` command, in co-operation with `OMX_CommandPortDisable`, is useful for the dynamic reconfiguration or re-tunneling of a port.
+命令`OMX_CommandPortEnable`配合`OMX_CommandPortDisable`，可以用于动态的改变端口配置或重新连接管道。
 
-The port must immediately set bEnabled in its port definition structure when the port receives OMX_CommandPortEnable. If the IL client enables a port while the component is in any state other than OMX_StateLoaded or OMX_WaitForResources, then that port shall allocate its buffers via the same call sequence used on a transition from OMX_StateLoaded to OMX_StateIdle. If the IL client enables while the component is in the OMX_Executing state, then that port shall begin transferring buffers.
+端口收到`OMX_CommandPortEnable`后必须立刻设置端口定义结构体中的`bEnabled`字段。如果IL客户端在组件为除`OMX_StateLoaded`或 `OMX_WaitForResources`以外的任何状态启用端口，端口应该通过和`OMX_StateLoaded`到`OMX_StateIdle`相同的调用顺序分配buffer。如果IL客户端当组件为`OMX_Executing`时启用，那么端口应该开始传输buffer。
 
-For each port that the component successfully enables, the component shall send an OMX_EventCmdComplete event, indicating OMX_CommandPortEnable for nData1 and the individual port index for nData2, even if using the value of -1 for nParam caused the enable operation. If a port enablement operation fails, the component shall notify the IL client of the error via OMX_EventError event.
+针对每一个组件成功启用的端口，组件应该发送`OMX_EventCmdComplete`事件，`nData1`中放入`OMX_CommandPortEnable`，`nData2`放入独立的端口索引，即使使用`nParam`为-1来启用。如果端口启用操作失败，组件应该通过`OMX_EventError`事件通知IL客户端。
 
 ####3.2.2.7  OMX_CommandMarkBuffer
-The OMX_CommandMarkBuffer command instructs the given port to mark a buffer. nParam holds the index of the port that will perform the mark. The pCmdData parameter of OMX_SendCommand points to an OMX_MARKTYPE structure. The pMarkTargetComponent field of this structure holds a pointer to the component that will send an event after processing the marked buffer. The pMarkData field of this structure holds a pointer to application-specific data associated with the mark to uniquely identify the mark to the application upon a mark event (denoted the mark data).
+命令`OMX_CommandMarkBuffer`指示给定的端口标记buffer。`nParam`持有进行标记的端口索引。`OMX_SendCommand`的`pCmdData`参数指向`OMX_MARKTYPE`结构体。结构体中`pMarkTargetComponent`字段持有目标组件的指针，当处理完标记的buffer后会发送事件给目标组件。`pMarkData`字段持有一个指针，指向与标记相关的应用程序特定的数据， 用来给应用程序在一个标记事件中唯一标识这个标记（标识数据的名称）。
 
-When instructed to mark a buffer, the component will mark the next buffer that it receives as input after it receives the mark command. The exception is a source component, which will mark the next buffer it adds to its output buffer queue. For components other than source components, the port index value in nParam holds the index of the input port that will mark its next buffer. For source components, the port index value in nParam holds the index of the output port that will mark its next buffer.
+当指示标记一个buffer时，组件将在接受到标记命令后标记接受的下一个buffer。源组件是一个特殊情况，它将标记加到其输出buffer队列的下一个buffer。非源组件的情况下，nParam中的端口索引值持有了标记下一个buffer的输入端口的索引。源组件的情况下，nParam中的端口索引值持有了标记下一个buffer的输出端口的索引。
 
-In the following cases, multiple marks may compete for a single buffer:
+在下列情况下， 多个标记可能会竞争同一个buffer：
 
-- A component receives two or more mark commands with no intervening buffer(s).
-- Two or more input buffers, each with a mark, contribute to an output buffer (e.g., in a mixer).
-- A component receives a mark command and the next buffer is already marked.
+- 组件连续收到两个或更多标记命令，两次标记之间没有buffer.
+- 两个或多个输入buffer，每个都有一个标记，合并成一个输出buffer，（例如，在一个mixer中）
+- 组件收到一个标记命令但下一个buffer已经被标记。
 
-If multiple marks compete for application to the same buffer, the component uses the first mark received to mark the buffer and applies the remaining marks to subsequent buffers in the order that the component received them. If there are no subsequent buffers, the component may send the remaining marks on one or more empty buffers.
+如果多个标记竞争同一个buffer，组件使用第一个收到的标记来标记buffer，并且按收到标记的顺序将剩余的标记应用到后续的buffer中。如果后面没有buffer，组件可以把剩余的标记应用到一个或多个空的buffer中去。
 
-For each port that the component successfully marks a buffer, the component shall send an OMX_EventCmdComplete event indicating OMX_CommandPortMarkBuffer for nData1 and the individual port index for nData2. If a mark operation fails, the component shall notify the IL client of the error via OMX_EventError event.
+组件成功标记buffer的每一个端口，组件应该发送`OMX_EventCmdComplete`事件，`nData1`中放置`OMX_CommandPortMarkBuffer`，`nData2`放置独立的端口索引。如果标记操作失败，组件应该通过`OMX_EventError`事件通知IL客户端。
 
-A buffer header includes pMarkTargetComponent and the pMarkData fields, whose meaning is identical to those in OMX_MARKTYPE. A component marks a buffer by copying pMarkTargetComponent and the pMarkData fields from the mark command to the buffer headers. Both fields are NULL by default (i.e., before the buffer being marked). A component propagates the mark fields from an input buffer to an output buffer according to the buffer metadata rules established for buffer flags and timestamps. The target component does not propagate the mark but instead clears both fields to NULL.
+buffer头包含了`pMarkTargetComponent`和`pMarkData`字段，意义和`OMX_MARKTYPE`中的字段相同。组件通过从标记命令拷贝`pMarkTargetComponent`和`pMarkData`字段来标记buffer。默认情况下这两个字段是空的（例如，标记buffer之前）。一个组件根据buffer标志位和时间戳简历的元数据规则来从输入buffer向输出buffer传播标记。目标组件不传播标记，而是将两个字段清楚为NULL。
 
-When a component receives a buffer, it shall compare its own pointer to the pMarkTargetComponent. If the pointers match, the component shall send a mark event, including pMarkData as a parameter, immediately after the buffer exits the component or has been completely processed in the case where it does not exit the component.
+但组件收到buffer，他应该自身指针和pMarkTargetComponent。如果指针匹配，buffer离开组件或成功处理而不需要离开组件后，组件应该立马发送标记事件，包含了pMarkData作为参数。
 
-#####3.2.2.7.1  Prerequisites for This Method
+#####3.2.2.7.1  先决条件
 这种方法没有先决条件。
 
 
@@ -878,25 +875,26 @@ The OMX_GetParameter macro is defined as follows.
 
 ```C
 #define OMX_GetParameter (
-hComponent,
-nParamIndex,
-ComponentParameterStructure)
-((OMX_COMPONENTTYPE*)hComponent)->GetParameter( \
-hComponent, \
-nParamIndex, \
-ComponentParameterStructure)
+  hComponent,
+  nParamIndex,
+  ComponentParameterStructure)
+  ((OMX_COMPONENTTYPE*)hComponent)->GetParameter( \
+    hComponent, \
+    nParamIndex, \
+    ComponentParameterStructure)
 ```
 
-The parameters are described as follows.
+参数描述如下：
 
 | Parameter | Description |
-| ------- |
-| hComponent [in] |The handle of the component that executes the call |
-| nParamIndex [in] | The index of the structure to be filled. This value is from the OMX_INDEXTYPE enumeration. |
-| ComponentParameterStructure [in,out] |A pointer to the IL client-allocated structure that the component fills|
+| ------- | ------- |
+| *hComponent* [in] |The handle of the component that executes the call |
+| *nParamIndex* [in] | The index of the structure to be filled. This value is from the OMX_INDEXTYPE enumeration. |
+| *ComponentParameterStructure* [in,out] |A pointer to the IL client-allocated structure that the component fills|
 
 Section 3.3.7 describes the corresponding function that each component implements.
-#####3.2.2.8.1  Prerequisites for This Method
+
+#####3.2.2.8.1  先决条件
 The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
 
 #####3.2.2.8.2  Sample Code Showing Calling Sequence
@@ -936,10 +934,10 @@ The OMX_SetParameter macro is defined as follows.
     ComponentParameterStructure)
 ```
 
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Description |
-| ------- |
+| ------- | ------- |
 | hComponent[in] | The handle of the component that executes the call.|
 | nIndex [in] |The index of the structure that is to be sent. This value isfrom the OMX_INDEXTYPE enumeration. |
 | ComponentParameterStructure [in] |A pointer to the IL client-allocated structure that the component uses for initialization.|
@@ -947,7 +945,7 @@ The parameters are as follows.
 
 Section 3.3.8 describes the corresponding function that each component implements.
 
-#####3.2.2.9.1  Prerequisites for This Method
+#####3.2.2.9.1  先决条件
 The OMX_SetParameter macro can be invoked only when the component is in the OMX_StateLoaded state or on a port that is disabled.
 
 #####3.2.2.9.2  Sample Code Showing Calling Sequence
@@ -983,7 +981,7 @@ nConfigIndex, \
 ComponentConfigStructure)
 ```
 
-The parameters are as follows.
+参数定义如下：
 
 | Parameters | Description |
 | ------- | ------- |
@@ -1030,10 +1028,10 @@ nConfigIndex, \
 ComponentConfigStructure)
 ```
 
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Description |
-|
+| ------- | ------- |
 | hComponent [in] |The handle of the component that executes the call.|
 | nIndex[in] | The index of the structure that is to be sent. This value is from the OMX_INDEXTYPE enumeration.|
 | ComponentConfigStructure[in] |A pointer to the IL client-allocated structure that the component uses for initialization.|
@@ -1068,10 +1066,10 @@ cParameterName, \
 pIndexType)
 ```
 
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Description|
-|
+| ------- | ------- |
 | hComponent [in] |The handle of the component that executes the call.|
 | cParameterName[in] |An OMX_STRING value that shall be less than 128 characters long including the trailing null byte. The component will translate this string into a configuration index.|
 | pIndexType [out] | A pointer to the OMX_INDEXTYPE structure that is to receive the index value.|
@@ -1103,10 +1101,10 @@ pState )
 hComponent, \
 pState)
 ```
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Definition |
-|
+| ------- | ------- |
 | hComponent [in] | The handle of the component that executes the call.|
 | pState[out]|A pointer to the location that receives the state. The value returned is one of the OMX_STATETYPE members.|
 
@@ -1158,7 +1156,7 @@ pBuffer)
 参数定义如下：
 
 | 参数 | 说明 |
-|--------| ------- |
+| --------| ------- |
 | hComponent [in] |The handle of that component that executes the call.|
 | ppBufferHdr[out] |A pointer to a pointer of an OMX_BUFFERHEADERTYPE structure that receives the pointer to the buffer header.|
 | nPortIndex [in] | The index of the port that will use the specified buffer. This index is relative to the component that owns the port. |
@@ -1216,7 +1214,7 @@ pAppPrivate, \
 nSizeBytes)
 ```
 
-The parameter are as follows.
+参数定义如下：
 
 | Paramter | Description |
 | ------- | ------- |
@@ -1270,7 +1268,7 @@ hComponent, \
 nPortIndex,
 pBuffer)
 ```
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Description |
 | ------- | ------- |
@@ -1318,7 +1316,7 @@ pBuffer )
 hComponent, \
 pBuffer)
 ```
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Description |
 | ------- | ------- |
@@ -1363,7 +1361,7 @@ hComponent, \
 pBuffer)
 ```
 
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Description |
 | ------- | ------- |
@@ -1465,7 +1463,7 @@ OMX_IN OMX_U32 nIndex
 )
 ```
 
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Description |
 | ------- | ------- |
@@ -1515,7 +1513,7 @@ OMX_IN OMX_CALLBACKTYPE * pCallBacks
 )
 ```
 
-The parameters are as follows.
+参数定义如下：
 
 | Parameter |  Description |
 | ------ | ------ |
@@ -1605,7 +1603,7 @@ OMX_IN OMX_HANDLETYPE hInput,
 OMX_IN OMX_U32 nPortInput
 )
 ```
-The parameters are as follows.
+参数定义如下：
 | Parameter | Description |
 | ------ | ------ |
 | hOutput [in] | The handle of the component containing the output port used in the tunnel, where the output port is identified by the nPortOutput parameter. By definition, an output port has the direction OMX_DirOutput. If the value of this parameter is 0x0, the hPortInput port on the hInput component will be set up for non-tunneled communication.|
@@ -1763,7 +1761,7 @@ OMX_IN OMX_HANDLETYPE hTunneledComp,
 OMX_IN OMX_U32 nTunneledPort,
 OMX_INOUT OMX_TUNNELSETUPTYPE* pTunnelSetup);
 ```
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Description |
 | ------- | ------- |
@@ -1859,7 +1857,7 @@ OMX_IN OMX_HANDLETYPE hComponent,
 OMX_IN OMX_CALLBACKTYPE* pCallbacks,
 OMX_IN OMX_PTR pAppData);
 ```
-The parameters are as follows.
+参数定义如下：
 
 | Parameter | Description |
 | ------ | ------ |
