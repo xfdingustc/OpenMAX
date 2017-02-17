@@ -850,8 +850,8 @@ buffer头包含了`pMarkTargetComponent`和`pMarkData`字段，意义和`OMX_MAR
 这种方法没有先决条件。
 
 
-#####3.2.2.7.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.7.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
 
 ``` C
 /* disable every audio port of a component*/
@@ -866,12 +866,11 @@ for (i=0;i<oParam.nPorts;i++) {
 ```
 
 ####3.2.2.8  OMX_GetParameter
-The OMX_GetParameter macro will get a parameter setting from a component. The nParamIndex parameter indicates which structure is requested from the component. The caller shall provide memory for the structure and populate the nSize and
-nVersion fields before invoking this macro. If the parameter settings are for a port, the caller shall also provide a valid port number in the nPortIndex field before invoking this macro. All components shall support a set of defaults for each parameter so that the caller can obtain the structure populated with valid values.
+宏`OMX_GetParameter`取得组件的一个参数。参数`nParamIndex`指示了请求组件的哪一个结构体。调用者在调用此宏之前应该提供结构体的内存并填充`nSize`和`nVersion`字段。如果参数是来自一个端口，调用者也应该在调用此宏之前在`nPortIndex`字段中提供一个有效的端口号。所有组件应该支持每个参数的一组默认值，这样调用者可以得到有效值的结构体。
 
-This call is a blocking call. The component should return from this call within 20 msec.
+这个调用为一个阻塞调用。组件应该在20毫秒以内返回这个调用
 
-The OMX_GetParameter macro is defined as follows.
+宏OMX_GetParameter定义如下：
 
 ```C
 #define OMX_GetParameter (
@@ -886,19 +885,19 @@ The OMX_GetParameter macro is defined as follows.
 
 参数描述如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
-| *hComponent* [in] |The handle of the component that executes the call |
-| *nParamIndex* [in] | The index of the structure to be filled. This value is from the OMX_INDEXTYPE enumeration. |
-| *ComponentParameterStructure* [in,out] |A pointer to the IL client-allocated structure that the component fills|
+| *hComponent* [输入] | 执行调用的组件句柄 |
+| *nParamIndex* [输入] | 填充的结构体索引。 这个值来自OMX_INDEXTYPE结构体 |
+| *ComponentParameterStructure* [输入,输出] | 指向IL客户端分配的结构体的指针，由组件填充 |
 
-Section 3.3.7 describes the corresponding function that each component implements.
+3.3.7小节描述了每个组件实现的相应的方法。
 
 #####3.2.2.8.1  先决条件
-The macro can be invoked when the component is in any state except the OMX_StateInvalid state.
+这个宏可以当组件在除`OMX_StateInvalid`外的任何状态时被调用。
 
-#####3.2.2.8.2  Sample Code Showing Calling Sequence
-The following sample code shows the calling sequence.
+#####3.2.2.8.2  调用顺序实例代码
+下面的实例代码展示了调用顺序：
 
 ```C
 /* disable every audio port of a component*/
