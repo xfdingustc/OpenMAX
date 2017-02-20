@@ -1225,7 +1225,7 @@ The OMX_AllocateBuffer macro allocates buffers on a specific port for communicat
 
 参数定义如下：
 
-| Paramter | Description |
+| Paramter | 说明 |
 | ------- | ------- |
 | hComponent [in] | 执行调用的组件句柄 |
 | ppBufferHdr [out] | A pointer to a pointer of an OMX_BUFFERHEADERTYPE structure that receives the pointer to the buffer header.|
@@ -1331,7 +1331,7 @@ pBuffer)
 ```
 参数定义如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
 | hComponent [in] | 执行调用的组件句柄|
 | pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure that is used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer |
@@ -1368,16 +1368,16 @@ This call is a non-blocking call since the component will queue the buffer and r
 
 ```C
 #define OMX_FillThisBuffer (
-hComponent,
-pBuffer )
-((OMX_COMPONENTTYPE*)hComponent)->FillThisBuffer( \
-hComponent, \
-pBuffer)
+  hComponent,
+  pBuffer )
+  ((OMX_COMPONENTTYPE*)hComponent)->FillThisBuffer( \
+      hComponent, \
+      pBuffer)
 ```
 
 参数定义如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
 | hComponent [in] | 执行调用的组件句柄|
 | pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer. |
@@ -1395,13 +1395,13 @@ The component must be in the appropriate state as shown in Table 3-10.
 /* On a port enable, if tunneling and an input and not supplier */
 /* then give buffers to supplier port */
 if (pPort->hTunnelComponent &&
-(pPort->oPortDef.eDir == OMX_DirInput) &&
-(pPort->eSupplierSetting == OMX_BufferSupplyInput) )
+    (pPort->oPortDef.eDir == OMX_DirInput) &&
+    (pPort->eSupplierSetting == OMX_BufferSupplyInput) )
 {
-for (i=0;i<pPort->nBuffers;i++){
-OMX_FillThisBuffer(pPort->hTunnelComponent,
-pPort->ppBufferHdrs[i]);
-}
+  for (i=0;i<pPort->nBuffers;i++){
+    OMX_FillThisBuffer(pPort->hTunnelComponent,
+        pPort->ppBufferHdrs[i]);
+  }
 }
 ```
 ###3.2.3 Functions
@@ -1484,7 +1484,7 @@ OMX_IN OMX_U32 nIndex
 
 参数定义如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
 | cComponentName [out] | A pointer to a null-terminated string with the component name. Component names are strings limited to less than 127 bytes in length plus the trailing null for a maximum length of 128 bytes. An example of a valid component name is "OMX.<vendor_name>.AUDIO.DSP.MIXER\0". The name shall start with "OMX." concatenated to a vendor-specified string. |
 | nNameLength [in] | The number of characters in the cComponentName string. Since all component name strings are restricted to less than 128 characters, not including the trailing null, the caller should provide an input string of at least 128 characters.|
@@ -1535,7 +1535,7 @@ OMX_IN OMX_CALLBACKTYPE * pCallBacks
 
 参数定义如下：
 
-| Parameter |  Description |
+| 参数 |  说明 |
 | ------ | ------ |
 | pHandle [out] | A pointer to OMX_HANDLETYPE to be filled in by this method. |
 | cComponentName [in] | A pointer to a null-terminated string with the component name. Component names are strings limited to less than 128 bytes in length plus the trailing null for a maximum length of 128 bytes. An example of a valid component name is "OMX.<vendor_name>.AUDIO.DSP.MIXER\0". The name shall start with "OMX." concatenated to a vendor-specified string. |
@@ -1576,7 +1576,7 @@ OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_FreeHandle(
 
 The single parameter is as follows.
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------ | ------ |
 | hComponent [in] | The handle of the component to freed. |
 
@@ -1626,7 +1626,7 @@ OMX_IN OMX_U32 nPortInput
 )
 ```
 参数定义如下：
-| Parameter | Description |
+| 参数 | 说明 |
 | ------ | ------ |
 | hOutput [in] | The handle of the component containing the output port used in the tunnel, where the output port is identified by the nPortOutput parameter. By definition, an output port has the direction OMX_DirOutput. If the value of this parameter is 0x0, the hPortInput port on the hInput component will be set up for non-tunneled communication.|
 | nPortOutput [in] | Indicates the output port of the component specified by hOutput that is to be used for tunneled or proprietary communication.|
@@ -1786,7 +1786,7 @@ OMX_INOUT OMX_TUNNELSETUPTYPE* pTunnelSetup);
 ```
 参数定义如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
 | hComp [in] | The handle of the target component of the RequestTunnel call and one of the components that will participate in the tunnel. |
 | nPort [in] | The index of the port belonging to hComp that will participate in the tunnel. |
@@ -1883,9 +1883,9 @@ OMX_IN OMX_PTR pAppData);
 ```
 参数定义如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------ | ------ |
-| hComponent [in] |The handle of the component that executes the call. |
+| hComponent [in] |执行调用的组件句柄 |
 | pCallbacks [in] | A pointer to an OMX_CALLBACKTYPE structure that is used to provide the callback information to the component. |
 | pAppData [in] | A pointer to a value that the IL client has defined (for example, a pointer to a data structure) that allows the callback in the IL client to determine the context of the call. |
 
@@ -1919,9 +1919,9 @@ OMX_IN OMX_HANDLETYPE hComponent);
 
 The single parameter is as follows.
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------ | ------ |
-| hComponent [in] | The handle of the component that executes the call. |
+| hComponent [in] | 执行调用的组件句柄 |
 
 There are no prerequisites for this method. The IL client may execute this function regardless of component state so that de-initialization is guaranteed even on components that are unresponsive to state changes. However, executing ComponentDeinit when the component is in the OMX_StateLoaded state is recommended for proper shutdown.
 
