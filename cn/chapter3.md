@@ -1198,11 +1198,11 @@ for (i=0;i<pPort->nBufferCount;i++)
 ####3.2.2.15  OMX_AllocateBuffer
 宏OMX_AllocateBuffer将请求组件分配一块新的buffer和buffer头。组件将分配buffer和buffer头并返回buffer头的指针。这个调用为阻塞调用，并且应该在下列条件下进行：
 
-- While the component is in the OMX_StateLoaded state and has already sent a request for the state transition to OMX_StateIdle
-- While the component it is in the OMX_StateWaitForResources state, the resources needed are available, and the component is ready to go to the OMX_StateIdle state
-- On a disabled port when the component is the OMX_StateExecuting, the OMX_StatePause, or the OMX_StateIdle states.
+- 组件处于`OMX_StateLoaded`状态并且已经发送了转移至`OMX_StateIdle`的请求。
+- 组件处于`OMX_StateWaitForResources`状态，所需资源可用，并且组件已准备进入`OMX_StateIdle`状态
+- 当组件处于`OMX_StateExecuting`, `OMX_StatePause`, 或`the OMX_StateIdle`状态时禁用端口。
 
-The OMX_AllocateBuffer macro allocates buffers on a specific port for communication with the IL client only. This macro cannot be used to allocate buffers for tunneled ports. Buffers allocated before a port was configured for tunneling will result in the component failing OMX_SetupTunnel calls to the port.
+宏`OMX_AllocateBuffer`在只和IL客户端的通信的特定端口分配buffer。这个宏不能用于管道端口上的分配buffer。在配置管道端口之前buffer分配会导致组件在端口上调用`OMX_SetupTunne`l失败。
 
 组件应该在5毫秒以内返回这个调用。
 
@@ -1225,13 +1225,13 @@ The OMX_AllocateBuffer macro allocates buffers on a specific port for communicat
 
 参数定义如下：
 
-| Paramter | 说明 |
+| 参数 | 说明 |
 | ------- | ------- |
-| hComponent [in] | 执行调用的组件句柄 |
-| ppBufferHdr [out] | A pointer to a pointer of an OMX_BUFFERHEADERTYPE structure that receives the pointer to the buffer header.|
-| nPortIndex [in] | Selects the port on the component that the buffer will be used with. The port can be found by using the nPortIndex value as an index into the port definition array of the component. |
-| pAppPrivate [in] | Initializes the pAppPrivate member of the buffer header structure. |
-| nSizeBytes [in] |The size of the buffer to allocate. |
+| *hComponent* [输入] | 执行调用的组件句柄 |
+| *ppBufferHdr* [输出] | 指向`OMX_BUFFERHEADERTYPE`结构体指针的指针，用于接受指向buffer头的指针 |
+| *nPortIndex* [输入] | 选择组件上使用buffer的端口。端口可以通过`nPortIndex`值在组件端口定义的数组中找到。|
+| *pAppPrivate* [输入] | 初始化buffer头结构体中`pAppPrivate`成员|
+| *nSizeBytes* [输入] | 分配buffer的大小 |
 
 3.3.15小节描述了每个组件实现的相应方法。
 
@@ -1272,21 +1272,21 @@ for (i=0;i<pClient->nBufferCount;i++)
 
 ```C
 #define OMX_FreeBuffer (
-hComponent,
-nPortIndex,
-pBuffer )
-((OMX_COMPONENTTYPE*)hComponent)->FreeBuffer( \
-hComponent, \
-nPortIndex,
-pBuffer)
+    hComponent,
+    nPortIndex,
+    pBuffer )
+    ((OMX_COMPONENTTYPE*)hComponent)->FreeBuffer( \
+        hComponent, \
+        nPortIndex,
+        pBuffer)
 ```
 参数定义如下：
 
 | 参数 | 说明 |
 | ------- | ------- |
 | *hComponent* [输入] | 执行调用的组件句柄 |
-| *nPortIndex* [输入] | The index of the port that is using the specified buffer |
-| *pBuffer* [输入] | A pointer to an OMX_BUFFERHEADERTYPE structure used to provide or receive the pointer to the buffer header.|
+| *nPortIndex* [输入] | 使用特定buffer的端口索引 |
+| *pBuffer* [输入] | 指向OMX_BUFFERHEADERTYPE结构体的指针，用于提供或接受buffer头的指针。|
 
 3.3.16小节描述了每个组件实现的相应方法。
 
@@ -1301,12 +1301,12 @@ pBuffer)
 /* supplier port frees buffers */
 for (i=0;i<pPort->nBufferCount;i++)
 {
-free(pPort->pBuffer[i]);
-pPort->pBuffer[i] = 0;
-OMX_FreeBuffer(pPort->hTunnelComponent,
-pPort->nTunnelPort,
-pPort->pBufferHdr[i]);
-pPort->pBufferHdr[j] = 0;
+  free(pPort->pBuffer[i]);
+  pPort->pBuffer[i] = 0;
+  OMX_FreeBuffer(pPort->hTunnelComponent,
+      pPort->nTunnelPort,
+      pPort->pBufferHdr[i]);
+  pPort->pBufferHdr[j] = 0;
 }
 ```
 
@@ -1333,8 +1333,8 @@ pBuffer)
 
 | 参数 | 说明 |
 | ------- | ------- |
-| hComponent [in] | 执行调用的组件句柄|
-| pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure that is used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer |
+| *hComponent* [in] | 执行调用的组件句柄|
+| *pBuffer* [in] | A pointer to an OMX_BUFFERHEADERTYPE structure that is used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer |
 
 3.3.17小节描述了每个组件实现的相应方法。
 
