@@ -1227,7 +1227,7 @@ The OMX_AllocateBuffer macro allocates buffers on a specific port for communicat
 
 | Paramter | Description |
 | ------- | ------- |
-| hComponent [in] | The handle of the component that executes the call. |
+| hComponent [in] | 执行调用的组件句柄 |
 | ppBufferHdr [out] | A pointer to a pointer of an OMX_BUFFERHEADERTYPE structure that receives the pointer to the buffer header.|
 | nPortIndex [in] | Selects the port on the component that the buffer will be used with. The port can be found by using the nPortIndex value as an index into the port definition array of the component. |
 | pAppPrivate [in] | Initializes the pAppPrivate member of the buffer header structure. |
@@ -1255,19 +1255,21 @@ for (i=0;i<pClient->nBufferCount;i++)
 ```
 
 ####3.2.2.16  OMX_FreeBuffer
-he OMX_FreeBuffer macro will release a buffer and buffer header from the component. The component shall free only the buffer header if it allocated only the buffer. The component shall free both the buffer and the buffer header if it allocated both the buffer and the buffer header. Thus, the component shall track which buffers it allocated so it can perform the corresponding de-allocation.
+宏`OMX_FreeBuffer`将从一个组件中释放一块buffer和buffer头。如果组件只分配buffer，则只释放buffer头。如果组件分配buffer和buffer头，则应该释放buffer和buffer头。因此，组件应该记录哪些buffer是自己分配的，以便执行响应的释放。
 
-The call should be performed under the following conditions:
+这个调用应该在下面的情况下执行：
 
-- While the component is in the OMX_StateIdle state and the IL client has already sent a request for the state transition to OMX_StateLoaded (e.g., during the stopping of the component)
-- On a disabled port when the component is in the OMX_StateExecuting, the OMX_StatePause, or the OMX_StateIdle state.
+- 当组件在`OMX_StateIdle`且IL客户端已发送了一个向OMX_StateLoaded转移的请求（例如，在组件停止时）。
+- 当组件在`OMX_StateExecuting`, `OMX_StatePause`, 或`OMX_StateIdle`状态时禁用端口。
 
-The call can be made at any time, but may result in the port sending an OMX_ErrorPortUnpopulated error if the call is not performed as described. The call is made from buffer supplier ports when tunneling to release buffer headers from the port
-that the supplier port is tunneling with.
 
-This call is a blocking call. The component should return from the call within 20 msec.
+这个方法可以在任何事件被调用，但如果调用没有按上面描述的规则执行，则可能端口发送`OMX_ErrorPortUnpopulated`错误。在管道中，这个方法由供应端口调用，用于释放供应端口管道上的buffer头。
 
-The OMX_FreeBuffer macro is defined as follows.
+
+这个调用为一个阻塞调用。组件应该在20毫秒以内返回这个调用。
+
+宏OMX_FreeBuffer定义如下。
+
 ```C
 #define OMX_FreeBuffer (
 hComponent,
@@ -1280,16 +1282,16 @@ pBuffer)
 ```
 参数定义如下：
 
-| Parameter | Description |
+| 参数 | 说明 |
 | ------- | ------- |
-| hComponent [in] | The handle of the component that executes the call |
-| nPortIndex [in] | The index of the port that is using the specified buffer |
-| pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure used to provide or receive the pointer to the buffer header.|
+| *hComponent* [输入] | 执行调用的组件句柄 |
+| *nPortIndex* [输入] | The index of the port that is using the specified buffer |
+| *pBuffer* [输入] | A pointer to an OMX_BUFFERHEADERTYPE structure used to provide or receive the pointer to the buffer header.|
 
 3.3.16小节描述了每个组件实现的相应方法。
 
 #####3.2.2.16.1  先决条件
-The component should be in the OMX_StateIdle state or the port should be disabled.
+组件应处于`OMX_StateIdle`状态或端口被禁用。
 
 #####3.2.2.16.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1331,7 +1333,7 @@ pBuffer)
 
 | Parameter | Description |
 | ------- | ------- |
-| hComponent [in] | The handle of the component that executes the call.|
+| hComponent [in] | 执行调用的组件句柄|
 | pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure that is used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer |
 
 3.3.17小节描述了每个组件实现的相应方法。
@@ -1377,7 +1379,7 @@ pBuffer)
 
 | Parameter | Description |
 | ------- | ------- |
-| hComponent [in] | The handle of the component that executes the call.|
+| hComponent [in] | 执行调用的组件句柄|
 | pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer. |
 
 3.3.18小节描述了每个组件实现的相应方法。
