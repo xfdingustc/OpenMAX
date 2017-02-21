@@ -1311,35 +1311,35 @@ for (i=0;i<pPort->nBufferCount;i++)
 ```
 
 ####3.2.2.17  OMX_EmptyThisBuffer
-The OMX_EmptyThisBuffer macro will send a filled buffer to an input port of a component. When the buffer contains data, the value of the nFilledLength field of the buffer header will not be zero. If the buffer contains no data, the value of nFilledLength is 0x0. The OMX_EmptyThisBuffer macro is invoked to pass buffers containing data when the component is in or making a transition to the OMX_StateExecuting or in the OMX_StatePaused state.
+宏`OMX_EmptyThisBuffer`会发送一块满的buffer给组件的一个输入端口。当buffer含有数据，buffer头中`nFilledLength`字段的值应该不为0。如果buffer不含有数据，`nFilledLength`的值为0x0。当组件在`OMX_StateExecuting`或`OMX_StatePaused`状态，或者正在向`OMX_StateExecuting`状态转移时，调用宏`OMX_EmptyThisBuffer`来传递包含数据的buffer。
 
-When a port is non-tunneled, buffers sent to OMX_EmptyThisBuffer are returned to the IL client with the EmptyBufferDone callback once they have been emptied.
+当端口没有管道时，发送给`OMX_EmptyThisBuffer`的buffer一旦被清空就通过回调`EmptyBufferDone`返回给IL客户端。
 
-When a port is tunneled, buffers sent to OMX_EmptyThisBuffer are sent to the tunneled port once they are emptied so long as the component is in the OMX_StateExecuting state. Buffers are returned to the input port that supplied them using OMX_EmptyThisBuffer whenever the tunneled port is flushed or disabled. Buffers are also returned to the input port that supplied them when the component calling OMX_FillThisBuffer is transitioning from the OMX_StateExecuting state or the
-OMX_StatePaused state to the OMX_StateIdle state.
+当端口有管道时，只要组件处于`OMX_StateExecuting`状态，发送给`OMX_EmptyThisBuffer`的buffer一旦被清空会发送给管道端口。buffer使用`OMX_EmptyThisBuffer`返回给提供buffer的输出端口，不管管道是否被清空或者禁用。buffer也会返回给提供的输入端口，当调用`OMX_FillThisBuffer`的组件正从`OMX_StateExecuting`或`OMX_StatePaused`状态转移到`OMX_StateIdle`状态。
 
-This call is a non-blocking call since the component will queue the buffer and return immediately. The buffer will be emptied later at the proper time. If the parameter nInputPortIndex in the buffer header does not specify a valid input port, the component returns OMX_ErrorBadPortIndex. The component should return from this call within five msec.
+这个调用为一个非阻塞调用，因为组件将buffer放入队列并立马返回。buffer会在后面合适的时间被填充。如果buffer头中的参数`nInputPortIndex`没有指定一个特定的输出端口，组件会返回`OMX_ErrorBadPortIndex`。组件应该在5毫秒以内返回这个调用。
+
 
 宏`OMX_EmptyThisBuffer`定义如下：
 ```C
 #define OMX_EmptyThisBuffer (
-hComponent,
-pBuffer )
-((OMX_COMPONENTTYPE*)hComponent)->EmptyThisBuffer( \
-hComponent, \
-pBuffer)
+    hComponent,
+    pBuffer )
+    ((OMX_COMPONENTTYPE*)hComponent)->EmptyThisBuffer( \
+        hComponent, \
+        pBuffer)
 ```
 参数定义如下：
 
 | 参数 | 说明 |
 | ------- | ------- |
 | *hComponent* [输入] | 执行调用的组件句柄|
-| *pBuffer* [输入] | A pointer to an OMX_BUFFERHEADERTYPE structure that is used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer |
+| *pBuffer* [输入] | 指向OMX_BUFFERHEADERTYPE结构体的指针，用于提供或接受buffer头的指针。buffer头应该指定接受buffer的输入端口的索引。|
 
 3.3.17小节描述了每个组件实现的相应方法。
 
 #####3.2.2.17.1  先决条件
-The component must be in the appropriate state as shown in Table 3-10.
+组件必须处于如表3-10所示的合适状态。
 
 #####3.2.2.17.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
