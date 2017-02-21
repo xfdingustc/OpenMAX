@@ -1403,25 +1403,24 @@ if (pPort->hTunnelComponent &&
   }
 }
 ```
-###3.2.3 Functions
-This section describes the functions in the OpenMAX IL API.
+###3.2.3 函数
+本小节描述了OpenMAX IL API中的函数方法。
 
 ####3.2.3.1  OMX_Init
-The OMX_Init method initializes the OpenMAX core. OMX_Init shall be the first call made into OpenMAX and should be executed only one time without an intervening OMX_Deinit call. If OMX_Init is called twice, OMX_ErrorNone is returned but the
-init request is ignored. The core should return from this call within 20 msec.
+`OMX_Init`方法初始化OpenMAX Core。`OMX_Init`应该在OpenMAX中首先被调用，并且仅被调用一次（如果中间没有调用`OMX_Deinit`的话）。如果`OMX_Init`被调用两次，应该返回`OMX_ErrorNone`但初始化请求被忽略。Core都应该在20毫秒内返回这个调用。
 
 
-OMX_Init()用法如下：
+`OMX_Init()`用法如下：
 
 ```C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_Init()
 ```
 
 #####3.2.3.1.1  先决条件
-This method has no prerequisites.
+此方法没有先决条件。
 
-#####3.2.3.1.2  Results/Outputs for This Method
-If the command successfully executes, the return code will be OMX_ErrorNone. Otherwise, the appropriate OpenMAX error will be returned. The OpenMAX core functions are ready to be used when this function returns successfully.
+#####3.2.3.1.2  方法的结果/输出
+如果命令成功执行，返回值为OMX_ErrorNone。否则，将返回合适的OpenMAX错误值。如果次函数返回成功，OpenMAX core函数则可以被使用。
 
 #####3.2.3.1.3  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1435,20 +1434,19 @@ OMX_GetHandle(hAudioMixer, "OMX.CompanyXYZ.audio.mixer", pAppData, pCallbacks);
 ```
 
 ####3.2.3.2  OMX_Deinit
-The OMX_Deinit method de-initializes the OpenMAX core. OMX_Deinit should be the last call made into the OpenMAX core after all OpenMAX-related resources have been released. The core should return from this call within 20 msec. While it may be
-preferable to have the core command each of the components back to the loaded state and then de-initialize them, doing so may require more than the recommended 20 msec call time. It further requires the OpenMAX core to track all component handles, which may add unnecessary complexity for some platforms.
+`OMX_Deinit`方法释放OpenMAX core。`OMX_Deinit`应该在OpenMAX core中当所有OpenMAX相关的资源被释放后最后被调用。core应该在20毫秒以内返回此调用。但更好的方法是让每个组件回到loaded状态再释放他们，做这些事情可能需要超过20毫秒调用时间。它进一步要求OpenMAX core来跟踪所有组件句柄，在某些平台上这可能会增加不必要的复杂性。
 
-The OMX_Deinit method usage is as follows.
+OMX_Deinit方法用法如下。
 
 ``` C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_Deinit()
 ```
 
 #####3.2.3.2.1  先决条件
-The use of OMX_Deinit requires that all component handles in the system have been released, implying that all resources associated with components have been freed.
+使用OMX_Deinit需要系统中所有组件句柄已被释放，意味着所有组件相关的资源已被释放。
 
-####3.2.3.2.2  Results/Outputs for This Method
-The use of OMX_Deinit returns OMX_ERRORTYPE. If the command successfully executes, the return code will be OMX_ErrorNone. Otherwise, the appropriate OpenMAX error will return.
+####3.2.3.2.2  方法的结果/输出
+`OMX_Deinit`返回`OMX_ERRORTYPE`。如果命令成功执行，返回结果为`OMX_ErrorNone`。否则返回合适的OpenMAX错误。
 
 #####3.2.3.2.3  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1460,13 +1458,13 @@ OMX_Init();
 eError = OMX_ErrorNone;
 for (i=0; OMX_ErrorNone == eError; i++)
 {
-eError = OMX_ComponentNameEnum(szCompEnumName, 256, i);
-if ((OMX_ErrorNone == eError) &&
-(!strcmp(szCompEnumName, szComponentName))
-{
-OMX_Deinit();
-return OMX_TRUE;
-}
+  eError = OMX_ComponentNameEnum(szCompEnumName, 256, i);
+  if ((OMX_ErrorNone == eError) &&
+      (!strcmp(szCompEnumName, szComponentName))
+  {
+    OMX_Deinit();
+    return OMX_TRUE;
+  }
 }
 OMX_Deinit();
 return OMX_FALSE;
@@ -1488,9 +1486,9 @@ OMX_IN OMX_U32 nIndex
 
 | 参数 | 说明 |
 | ------- | ------- |
-| cComponentName [out] | A pointer to a null-terminated string with the component name. Component names are strings limited to less than 127 bytes in length plus the trailing null for a maximum length of 128 bytes. An example of a valid component name is "OMX.<vendor_name>.AUDIO.DSP.MIXER\0". The name shall start with "OMX." concatenated to a vendor-specified string. |
-| nNameLength [in] | The number of characters in the cComponentName string. Since all component name strings are restricted to less than 128 characters, not including the trailing null, the caller should provide an input string of at least 128 characters.|
-| nIndex [in] | A number containing the enumeration index for the component. Multiple calls to OMX_ComponentNameEnum with increasing values of nIndex will enumerate through the component names in the system until OMX_ErrorNoMore returns. The value of nIndex is 0 to N-1, where N is the number of installed components in the system. |
+| *cComponentName* [out] | A pointer to a null-terminated string with the component name. Component names are strings limited to less than 127 bytes in length plus the trailing null for a maximum length of 128 bytes. An example of a valid component name is "OMX.<vendor_name>.AUDIO.DSP.MIXER\0". The name shall start with "OMX." concatenated to a vendor-specified string. |
+| *nNameLength* [in] | The number of characters in the cComponentName string. Since all component name strings are restricted to less than 128 characters, not including the trailing null, the caller should provide an input string of at least 128 characters.|
+| *nIndex* [in] | A number containing the enumeration index for the component. Multiple calls to OMX_ComponentNameEnum with increasing values of nIndex will enumerate through the component names in the system until OMX_ErrorNoMore returns. The value of nIndex is 0 to N-1, where N is the number of installed components in the system. |
 
 #####3.2.3.3.1  先决条件
 OMX_ComponentNameEnum can be called after the OMX_Init function.
