@@ -1511,24 +1511,24 @@ for (i=0; OMX_ErrorNoMore != eError; i++)
 ```
 
 ####3.2.3.4  OMX_GetHandle
-The OMX_GetHandle method will locate the component specified by the component name given, load that component into memory, and validate it. If the component is valid, OMX_GetHandle will invoke the component's methods to fill the component handle and set up the callbacks. The OMX_GetHandle method will allocate the actual OMX_HANDLETYPE structure, ensures it is populated correctly, and then updates the value of *pHandle with a pointer to the newly created handle. The component should return from this call within 20 msec.
+`OMX_GetHandle`方法会根据指定的组件名定位组件，加载组件进入内存并验证其有效性。如果组件有效，`OMX_GetHandle`会调用组件方法来填充组件句柄并设置回调。`OMX_GetHandle`方法会分配真正的`OMX_HANDLETYPE`结构体，保证正确的填写，然后用新创建的句柄指针更新*pHandle的值。组件应该在20毫秒内返回这个调用。
 
-Each time the OMX_GetHandle function returns successfully, a new component instance is created. The IL client shall configure the newly created component, which is in the OMX_StateLoaded state, before the component can be used.
+每次OMX_GetHandle方法成功返回，会创建一个新的组件实例。在组件可以被使用之前，IL客户端应该配置新创建的处于OMX_StateLoaded状态的组件。
 
-Since components are requested by name, a naming convention is defined. OpenMAX component names are NULL terminated strings with the following format:
+由于组件是通过名称来请求，这里定义了命名规则。OpenMAX组件的名字是null结尾的字符串，格式如下：
 
 “OMX.<vendor_name>.<vendor_specified_convention>”.
 
-No standardization among component names is dictated across different vendors.
+不同厂商之间的组件名称没有标准。
 
 `OMX_GetHandle`定义如下：
 
 ```C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_GetHandle(
-OMX_OUT OMX_HANDLETYPE * pHandle,
-OMX_IN OMX_STRING cComponentName,
-OMX_IN OMX_PTR pAppData,
-OMX_IN OMX_CALLBACKTYPE * pCallBacks
+    OMX_OUT OMX_HANDLETYPE * pHandle,
+    OMX_IN OMX_STRING cComponentName,
+    OMX_IN OMX_PTR pAppData,
+    OMX_IN OMX_CALLBACKTYPE * pCallBacks
 )
 ```
 
@@ -1536,16 +1536,16 @@ OMX_IN OMX_CALLBACKTYPE * pCallBacks
 
 | 参数 |  说明 |
 | ------ | ------ |
-| pHandle [out] | A pointer to OMX_HANDLETYPE to be filled in by this method. |
-| cComponentName [in] | A pointer to a null-terminated string with the component name. Component names are strings limited to less than 128 bytes in length plus the trailing null for a maximum length of 128 bytes. An example of a valid component name is "OMX.<vendor_name>.AUDIO.DSP.MIXER\0". The name shall start with "OMX." concatenated to a vendor-specified string. |
-| pAppData [in] | A pointer to an IL client-defined value that will be returned during callbacks so that the IL client can identify the source of the callback. |
-| pCallBacks [in] |A pointer to an OMX_CALLBACKTYPE structure containing the  callbacks that the component will use for this IL client.|
+| *pHandle* [输出] | 指向OMX_HANDLETYPE的指针，由此方法填充 |
+| *cComponentName* [输入] | 指向以null结果的组件名称的字符串指针。组件名字符串大小限制为127字节加上结尾的null最大长度为128字节。例如一个合法的组件名为"OMX.<vendor_name>.AUDIO.DSP.MIXER\0"。名字应该以"OMX."开始加上厂商指定的字符串|
+| *pAppData* [输入] | 指向IL客户端定义的值的指针，在回调用返回。这样IL客户端可以知道回调的来源。 |
+| *pCallBacks* [输入] | 指向OMX_CALLBACKTYPE结构体的指针，包含了组件使用的给此IL客户端的回调函数|
 
 #####3.2.3.4.1  先决条件
-The OpenMAX core shall be initialized.
+OpenxMax core应该被初始化。
 
-#####3.2.3.4.2  Results/Outputs for This Method
-If successful, the function returns a valid component handle to the IL client.
+#####3.2.3.4.2  方法的结果/输出
+如果成功，此方法返回一个有效的组件句柄给IL客户端。
 
 #####3.2.3.4.3  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1573,11 +1573,11 @@ OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_FreeHandle(
   OMX_IN OMX_HANDLETYPE hComponent )
 ```
 
-The single parameter is as follows.
+唯一的参数定义如下。
 
 | 参数 | 说明 |
 | ------ | ------ |
-| hComponent [in] | The handle of the component to freed. |
+| *hComponent* [输入] | 待释放的组件句柄 |
 
 #####3.2.3.5.1  先决条件
 The component should be in the OMX_StateLoaded or the OMX_StateInvalid state when this method is called.
