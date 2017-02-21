@@ -1333,8 +1333,8 @@ pBuffer)
 
 | 参数 | 说明 |
 | ------- | ------- |
-| *hComponent* [in] | 执行调用的组件句柄|
-| *pBuffer* [in] | A pointer to an OMX_BUFFERHEADERTYPE structure that is used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer |
+| *hComponent* [输入] | 执行调用的组件句柄|
+| *pBuffer* [输入] | A pointer to an OMX_BUFFERHEADERTYPE structure that is used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer |
 
 3.3.17小节描述了每个组件实现的相应方法。
 
@@ -1348,21 +1348,20 @@ The component must be in the appropriate state as shown in Table 3-10.
 ```C
 /* deliver full buffer */
 if (pPort->hTunnelComponent)
-OMX_EmptyThisBuffer(pPort->hTunnelComponent, pBuffer);
+  OMX_EmptyThisBuffer(pPort->hTunnelComponent, pBuffer);
 else
-pCallbacks->FillBufferDone(hComp, pBuffer,
-pPort->pCallbackAppData);
+  pCallbacks->FillBufferDone(hComp, pBuffer,
+      pPort->pCallbackAppData);
 ```
 
 ####3.2.2.18  OMX_FillThisBuffer
-The OMX_FillThisBuffer macro will send an empty buffer to an output port of a component. The OMX_FillThisBuffer macro is invoked to pass buffers containing no data when the component is in or making a transition to the OMX_StateExecuting
-state or is in the OMX_StatePaused state.
+宏`OMX_FillThisBuffer`会给组件的输出端口发送一个空buffer。当组件正处于`OMX_StatePaused`或`OMX_StateExecuting`状态，或者正在向`OMX_StateExecuting`状态转移时调用宏`OMX_FillThisBuffer`用来传递一块不含数据的buffer。
 
-When a port is non-tunneled, buffers sent to OMX_FillThisBuffer return to the IL client with the FillBufferDone callback once they have been filled.
+当端口没有管道时，发送给`OMX_FillThisBuffer`的buffer一旦被填充通过回调`FillBufferDone`返回给IL客户端。
 
-When a port is tunneled, buffers sent to OMX_FillThisBuffer are sent to the tunneled port once they are filled so long as the component is in the OMX_StateExecuting state. Buffers are returned to the output port that supplied them using OMX_FillThisBuffer whenever the tunneled port is flushed or disabled. Buffers are also returned to the output port that supplied them when the component that calls OMX_FillThisBuffer is transitioning from the OMX_StateExecuting state or OMX_StatePaused state to the OMX_StateIdle state.
+当端口有管道时，只要组件处于`OMX_StateExecuting`状态，发送给`OMX_FillThisBuffer`的buffer一旦被填充会发送给管道端口。buffer使用`OMX_FillThisBuffer`返回给提供buffer的输出端口，不管管道是否被清空或者禁用。buffer也会返回给提供的输出端口，当调用`OMX_FillThisBuffer`的组件正从`OMX_StateExecuting`或`OMX_StatePaused`状态转移到`OMX_StateIdle`状态。
 
-This call is a non-blocking call since the component will queue the buffer and return immediately. The buffer will be filled later at the proper time. If the parameter nOutputPortIndex in the buffer header does not specify a valid output port, the component returns OMX_ErrorBadPortIndex. The component should return from this call within five msec.
+这个调用为一个非阻塞调用，因为组件将buffer放入队列并立马返回。buffer会在后面合适的时间被填充。如果buffer头中的参数`nOutputPortIndex`没有指定一个特定的输出端口，组件会返回`OMX_ErrorBadPortIndex`。组件应该在5毫秒以内返回这个调用。
 
 宏`OMX_FillThisBuffer`定义如下：
 
@@ -1379,13 +1378,13 @@ This call is a non-blocking call since the component will queue the buffer and r
 
 | 参数 | 说明 |
 | ------- | ------- |
-| hComponent [in] | 执行调用的组件句柄|
-| pBuffer [in] | A pointer to an OMX_BUFFERHEADERTYPE structure used to provide or receive the pointer to the buffer header. The buffer header shall specify the index of the input port that receives the buffer. |
+| *hComponent* [输入] | 执行调用的组件句柄|
+| *pBuffer* [输入] | 指向OMX_BUFFERHEADERTYPE结构体的指针，用于提供或接受buffer头的指针。buffer头应该指定接受buffer的输入端口的索引。 |
 
 3.3.18小节描述了每个组件实现的相应方法。
 
 #####3.2.2.18.1  先决条件
-The component must be in the appropriate state as shown in Table 3-10.
+组件必须处于如表3-10所示的合适状态。
 
 #####3.2.2.18.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1411,9 +1410,12 @@ This section describes the functions in the OpenMAX IL API.
 The OMX_Init method initializes the OpenMAX core. OMX_Init shall be the first call made into OpenMAX and should be executed only one time without an intervening OMX_Deinit call. If OMX_Init is called twice, OMX_ErrorNone is returned but the
 init request is ignored. The core should return from this call within 20 msec.
 
-The usage of OMX_Init() is as follows.
 
+OMX_Init()用法如下：
+
+```C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_Init()
+```
 
 #####3.2.3.1.1  先决条件
 This method has no prerequisites.
