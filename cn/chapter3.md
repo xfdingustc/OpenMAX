@@ -1470,15 +1470,15 @@ OMX_Deinit();
 return OMX_FALSE;
 ```
 ####3.2.3.3  OMX_ComponentNameEnum
-The OMX_ComponentNameEnum method will enumerate through all the names of recognized components in the system to detect all the components in the system run-time. There is no strict ordering to the enumeration of component names, although each name shall be enumerated only once. If the OpenMAX core supports run-time installation of new components, it is required to detect newly installed components only when the first call to enumerate component names occurs (i.e., when the value of nIndex is 0x0).
+`OMX_ComponentNameEnum`方法会枚举所有组件中识别的组件来检测运行时系统中的所有组件。组件名称的列举没有严格顺序，但每个名字只能被列举一次。如果OpenMAX core支持运行期间加入新组件，当第一次列举组件名时，它仅需要检测新安装的组件（例如，当nIndex的值为0x0）。
 
 方法`OMX_ComponentNameEnum`定义如下：
 
 ```C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_ComponentNameEnum(
-OMX_OUT OMX_STRING cComponentName,
-OMX_IN OMX_U32 nNameLength,
-OMX_IN OMX_U32 nIndex
+    OMX_OUT OMX_STRING cComponentName,
+    OMX_IN OMX_U32 nNameLength,
+    OMX_IN OMX_U32 nIndex
 )
 ```
 
@@ -1486,15 +1486,15 @@ OMX_IN OMX_U32 nIndex
 
 | 参数 | 说明 |
 | ------- | ------- |
-| *cComponentName* [out] | A pointer to a null-terminated string with the component name. Component names are strings limited to less than 127 bytes in length plus the trailing null for a maximum length of 128 bytes. An example of a valid component name is "OMX.<vendor_name>.AUDIO.DSP.MIXER\0". The name shall start with "OMX." concatenated to a vendor-specified string. |
-| *nNameLength* [in] | The number of characters in the cComponentName string. Since all component name strings are restricted to less than 128 characters, not including the trailing null, the caller should provide an input string of at least 128 characters.|
-| *nIndex* [in] | A number containing the enumeration index for the component. Multiple calls to OMX_ComponentNameEnum with increasing values of nIndex will enumerate through the component names in the system until OMX_ErrorNoMore returns. The value of nIndex is 0 to N-1, where N is the number of installed components in the system. |
+| *cComponentName* [输出] | 指向以0结尾的组件名字符串的指针。组件名字符串大小限制为127字节加上结尾的null最大长度为128字节。例如一个合法的组件名为"OMX.<vendor_name>.AUDIO.DSP.MIXER\0"。名字应该以"OMX."开始加上厂商指定的字符串|
+| *nNameLength* [输入] | cComponentName字符串中字符大小。由于组件名不得超过128个字符（不包括结尾的null），调用者应该提供一个至少128字符的输入字符串|
+| *nIndex* [输入] | 包含组件列表索引的数值。增加nIndex的值来多次调用`OMX_ComponentNameEnum`来列举系统中所有的组件名直到返回`OMX_ErrorNoMore`。如果系统中有N个组件安装，则nIndex的取值范围是0到N-1。|
 
 #####3.2.3.3.1  先决条件
-OMX_ComponentNameEnum can be called after the OMX_Init function.
+`OMX_ComponentNameEnum`可以在`OMX_Init`函数后调用。
 
-#####3.2.3.3.2  Results/Outputs for This Method
-If OMX_ComponentNameEnum successfully executes, the return code will be OMX_ErrorNone. When the value of nIndex exceeds the number of components in the system minus 1, OMX_ErrorNoMore will be returned. Otherwise, the appropriate OpenMAX error will be returned.
+#####3.2.3.3.2  方法的结果/输出
+如果OMX_ComponentNameEnum成功执行，返回值为OMX_ErrorNone。如果nIndex值超过了系统中组件个数-1，则返回OMX_ErrorNoMore。否则应返回合适的OpenMAX错误。
 
 #####3.2.3.3.3  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1504,15 +1504,14 @@ If OMX_ComponentNameEnum successfully executes, the return code will be OMX_Erro
 eError = OMX_ErrorNone;
 for (i=0; OMX_ErrorNoMore != eError; i++)
 {
-eError = OMX_ComponentNameEnum(szCompName, 256, i);
-if (OMX_ErrorNone == eError)
-printf("Component %i: %s\n", szCompName);
+  eError = OMX_ComponentNameEnum(szCompName, 256, i);
+  if (OMX_ErrorNone == eError)
+    printf("Component %i: %s\n", szCompName);
 }
 ```
 
 ####3.2.3.4  OMX_GetHandle
-The OMX_GetHandle method will locate the component specified by the component name given, load that component into memory, and validate it. If the component is valid, OMX_GetHandle will invoke the component's methods to fill the component handle
-and set up the callbacks. The OMX_GetHandle method will allocate the actual OMX_HANDLETYPE structure, ensures it is populated correctly, and then updates the value of *pHandle with a pointer to the newly created handle. The component should return from this call within 20 msec.
+The OMX_GetHandle method will locate the component specified by the component name given, load that component into memory, and validate it. If the component is valid, OMX_GetHandle will invoke the component's methods to fill the component handle and set up the callbacks. The OMX_GetHandle method will allocate the actual OMX_HANDLETYPE structure, ensures it is populated correctly, and then updates the value of *pHandle with a pointer to the newly created handle. The component should return from this call within 20 msec.
 
 Each time the OMX_GetHandle function returns successfully, a new component instance is created. The IL client shall configure the newly created component, which is in the OMX_StateLoaded state, before the component can be used.
 
