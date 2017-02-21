@@ -1564,7 +1564,7 @@ printf("Created %i instantiations.\n",i);
 ```
 
 ####3.2.3.5  OMX_FreeHandle
-The OMX_FreeHandle method will free a handle allocated by the OMX_GetHandle method. The component should return from this call within 20 msec. The IL client should call OMX_FreeHandle only when the component is in the OMX_StateLoaded or the OMX_StateInvalid state; calling OMX_FreeHandle from any other state may result in the component taking longer than the recommended 20 msec execution time, and is provided only as a failure recovery mechanism.
+`OMX_FreeHandle`方法会释放一个由`OMX_GetHandle`方法分配的句柄。组件应该在20毫秒内返回此方法。 IL客户端只能当组件是`OMX_StateLoaded`或`OMX_StateInvalid`状态是调用`OMX_FreeHandle`。在其他状态调用`OMX_FreeHandle`可能导致组件花费超过推荐的20毫秒，并且用来作为一个错误恢复机制。
 
 `OMX_FreeHandle`定义如下：
 
@@ -1580,10 +1580,10 @@ OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_FreeHandle(
 | *hComponent* [输入] | 待释放的组件句柄 |
 
 #####3.2.3.5.1  先决条件
-The component should be in the OMX_StateLoaded or the OMX_StateInvalid state when this method is called.
+调用此方法的时候，组件应该处于`OMX_StateLoade`d或`OMX_StateInvalid`状态。
 
-#####3.2.3.5.2  Results/Outputs for This Method
-All resources associated with the components are freed.
+#####3.2.3.5.2  方法的结果/输出
+组件相关的资源被释放。
 
 #####3.2.3.5.3  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1594,7 +1594,7 @@ All resources associated with the components are freed.
 OMX_SendCommand(hComp, OMX_CommandStateSet, OMX_StateIdle, 0);
 OMX_SendCommand(hComp, OMX_CommandStateSet, OMX_StateLoaded, 0);
 do {
-OMX_GetState(hComp, &eState);
+  OMX_GetState(hComp, &eState);
 } while (OMX_StateLoaded != eState);
 OMX_FreeHandle(hComp);
 ```
@@ -1635,7 +1635,7 @@ OMX_IN OMX_U32 nPortInput
 #####3.2.3.6.1  先决条件
 Each component that is being tunneled shall be in the OMX_StateLoaded state, or its port shall be disabled.
 
-#####3.2.3.6.2  Results/Outputs for This Method
+#####3.2.3.6.2  方法的结果/输出
 If the method returns successfully when both an output and input component are supplied, tunneled or proprietary communication has been set up between the specified output and input ports. When only an output or an input component is supplied or if an error occurs during processing, the ports are set up for non-tunneled communication.
 
 #####3.2.3.6.3  调用顺序实例代码
