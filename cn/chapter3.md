@@ -1696,7 +1696,7 @@ OMX_ERRORTYPE (*GetParameter)(
     OMX_INOUT OMX_PTR ComponentParameterStructure);
 ```
 ###3.3.8 SetParameter
-IL客户端或者一个管道组件通过`OMX_SetParameter`宏调用组件的`SetParameter`方法。见小节3.2.2.8中`OMX_SetParameter`的定义，描述了其语义。
+IL客户端或者一个管道组件通过`OMX_SetParameter`宏调用组件的`SetParameter`方法。见小节3.2.2.9中`OMX_SetParameter`的定义，描述了其语义。
 
 `SetParameter`定义如下：
 ```C
@@ -1707,49 +1707,49 @@ OMX_ERRORTYPE (*SetParameter)(
 ```
 
 ###3.3.9 GetConfig
-The IL client calls the GetConfig component method via the OMX_GetConfig core macro. See the definition of OMX_GetConfig in section 3.2.2.10 for a description of its semantics.
+IL客户端通过`OMX_GetConfig`宏来调用组件的`GetConfig`方法。见小节3.2.2.10中`OMX_GetConfig`的定义，描述了其语义。
 `GetConfig`定义如下：
 
 ```C
 OMX_ERRORTYPE (*GetConfig)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_INDEXTYPE nIndex,
-OMX_INOUT OMX_PTR pComponentConfigStructure);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_INDEXTYPE nIndex,
+    OMX_INOUT OMX_PTR pComponentConfigStructure);
 ```
 
 ###3.3.10  SetConfig
-The IL client calls the SetConfig component method via the OMX_SetConfig core macro. See the definition of OMX_SetConfig in section 3.2.2.11 for a description of its semantics.
+IL客户端通过`OMX_SetConfig`宏来调用组件的`SetConfig`方法。见小节3.2.2.11中`OMX_SetConfig`的定义，描述了其语义。
 
 `SetConfig`定义如下：
 
 ```C
 OMX_ERRORTYPE (*SetConfig)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_INDEXTYPE nIndex,
-OMX_IN OMX_PTR pComponentConfigStructure);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_INDEXTYPE nIndex,
+    OMX_IN OMX_PTR pComponentConfigStructure);
 ```
 ###3.3.11  GetExtensionIndex
-The IL client calls the GetExtenstionIndex component method via the OMX_GetExtensionIndex core macro. See the definition of
-OMX_GetExtensionIndex in section 3.2.2.12 for a description of its semantics.
+IL客户端通过`OMX_GetExtensionIndex`宏来调用组件的`GetExtenstionIndex`方法。见小节3.2.2.12中`OMX_GetExtensionIndex`的定义，描述了其语义。
 
 `GetExtensionIndex`定义如下：
 
 ```C
 OMX_ERRORTYPE (*GetExtensionIndex)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_STRING cParameterName,
-OMX_OUT OMX_INDEXTYPE* pIndexType);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_STRING cParameterName,
+    OMX_OUT OMX_INDEXTYPE* pIndexType);
 ```
 
 ###3.3.12  GetState
-The IL client calls the GetState component method via the OMX_GetState core macro. See the definition of OMX_GetState in section 3.2.2.13 for a description of its semantics.
+IL客户端通过`OMX_GetState`宏来调用组件的`GetState`方法。见小节3.2.2.13中`OMX_GetState`的定义，描述了其语义。
 
 `GetState`定义如下：
 ```C
 OMX_ERRORTYPE (*GetState)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_OUT OMX_STATETYPE* pState);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_OUT OMX_STATETYPE* pState);
 ```
+
 ###3.3.13  ComponentTunnelRequest
 The OMX_ComponentTunnelRequest method will interact with another OpenMAX component to determine if tunneling is possible and to set up the tunneling if it is possible. The return codes for this method can determine if tunneling is not possible or if proprietary communication or tunneling is used.
 
