@@ -1645,23 +1645,23 @@ OMX_SendCommand(hCompA, OMX_CommandStateSet, OMX_StateIdle, 0);
 OMX_SendCommand(hCompB, OMX_CommandStateSet, OMX_StateIdle, 0);
 ```
 
-##3.3  OpenMAX Component Methods and Structures
-OpenMAX components are defined in the OMX_Component.h header file. The structure OMX_COMPONENTTYPE holds the data fields and function entry points for a component.
+##3.3  OpenMAX组件方法和结构
+OpenMAX组件定义在`OMX_Component.h`头文件中。结构体OMX_COMPONENTTYPE持有了组件的数据字段和函数入口。
 
 ###3.3.1 nSize
-nSize is the size of the structure in bytes. This value shall be specified when this structure is used as either an input to or an output from a function.
+`nSize` 为结构体大小的字节数。这个值不论结构体用作函数输入或是输出时都应该被指定。
 
 ###3.3.2 nVersion
-nVersion is the version of the OpenMAX specification that the structure is built against. The creator of this structure is responsible for initializing this value. Every user of this structure should verify that it knows how to use the exact version of this structure.
+`nVersion`为创建结构体的OpenMAX协议的版本好。结构体的创建者负责初始化这个值。每一个结构体的使用者应该验证，这样它可以知道怎么使用这个版本的结构体。
 
 ###3.3.3 pComponentPrivate
-pComponentPrivate is a pointer to the component private data area. The component allocates and initializes this member when the component is first loaded. The application should not access this data area.
+`pComponentPrivate`是一个组件私有数据空间的指针。组件在第一次加载时分配并初始化这个成员。应用不应该访问这个数据空间。
 
 ###3.3.4 pApplicationPrivate
-pApplicationPrivate is a pointer to the application private data area. The component initializes this field during the call to OMX_SetCallbacks, as this field is provided back to the IL client when the component issues callbacks..
+`pApplicationPrivate`是一个指向应用私有数据空间的指针。组件在调用`OMX_SetCallbacks`时初始化这个字段，这个字段当组件回调时返回提供给IL客户端。
 
 ###3.3.5 GetComponentVersion
-The IL client calls the GetComponentVersion component method via the OMX_GetComponentVersion core macro. See the definition of OMX_GetComponentVersion in section 3.2.2.1 for a description of its semantics.
+IL客户端通过宏`OMX_GetComponentVersion`调用组件的`GetComponentVersion`。见`OMX_GetComponentVersion`在3.2.2.1小节的定义，描述了其语义。
 
 `GetComponentVersion`定义如下：
 
@@ -1674,7 +1674,7 @@ OMX_ERRORTYPE (*GetComponentVersion)(
     OMX_OUT OMX_UUIDTYPE* pComponentUUID);
 ```
 ###3.3.6 SendCommand
-The IL client calls the SendCommand component method via the OMX_SendCommand core macro. See the definition of OMX_SendCommand in section 3.2.2.2 for a description of its semantics.
+IL客户端通过`OMX_SendCommand`宏来调用组件的SendCommand方法。见小节3.2.2.2中`OMX_SendCommand`的定义，描述了其语义。
 
 `SendCommand`定义如下：
 ```C
@@ -1686,24 +1686,24 @@ OMX_ERRORTYPE (*SendCommand)(
 ```
 
 ###3.3.7 GetParameter
-The IL client or a tunneled component calls the GetParameter component method via the OMX_GetParameter core macro. See the definition of OMX_GetParameter in section 3.2.2.8 for a description of its semantics.
+IL客户端或者一个管道组件通过`OMX_GetParameter`宏调用组件的`GetParameter`方法。见小节3.2.2.8中`OMX_GetParameter`的定义，描述了其语义。
 
-GetParameter is defined as follows.
+`GetParameter`定义如下。
 ```C
 OMX_ERRORTYPE (*GetParameter)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_INDEXTYPE nParamIndex,
-OMX_INOUT OMX_PTR ComponentParameterStructure);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_INDEXTYPE nParamIndex,
+    OMX_INOUT OMX_PTR ComponentParameterStructure);
 ```
 ###3.3.8 SetParameter
-The IL client or a tunneled component calls the SetParameter component method via the OMX_SetParameter core macro. See the definition of OMX_SetParameter in section 3.2.2.9 for a description of its semantics.
+IL客户端或者一个管道组件通过`OMX_SetParameter`宏调用组件的`SetParameter`方法。见小节3.2.2.8中`OMX_SetParameter`的定义，描述了其语义。
 
 `SetParameter`定义如下：
 ```C
 OMX_ERRORTYPE (*SetParameter)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_INDEXTYPE nIndex,
-OMX_IN OMX_PTR ComponentParameterStructure);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_INDEXTYPE nIndex,
+    OMX_IN OMX_PTR ComponentParameterStructure);
 ```
 
 ###3.3.9 GetConfig
