@@ -1600,43 +1600,39 @@ OMX_FreeHandle(hComp);
 ```
 
 ####3.2.3.6  OMX_SetupTunnel
-The OMX_SetupTunnel method sets up tunneled communication between an output port and an input port. This method is an actual method and not a defined macro. The OMX_SetupTunnel method will make calls to the component’s
-ComponentTunnelRequest() method to set up the tunnel.
+`OMX_SetupTunnel`方法设置输入和输出端口之间的管道通信。此方法是一个实际的方法而不是一个宏。`OMX_SetupTunnel`方法会调用组件的`ComponentTunnelRequest()`方法来建立管道。
 
-When setting up non-tunneled communication for an input port, the value of the hOutput parameter shall be 0x0. When setting up non-tunneled communication for an output port, the value of hInput shall be 0x0.
+在建立输入端口的非管道通信时， 参数`hOutput`的值应该为0x0.当建立输出端口的非管道通信时，`hInput`的值应该为0x0。
 
-When setting up tunneled communication between an output port and an input port, the method first issues a call to ComponentTunnelRequest() on the component with the output port. If the call is successful, a second call to ComponentTunnelRequest() on the component with the input port is made. Should either call to ComponentTunnelRequest() fail, the method will set up both the output and input ports for non-tunneled communication.
+在设置输出和输入端口之间的管道通信时， 此方法首先调用输出端口的组件上的ComponentTunnelRequest()。如果调用成功，会接着调用输入端口的组件上的ComponentTunnelRequest()。如果这两次调用失败一次，则此方法会将输入和输入端口都设置成非管道通信。
 
-The components may negotiate proprietary communication in place of tunneled communication so long as both the output and input ports can support proprietary communication. An IL client cannot disambiguate between tunneled and proprietary
-communication.
+组件可能用专用通信来代替管道通信只要输入输出端口都支持专有通信。IL客户端无法区分管道通信和专有通信。
 
-The component should return from this call within 20 msec.
+组件应该在20毫秒以内返回此调用。
 
-This method is unsupported by base profile components, which shall return OMX_ErrorNotImplemented .
-For a detailed description of the process to set up a data tunnel between two components, see section 3.4.1.2.
-OMX_SetupTunnel is defined as follows.
+Base profile的组件不支持这个方法，此时应该返回`OMX_ErrorNotImplemented`。具体关于设置两个组件之间的数据管道描述可见3.4.1.2小节。`OMX_SetupTunnel`定义如下。
 
 ```C
 OMX_API OMX_ERRORTYPE OMX_APIENTRY OMX_SetupTunnel(
-OMX_IN OMX_HANDLETYPE hOutput,
-OMX_IN OMX_U32 nPortOutput,
-OMX_IN OMX_HANDLETYPE hInput,
-OMX_IN OMX_U32 nPortInput
+    OMX_IN OMX_HANDLETYPE hOutput,
+    OMX_IN OMX_U32 nPortOutput,
+    OMX_IN OMX_HANDLETYPE hInput,
+    OMX_IN OMX_U32 nPortInput
 )
 ```
 参数定义如下：
 | 参数 | 说明 |
 | ------ | ------ |
-| hOutput [in] | The handle of the component containing the output port used in the tunnel, where the output port is identified by the nPortOutput parameter. By definition, an output port has the direction OMX_DirOutput. If the value of this parameter is 0x0, the hPortInput port on the hInput component will be set up for non-tunneled communication.|
-| nPortOutput [in] | Indicates the output port of the component specified by hOutput that is to be used for tunneled or proprietary communication.|
-| hInput [in] |The handle of the component containing the input port used in the tunnel, where the input port is identified by the nPortInput parameter. By definition, an input port has the direction OMX_DirInput. If the value of this parameter is 0x0, the hPortOutput port on the hOutput component will be set up for non-tunneled communication. |
-| nPortInput [in] | Indicates the input port of the component specified by hInput that is to be used for tunneled or proprietary communication. |
+| *hOutput* [输出] | 包含管道中输出端口的组件的句柄。输出端口在参数`nPortOutput`中定义。根据定义，输出端口的方向是`OMX_DirOutput`。如果这个参数是0x0，那么组件`hInput`上端口`hPortInput`会被设置为非管道通信。|
+| *nPortOutput* [输入] | 表示组件`hOutput`上用于管道或专有通信的输出端口。|
+| *hInput* [输入] |包含管道中输入端口的组件的句柄。输入端口在参数`nPortInput`中定义。根据定义，输入端口的方向是`OMX_DirInput`。如果这个参数是0x0，那么组件`hOutput`上端口`hPortOutput`会被设置为非管道通信。|
+| *nPortInput* [输入] | 表示组件`hInput`上用于管道或专有通信的输入端口。 |
 
 #####3.2.3.6.1  先决条件
-Each component that is being tunneled shall be in the OMX_StateLoaded state, or its port shall be disabled.
+每一个建立管道的组件应该处于`OMX_StateLoaded`装填，或者端口被禁用。
 
 #####3.2.3.6.2  方法的结果/输出
-If the method returns successfully when both an output and input component are supplied, tunneled or proprietary communication has been set up between the specified output and input ports. When only an output or an input component is supplied or if an error occurs during processing, the ports are set up for non-tunneled communication.
+如果此方法当输出和输入组件都已提供，管道或专有通信已在指定的输出和输入端口之间建立时返回成功。当只有一个输入或输出组件提供或者在处理时发生了错误，端口会被设置成非管道通信。
 
 #####3.2.3.6.3  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1671,11 +1667,11 @@ The IL client calls the GetComponentVersion component method via the OMX_GetComp
 
 ```C
 OMX_ERRORTYPE (*GetComponentVersion)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_OUT OMX_STRING pComponentName,
-OMX_OUT OMX_VERSIONTYPE* pComponentVersion,
-OMX_OUT OMX_VERSIONTYPE* pSpecVersion,
-OMX_OUT OMX_UUIDTYPE* pComponentUUID);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_OUT OMX_STRING pComponentName,
+    OMX_OUT OMX_VERSIONTYPE* pComponentVersion,
+    OMX_OUT OMX_VERSIONTYPE* pSpecVersion,
+    OMX_OUT OMX_UUIDTYPE* pComponentUUID);
 ```
 ###3.3.6 SendCommand
 The IL client calls the SendCommand component method via the OMX_SendCommand core macro. See the definition of OMX_SendCommand in section 3.2.2.2 for a description of its semantics.
@@ -1683,10 +1679,10 @@ The IL client calls the SendCommand component method via the OMX_SendCommand cor
 `SendCommand`定义如下：
 ```C
 OMX_ERRORTYPE (*SendCommand)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_COMMANDTYPE Cmd,
-OMX_IN OMX_U32 nParam,
-OMX_IN OMX_PTR pCmdData);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_COMMANDTYPE Cmd,
+    OMX_IN OMX_U32 nParam,
+    OMX_IN OMX_PTR pCmdData);
 ```
 
 ###3.3.7 GetParameter
