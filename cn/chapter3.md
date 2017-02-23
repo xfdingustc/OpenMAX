@@ -1751,46 +1751,46 @@ OMX_ERRORTYPE (*GetState)(
 ```
 
 ###3.3.13  ComponentTunnelRequest
-The OMX_ComponentTunnelRequest method will interact with another OpenMAX component to determine if tunneling is possible and to set up the tunneling if it is possible. The return codes for this method can determine if tunneling is not possible or if proprietary communication or tunneling is used.
+`OMX_ComponentTunnelRequest`方法会和另一个OpenMAX组件交互来确定管道或简历管道是否可行。此方法的返回值可以决定管道是否可行或者专有通信或管道已经使用。
 
-The interop profile-conformant component shall support tunneling to a component with compatible parameters. The component may also support proprietary communication. If proprietary communication is supported, the negotiation of proprietary communication is performed in a vendor-specific way. The only requirement is that the proper result be returned. The details of the proprietary communication setup are left to the vendor’s component implementer.
+interop profile的组件应该支持通过兼容的参数和组件建立管道。组件也可以支持专有通信。如果支持管有通信，会使用厂商特定的专有通信协议。唯一的要求是返回正确的记过。专有通信设置细节留给厂商来实现。
 
 
-The ComponentTunnelRequest method is invoked on both components that support the tunneling communication. When this method is invoked on the component that provides the output port, the component will do the following:
+`ComponentTunnelRequest`方法在支持管道通信的两端的组件上调用。当这个放在在提供输出端口的组件上调用时。组件应该做下面的事：
 
-1. Indicate its supplier preference in pTunnelSetup.
-2. Set the OMX_PORTTUNNELFLAG_READONLY flag to indicate that buffers from this output port are read-only and that the buffers cannot be shared through components or modified.
+1. 在pTunnelSetup中表明提供者的参数。
+2. 设置`OMX_PORTTUNNELFLAG_READONLY`标志来表明从这个输出端口出来的buffer是只读的而且buffer不可以被组件共享或修改。
 
-When this method is invoked on the component that provides the input port, the component will do the following:
+当这个方法在提供输入端口的组件上调用，组件应该做下面的事：
 
-1. Check the data compatibility between the ports using one or more GetParameter calls.
-2. Review the buffer supplier preferences of the output port and use OMX_SetParameter with index OMX_IndexParamCompBufferSupplier to inform the output port of which port supplies the buffers.
+1. 使用若干次GetParameter调用检查端口间数据的兼容性。
+2. 检查输出端口的buffer提供参数，并使用OMX_SetParameter和OMX_IndexParamCompBufferSupplier索引来通知输出端口哪个端口提供这些buffer。
 
-If this method is invoked with a NULL parameter for the pTunnelComp parameter, the port should be set up for non-tunneled communication with the IL client.
+如果这个方法使用NULL作为pTunnelComp参数调用，端口应该设置与IL客户端的非管道通信。
 
-The component should return from this call within five msec.
+组件应该在5毫秒内返回这个调用。
 
 `ComponentTunnelRequest`定义如下：
 ``` C
 OMX_ERRORTYPE (*ComponentTunnelRequest)(
-OMX_IN OMX_HANDLETYPE hComp,
-OMX_IN OMX_U32 nPort,
-OMX_IN OMX_HANDLETYPE hTunneledComp,
-OMX_IN OMX_U32 nTunneledPort,
-OMX_INOUT OMX_TUNNELSETUPTYPE* pTunnelSetup);
+    OMX_IN OMX_HANDLETYPE hComp,
+    OMX_IN OMX_U32 nPort,
+    OMX_IN OMX_HANDLETYPE hTunneledComp,
+    OMX_IN OMX_U32 nTunneledPort,
+    OMX_INOUT OMX_TUNNELSETUPTYPE* pTunnelSetup);
 ```
 参数定义如下：
 
 | 参数 | 说明 |
 | ------- | ------- |
-| hComp [in] | The handle of the target component of the RequestTunnel call and one of the components that will participate in the tunnel. |
-| nPort [in] | The index of the port belonging to hComp that will participate in the tunnel. |
-| hTunneledComp [in] | The handle of the other component that participates in the tunnel. When this parameter is NULL, the port specified in nPort should be configured for non-tunneled communication with the IL client. |
-| nTunneledPort [in] | The index of the port belonging to hTunneledComp that participates in the tunnel.|
-| pTunnelSetup [in,out] | The structure that contains data for the tunneling negotiation between components. The supplier field can be filled by both components; the callbacks field is filled by the output port component. The read-only flag can be applied by both components.|
+| *hComp* [输入] | 调用RequestTunnel目标和参与管道的一个组件句柄。
+| *nPort* [输入] | 属于hComp，参与管道的端口索引|
+| *hTunneledComp* [输入] | 管道中另一个组件的句柄。当这个参数为NULL，在nPort中指定端口应该设置为和IL客户端进行非管道通信。|
+| *nTunneledPort* [输入] | hTunneledComp，参与管道的端口索引|
+| *pTunnelSetup* [输入,输出] | 这个结构包含了组件间管道通信的数据。提供者字段可以被两个组件填充，回调字段被输出端口的组件填充。只读标识可以被两个组件设置。|
 
 ####3.3.13.1  先决条件
-The component shall be in the OMX_StateLoaded state.
+组件应该处于OMX_StateLoaded状态。
 
 ####3.3.13.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1801,9 +1801,9 @@ The component shall be in the OMX_StateLoaded state.
 pCompOut = (OMX_COMPONENTTYPE *)hOutput;
 pCompIn = (OMX_COMPONENTTYPE *)hInput;
 pCompOut->ComponentTunnelRequest(hOutput, nPortOutput, hInput,
-nPortInput, &oTunnelSetup);
+    nPortInput, &oTunnelSetup);
 pCompIn->ComponentTunnelRequest(hInput, nPortInput, hOutput,
-nPortOutput, &oTunnelSetup);
+    nPortOutput, &oTunnelSetup);
 ```
 
 ###3.3.14  UseBuffer
@@ -1813,12 +1813,12 @@ The IL client or a tunneled component calls the UseBuffer component method via t
 
 ```C
 OMX_ERRORTYPE (*UseBuffer)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_INOUT OMX_BUFFERHEADERTYPE** ppBufferHdr,
-OMX_IN OMX_U32 nPortIndex,
-OMX_IN OMX_PTR pAppPrivate,
-OMX_IN OMX_U32 nSizeBytes,
-OMX_IN OMX_U8* pBuffer);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_INOUT OMX_BUFFERHEADERTYPE** ppBufferHdr,
+    OMX_IN OMX_U32 nPortIndex,
+    OMX_IN OMX_PTR pAppPrivate,
+    OMX_IN OMX_U32 nSizeBytes,
+    OMX_IN OMX_U8* pBuffer);
 ```
 
 ###3.3.15  AllocateBuffer
@@ -1827,11 +1827,11 @@ The IL client calls the AllocateBuffer component method via the OMX_AllocateBuff
 `AllocateBuffer`定义如下：
 ```C
 OMX_ERRORTYPE (*AllocateBuffer)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_INOUT OMX_BUFFERHEADERTYPE** pBuffer,
-OMX_IN OMX_U32 nPortIndex,
-OMX_IN OMX_PTR pAppPrivate,
-OMX_IN OMX_U32 nSizeBytes);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_INOUT OMX_BUFFERHEADERTYPE** pBuffer,
+    OMX_IN OMX_U32 nPortIndex,
+    OMX_IN OMX_PTR pAppPrivate,
+    OMX_IN OMX_U32 nSizeBytes);
 ```
 
 ###3.3.16  FreeBuffer
@@ -1841,9 +1841,9 @@ The IL client or a tunneled component calls the FreeBuffer component method via 
 
 ```C
 OMX_ERRORTYPE (*FreeBuffer)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_U32 nPortIndex,
-OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_U32 nPortIndex,
+    OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 ```
 
 ###3.3.17  EmptyThisBuffer
@@ -1852,8 +1852,8 @@ The IL client or a tunneled component calls the EmptyThisBuffer component method
 `EmptyThisBuffer`定义如下：
 ```C
 OMX_ERRORTYPE (*EmptyThisBuffer)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 ```
 ###3.3.18  FillThisBuffer
 The IL client or a tunneled component calls the FillThisBuffer component method via the OMX_FillThisBuffer core macro. See the definition of OMX_FillThisBuffer in section 3.2.2.18 for a description of its semantics.
