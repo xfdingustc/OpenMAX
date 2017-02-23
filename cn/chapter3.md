@@ -1807,7 +1807,7 @@ pCompIn->ComponentTunnelRequest(hInput, nPortInput, hOutput,
 ```
 
 ###3.3.14  UseBuffer
-IL客户端通过`OMX_UseBuffer`宏来调用组件的`UseBuffer`方法。见小节3.2.2.14中`OMX_UseBuffer`的定义，描述了其语义。
+IL客户端或一个管道组件通过`OMX_UseBuffer`宏来调用组件的`UseBuffer`方法。见小节3.2.2.14中`OMX_UseBuffer`的定义，描述了其语义。
 
 `UseBuffer`定义如下：
 
@@ -1835,7 +1835,8 @@ OMX_ERRORTYPE (*AllocateBuffer)(
 ```
 
 ###3.3.16  FreeBuffer
-IL客户端通过`OMX_FreeBuffer`宏来调用组件的`FreeBuffer`方法。见小节3.2.2.16中`OMX_FreeBuffer`的定义，描述了其语义。
+IL客户端或一个管道组件通过`OMX_FreeBuffer`宏来调用组件的`FreeBuffer`方法。见小节3.2.2.16中`OMX_FreeBuffer`的定义，描述了其语义。
+
 `FreeBuffer`定义如下：
 
 ```C
@@ -1846,7 +1847,7 @@ OMX_ERRORTYPE (*FreeBuffer)(
 ```
 
 ###3.3.17  EmptyThisBuffer
-The IL client or a tunneled component calls the EmptyThisBuffer component method via the OMX_EmptyThisBuffer core macro. See the definition of OMX_EmptyThisBuffer in section 3.2.2.17 for a description of its semantics.
+IL客户端或一个管道组件通过`OMX_EmptyThisBuffer`宏来调用组件的`EmptyThisBuffer`方法。见小节3.2.2.17中`OMX_EmptyThisBuffer`的定义，描述了其语义。
 
 `EmptyThisBuffer`定义如下：
 ```C
@@ -1855,36 +1856,36 @@ OMX_ERRORTYPE (*EmptyThisBuffer)(
     OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 ```
 ###3.3.18  FillThisBuffer
-The IL client or a tunneled component calls the FillThisBuffer component method via the OMX_FillThisBuffer core macro. See the definition of OMX_FillThisBuffer in section 3.2.2.18 for a description of its semantics.
+IL客户端或一个管道组件通过`OMX_FillThisBuffer`宏来调用组件的`FillThisBuffer`方法。见小节3.2.2.18中`OMX_FillThisBuffer`的定义，描述了其语义。
 
 `FillThisBuffer`定义如下：
 
 ```C
 OMX_ERRORTYPE (*FillThisBuffer)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
 ```
 
 ###3.3.19  SetCallbacks
-The SetCallbacks method will allow the core to transfer the callback structure from the IL client to the component. This is a blocking call. The component should return from this call within five msec.
+SetCallbacks方法允许core从IL客户端到组件传递回调结构体。这是一个阻塞调用。组件应该在5毫秒内返回这个调用。
 
 `SetCallbacks`定义如下：
 ```C
 OMX_ERRORTYPE (*SetCallbacks)(
-OMX_IN OMX_HANDLETYPE hComponent,
-OMX_IN OMX_CALLBACKTYPE* pCallbacks,
-OMX_IN OMX_PTR pAppData);
+    OMX_IN OMX_HANDLETYPE hComponent,
+    OMX_IN OMX_CALLBACKTYPE* pCallbacks,
+    OMX_IN OMX_PTR pAppData);
 ```
 参数定义如下：
 
 | 参数 | 说明 |
 | ------ | ------ |
-| hComponent [in] |执行调用的组件句柄 |
-| pCallbacks [in] | A pointer to an OMX_CALLBACKTYPE structure that is used to provide the callback information to the component. |
-| pAppData [in] | A pointer to a value that the IL client has defined (for example, a pointer to a data structure) that allows the callback in the IL client to determine the context of the call. |
+| *hComponent* [输入] |执行调用的组件句柄 |
+| *pCallbacks* [输入] | 指向OMX_CALLBACKTYPE结构体的指针，用于给组件提供回调信息。|
+| *pAppData* [输入] | 指向IL客户端定义的一个值的指针（例如，一个指针或一个数据结构体），允许IL客户端中的回调来确定回调的上下文|
 
 ####3.3.19.1  先决条件
-The component shall be in the OMX_StateLoaded state.
+组件应处于`OMX_StateLoaded`状态。
 
 ####3.3.19.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1908,7 +1909,7 @@ The core calls the ComponentDeinit function when the core needs to dispose of a 
 
 ```C
 OMX_ERRORTYPE (*ComponentDeInit)(
-OMX_IN OMX_HANDLETYPE hComponent);
+    OMX_IN OMX_HANDLETYPE hComponent);
 ```
 
 The single parameter is as follows.
