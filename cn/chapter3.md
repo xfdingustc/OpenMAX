@@ -1807,7 +1807,7 @@ pCompIn->ComponentTunnelRequest(hInput, nPortInput, hOutput,
 ```
 
 ###3.3.14  UseBuffer
-The IL client or a tunneled component calls the UseBuffer component method via the OMX_UseBuffer core macro. See the definition of OMX_UseBuffer in section 3.2.2.14 for a description of its semantics.
+IL客户端通过`OMX_UseBuffer`宏来调用组件的`UseBuffer`方法。见小节3.2.2.14中`OMX_UseBuffer`的定义，描述了其语义。
 
 `UseBuffer`定义如下：
 
@@ -1822,7 +1822,7 @@ OMX_ERRORTYPE (*UseBuffer)(
 ```
 
 ###3.3.15  AllocateBuffer
-The IL client calls the AllocateBuffer component method via the OMX_AllocateBuffer core macro. See the definition of OMX_AllocateBuffer in section 3.2.2.15 for a description of its semantics.
+IL客户端通过`OMX_AllocateBuffer`宏来调用组件的`AllocateBuffer`方法。见小节3.2.2.15中`OMX_AllocateBuffer`的定义，描述了其语义。
 
 `AllocateBuffer`定义如下：
 ```C
@@ -1835,8 +1835,7 @@ OMX_ERRORTYPE (*AllocateBuffer)(
 ```
 
 ###3.3.16  FreeBuffer
-The IL client or a tunneled component calls the FreeBuffer component method via the OMX_FreeBuffer core macro. See the definition of OMX_FreeBuffer in section 3.2.2.16 for a description of its semantics.
-
+IL客户端通过`OMX_FreeBuffer`宏来调用组件的`FreeBuffer`方法。见小节3.2.2.16中`OMX_FreeBuffer`的定义，描述了其语义。
 `FreeBuffer`定义如下：
 
 ```C
