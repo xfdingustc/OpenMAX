@@ -1903,7 +1903,7 @@ pComp->SetCallbacks(hHandle, pCallBacks, pAppData);
 ```
 
 ###3.3.20  ComponentDeinit
-The core calls the ComponentDeinit function when the core needs to dispose of a component.
+当core希望处理掉组件时调用`ComponentDeinit`方法
 
 `ComponentDeinit`定义如下：
 
@@ -1912,13 +1912,13 @@ OMX_ERRORTYPE (*ComponentDeInit)(
     OMX_IN OMX_HANDLETYPE hComponent);
 ```
 
-The single parameter is as follows.
+唯一的参数如下。
 
 | 参数 | 说明 |
 | ------ | ------ |
-| hComponent [in] | 执行调用的组件句柄 |
+| *hComponent* [输入] | 执行调用的组件句柄 |
 
-There are no prerequisites for this method. The IL client may execute this function regardless of component state so that de-initialization is guaranteed even on components that are unresponsive to state changes. However, executing ComponentDeinit when the component is in the OMX_StateLoaded state is recommended for proper shutdown.
+这个方法没有先决条件。IL客户端可以不管组件的状态来执行这个方法，这样即使组件对状态变化已经不响应仍然可以保证释放。但是，正确关闭还是推荐当组件是OMX_StateLoaded状态时执行ComponentDeinit。
 
 ####3.3.20.2  调用顺序实例代码
 下面的实例代码展示了调用顺序：
@@ -1931,28 +1931,26 @@ pComp = (OMX_COMPONENTTYPE*)hComponent;
 OMX_OSAL_Free(pComp);
 ```
 
-##3.4  Calling Sequences
-This section describes how the IL client, the OpenMAX core, and the components dynamically interact in a few meaningful use cases, namely initialization, de-initialization, data flow, data tunneling setup, and data flow in the case of data tunneling and dynamic port reconfiguration. The interaction between the core, the components, and the possible implementation of a resource manager is also described.
+##3.4  调用顺序
+本小节描述了IL客户端，OpenMAX core 和组件在一些有意义的用户场景下如何动态交互。分别为初始化，释放，数据流，数据管道建立，数据管道中的数据流，动态端口重配置。Core，组件和可能实现的资源管理器之间的交互也一并描述。
 
-###3.4.1 Initialization
-This section describes the operations for initializing the OpenMAX components. The components can be handled directly by the IL client, can be tunneled to each other, or both. The tunneled and non-tunneled cases are distinguished for clarity, but the two cases can be both present in the component framework.
+###3.4.1 初始化
+本小节描述了初始化OpenMAX组件的操作。组件可以被IL客户端直接操作，可以相互建立管道，或两者兼而有之。管道和非管道清楚的被区分，但这两种情况可以在一个组件的框架中同时存在。
 
-####3.4.1.1  Non-tunneled Initialization
-Figure 3-3 shows how an IL client should initialize an OpenMAX component.
+####3.4.1.1  非管道初始化
+图 3-3 显示了IL客户端应该如何初始化一个OpenMAX组件。
 
 ![](img/3_3.png)
 
-**Figure 3-3. Component Initialization**
+**图 3-3. 组件初始化**
 
-First, the IL client shall call the OMX_GetHandle function, which activates the actual component creation (1.1) by the core. Also, all of the configuration resources of the component are loaded into memory. The core passes IL client callback functions to the component by means of the SetCallbacks method (1.2). If previous steps are
-successful, a valid handle is returned in step 1.3 and the component will be in the
-OMX_StateLoaded state.
+首先，IL客户端应该调用`OMX_GetHandle`函数，通过core激活真正的组件创建（1.1）。同样，组件所有配置的资源也应该加载到内存中。Core通过`SetCallbacks`方法（1.2）传递给IL客户端的回调函数给组件。如果上一部成功，一个有效的句柄在1.3步返回，组件会进入`OMX_StateLoaded`状态。
 
-The IL client shall configure the component and its ports. For this purpose, the IL core macro OMX_SetParameter shall be used; it may be called multiple times (step 1.4) if needed.
+IL客户端应该配置组件和它的端口。为此，IL core应该调用OMX_SetParameter宏，如果需要的话，它可以多次调用（步骤1.4）。
 
-When the client has completed the configuration phase, it can request the component to make the state transition to OMX_StateIdle. Only after this request shall the IL client set up buffers for the component to use for all of its ports. The IL client shall use either OMX_AllocateBuffer or OMX_UseBuffer to set up buffers. If the IL client asks components for a tunnel, it does not allocate setup buffers because the tunneled components allocate any buffers. See section 3.4.1.2 for more details on tunneling.
+当客户端完成了配置阶段，他可以请求组件切换状态至OMX_StateIdle。只有在这个请求之后，IL客户端才会为该组件的所有端口设置buffer。IL客户端应该使用OMX_AllocateBuffer或OMX_UseBuffer设置buffer。如果IL客户端要求组件建立管道，它不会分配buffer应该管道的组件分配其buffer。更多管道细节，见3.4.1.2小节。
 
-This process may be repeated multiple times, depending on the number of ports and the total number of buffers needed on each port. If OMX_UseBuffer is used, the IL client shall have allocated a buffer and passed it to the component. Alternatively, the IL client may ask the component to allocate a buffer and a buffer header using the OMX_AllocateBuffer method. In the latter case, the component will allocate both a buffer and its related header and return it to the IL client by reference.
+这个过程可以重复多次，取决于端口数和每个端口所需的buffer数。如果使用OMX_UseBuffer， IL客户端应该分配一个buffer并传递给组件。此外，如果IL客户端可以请求组件调用OMX_AllocateBuffer方法来分配buffer和buffer头。在后一种情况下，组件应该分配buffer和相关的头并返回给IL客户端。
 
 As soon as these initial configuration steps are completed, the component shall complete the state transition and return an event to the client for the SendCommand request completion (step 2.8).
 
