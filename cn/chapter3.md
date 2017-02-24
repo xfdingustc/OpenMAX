@@ -1946,55 +1946,42 @@ OMX_OSAL_Free(pComp);
 
 首先，IL客户端应该调用`OMX_GetHandle`函数，通过core激活真正的组件创建（1.1）。同样，组件所有配置的资源也应该加载到内存中。Core通过`SetCallbacks`方法（1.2）传递给IL客户端的回调函数给组件。如果上一部成功，一个有效的句柄在1.3步返回，组件会进入`OMX_StateLoaded`状态。
 
-IL客户端应该配置组件和它的端口。为此，IL core应该调用OMX_SetParameter宏，如果需要的话，它可以多次调用（步骤1.4）。
+IL客户端应该配置组件和它的端口。为此，IL core应该调用`OMX_SetParameter`宏，如果需要的话，它可以多次调用（步骤1.4）。
 
-当客户端完成了配置阶段，他可以请求组件切换状态至OMX_StateIdle。只有在这个请求之后，IL客户端才会为该组件的所有端口设置buffer。IL客户端应该使用OMX_AllocateBuffer或OMX_UseBuffer设置buffer。如果IL客户端要求组件建立管道，它不会分配buffer应该管道的组件分配其buffer。更多管道细节，见3.4.1.2小节。
+当客户端完成了配置阶段，他可以请求组件切换状态至`OMX_StateIdle`。只有在这个请求之后，IL客户端才会为该组件的所有端口设置buffer。IL客户端应该使用`OMX_AllocateBuffer`或`OMX_UseBuffer`设置buffer。如果IL客户端要求组件建立管道，它不会分配buffer应该管道的组件分配其buffer。更多管道细节，见3.4.1.2小节。
 
-这个过程可以重复多次，取决于端口数和每个端口所需的buffer数。如果使用OMX_UseBuffer， IL客户端应该分配一个buffer并传递给组件。此外，如果IL客户端可以请求组件调用OMX_AllocateBuffer方法来分配buffer和buffer头。在后一种情况下，组件应该分配buffer和相关的头并返回给IL客户端。
+这个过程可以重复多次，取决于端口数和每个端口所需的buffer数。如果使用OMX_UseBuffer， IL客户端应该分配一个buffer并传递给组件。此外，如果IL客户端可以请求组件调用`OMX_AllocateBuffer`方法来分配buffer和buffer头。在后一种情况下，组件应该分配buffer和相关的头并返回给IL客户端。
 
-As soon as these initial configuration steps are completed, the component shall complete the state transition and return an event to the client for the SendCommand request completion (step 2.8).
+一旦这些初始化配置步骤完成，组件应该完成状态转换并返回一个SendCommand请求完成事件给客户端（步骤2.8）。
 
-The component is now ready to be used by the IL client.
+现在组件已准备完成，可以被IL客户端使用。
 
-####3.4.1.2  Tunneled Initialization
-To avoid moving data buffers back and forth among the IL client and OpenMAX components, data tunnels can be set up so that the output buffer of one component is passed directly to the input port of the next component in the chain.
+####3.4.1.2  管道初始化
+为了避免数据buffer在IL客户端和OpenMAX组件之间来回传递，可以建立数据管道这样组件的输出buffer会直接传递给链中下一个组件的输入端口。
 
-Consider the example shown in Figure 3-4, where an IL client generates data for a chain of three tunneled components identified as A, B, and C. Component C is a sink and does not return data to the IL client.
+考虑如图3-4所示的例子，起重IL客户端生成数据给一个三个组件的管道，标识A，B，C。组件C是一个sink，不返回数据给IL客户端。
 
 ![](img/3_4.png)
 
-**Figure 3-4. Example of Data Tunneling Among OpenMAX Components**
+**图 3-4. OpenMAX组件之间数据管道的例子**
 
-Note that all callbacks are always directed to and managed by the IL client when ports communicate using proprietary or tunneled communication. The tunneling setup and initialization require a detailed description, based on the following steps:
+注意在使用专有或管道通信时，所有的回调永远指向IL客户端端并由其管理。管道的设置和初始化需要详细描述，基于下面的步骤：
 
-- The components are constructed with the calls to OMX_GetHandle.
-- The components are tunneled, linking an output port of the first component to an input port of the second component. The port that shall supply the buffer is decided in this phase.
-- The IL client may override the input ports’ choice of buffer supplier after OMX_SetupTunnel has completed by setting the buffer supplier into the input port, which in turn will reprogram the supplier to the output port..
+- 组件由`OMX_GetHandle`调用构建。
+- 管道中的组件，第一个组件的输出和第二个组件的输入端口相连。应该在这个阶段决定提供buffer的端口
+- 在`OMX_SetupTunnel`完成后，设置了输入端口的提供者之后，IL客户端可以覆盖输入端口对于buffer提供者的选择。这反过来又会重新改变输出端口的提供者。
 
-During the transition from OMX_StateLoaded to OMX_StateIdle, each component shall not transition until the required buffers on all enabled ports have been allocated.
+在`OMX_StateLoaded`向`OMX_StateIdle`改变的时候，每个组件在每个启用端口上的所需buffer没有被分配之前不应该转移。
 
-OMX_SetupTunnel shall be executed only when the components are in the OMX_StateLoaded state or when ports are disabled. Figure 3-5 illustrates the setup process:
+仅当组件处于`OMX_StateLoaded`状态或端口被禁用时`OMX_SetupTunnel`可以被调用。图3-5描述了建立的过程：
 
 ![](img/3_5.png)
 
-**Figure 3-5. Tunnel Setup**
-The IL client shall start the data setup process by calling the OMX_SetupTunnel
-function of the IL core when the components that are being tunneled are in the
-OMX_StateLoaded state (step 1.0).
+**图 3-5. 管道建立**
 
-As a result, the IL core shall call the ComponentTunnelRequest methods of
-component A and B in sequence. The structure OMX_TUNNELSETUPTYPE defined in
-section 3.1.2.9 shall be passed by the IL core to the component with the output port first.
-The component receiving such a call shall fill in the structure and return it to the core. If
-the ComponentTunnelRequest call returns successfully, the IL core shall call the
-same function on the second component (1.3), passing the OMX_TUNNELSETUPTYPE
-structure that was filled in by the first component. The component also shall check that
-the output port of the peer component is compatible with its input port (i.e., the data type
-should be the same) (1.4). If the tunnel setup parameters included in the structure are
-agreed to by the second component, the ComponentTunnelRequest call will send
-back to the first component the result of negotiation (1.5) and returns successfully (1.6).
-The IL core shall check that both calls of ComponentTunnelRequest did not return
-errors. If so, the initial OMX_SetupTunnel will return successfully.
+当管道组件在OMX_StateLoaded状态时，IL客户端应该调用IL core的OMX_SetupTunnel函数启动数据设置过程（步骤1.0）。
+
+作为结果，IL core应该顺序调用组件A和B的ComponentTunnelRequest方法。小节3.1.2.9中定义的结构体OMX_TUNNELSETUPTYPE应该由IL core传递首先传递给拥有输出端口的组件。组件收到这个的调用，应该填写这个结构体并返回给core。如果ComponentTunnelRequest调用返回成功，IL core应该在第二个组件上调用同样的函数（1.3），传递由第一个组件填充的结构体OMX_TUNNELSETUPTYPE。组件也应该检查peer组件上的输出端口是否和自己的输入端口兼容（例如，数据类型是否一致）（1.4）。如果第二个组件兼容管道设置参数，ComponentTunnelRequest调用应该将返回给第一个组件协商的结果（1.5）并返回成功（1.6）。IL core应该检查是否两次调用ComponentTunnelRequest均没有返回错误。如果是这样，最初的OMX_SetupTunnel将返回成功。
 
 If the call to ComponentTunnelRequest on component B fails, component A will
 be set to not tunnel by a second call to ComponentTunnelRequest with a pointer to
