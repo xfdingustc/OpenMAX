@@ -1979,37 +1979,26 @@ IL客户端应该配置组件和它的端口。为此，IL core应该调用`OMX_
 
 **图 3-5. 管道建立**
 
-当管道组件在OMX_StateLoaded状态时，IL客户端应该调用IL core的OMX_SetupTunnel函数启动数据设置过程（步骤1.0）。
+当管道组件在`OMX_StateLoaded`状态时，IL客户端应该调用IL core的`OMX_SetupTunnel`函数启动数据设置过程（步骤1.0）。
 
-作为结果，IL core应该顺序调用组件A和B的ComponentTunnelRequest方法。小节3.1.2.9中定义的结构体OMX_TUNNELSETUPTYPE应该由IL core传递首先传递给拥有输出端口的组件。组件收到这个的调用，应该填写这个结构体并返回给core。如果ComponentTunnelRequest调用返回成功，IL core应该在第二个组件上调用同样的函数（1.3），传递由第一个组件填充的结构体OMX_TUNNELSETUPTYPE。组件也应该检查peer组件上的输出端口是否和自己的输入端口兼容（例如，数据类型是否一致）（1.4）。如果第二个组件兼容管道设置参数，ComponentTunnelRequest调用应该将返回给第一个组件协商的结果（1.5）并返回成功（1.6）。IL core应该检查是否两次调用ComponentTunnelRequest均没有返回错误。如果是这样，最初的OMX_SetupTunnel将返回成功。
+作为结果，IL core应该顺序调用组件A和B的`ComponentTunnelRequest`方法。小节3.1.2.9中定义的结构体`OMX_TUNNELSETUPTYPE`应该由IL core传递首先传递给拥有输出端口的组件。组件收到这个的调用，应该填写这个结构体并返回给core。如果`ComponentTunnelRequest`调用返回成功，IL core应该在第二个组件上调用同样的函数（1.3），传递由第一个组件填充的结构体`OMX_TUNNELSETUPTYPE`。组件也应该检查peer组件上的输出端口是否和自己的输入端口兼容（例如，数据类型是否一致）（1.4）。如果第二个组件兼容管道设置参数，`ComponentTunnelRequest`调用应该将返回给第一个组件协商的结果（1.5）并返回成功（1.6）。IL core应该检查是否两次调用`ComponentTunnelRequest`均没有返回错误。如果是这样，最初的`OMX_SetupTunnel`将返回成功。
 
-If the call to ComponentTunnelRequest on component B fails, component A will
-be set to not tunnel by a second call to ComponentTunnelRequest with a pointer to
-NULL in place of the component B handle and pTunnelSetup parameter.
+如果在组件B上调用`ComponentTunnelRequest`失败，组件A将被设置为非管道模式。会再一次调用`ComponentTunnelRequest`，这次组件B的句柄和参数`pTunnelSetup`设置为NULL
 
-
-After the successful tunnel setup, the IL client may override the buffer supplier
-negotiation with the procedure illustrated in Figure 3-6:
+管道建立成功之后，如图3-6所示， IL客户端可以覆盖buffer提供者的协商。
 
 ![](img/3_6.png)
 
-**Figure 3-6. IL Client Buffer Supplier Override**
+**图 3-6. IL客户端覆盖buffer提供者**
 
-If the IL client wants to override the negotiation of tunneled components that specifies
-which component is the buffer supplier, it shall call the function SetParameter on the
-component that provides the input port. That component is responsible for signaling to
-the other tunneled component the new buffer supplier, with the same call to
-SetParameter.
+如果IL客户端想覆盖管道组件之间的指定哪个组件为buffer提供者的协商，它应该在提供输入端口组件上调用SetParameter方法。这个组件负责通过同样的调用SetParameter来通知管道上另一个组件新的buffer提供者。
 
-The last step of the tunnel initialization phase is the state transition from
-OMX_StateLoaded to OMX_StateIdle that also involves the buffer allocation and
-assignment. Figure 3-7 illustrates the state transition behavior in which the tunnels are
-already created and configured.
+管道初始化阶段的最后一个步骤就是将状态由OMX_StateLoaded转到OMX_StateLoaded，并调用buffer分配。图3-7描述了管道已创建并配置时状态切换的行为。
 
 
 ![](img/3_7.png)
 
-**Figure 3-7. Tunneling Example**
+**图3-7. 管道举例**
 
 Component A is tunneled with component B, and component B is the buffer supplier.
 
@@ -2021,53 +2010,31 @@ Figure 3-8 illustrates the behavior of each tunneled component during the state 
 
 **Figure 3-8. State Transition to Idle in the Case of Tunneled Component s**
 
-Each supplier port on a component shall pass its buffers to the non-supplier port it is
-tunneling with via OMX_UseBuffer. After all of its supplier ports have passed buffers,
-the component waits until all of its non-supplier ports have received all of their buffers
-via OMX_UseBuffer.
+Each supplier port on a component shall pass its buffers to the non-supplier port it is tunneling with via OMX_UseBuffer. After all of its supplier ports have passed buffers, the component waits until all of its non-supplier ports have received all of their buffers via OMX_UseBuffer.
 
-In Figure 3-8, component A receives the state transition request from the IL client.
-Component A is tunneled with component B. The input port of B is set as buffer supplier
-for the tunnel. In this case, component A shall wait until its output port receives all of the
-needed buffers.
+In Figure 3-8, component A receives the state transition request from the IL client. Component A is tunneled with component B. The input port of B is set as buffer supplier for the tunnel. In this case, component A shall wait until its output port receives all of the needed buffers.
 
-Meanwhile, the IL client asks component B to change its state. In this case, component B
-has a port that is a buffer supplier, the input port, and it shall call UseBuffer on the
-output port of component A. Then, component B waits for all of the needed buffers on its
-output port.
+Meanwhile, the IL client asks component B to change its state. In this case, component B has a port that is a buffer supplier, the input port, and it shall call UseBuffer on the output port of component A. Then, component B waits for all of the needed buffers on its output port.
 
-Now component A has all of the needed buffers, so it can perform the state transition to
-OMX_StateIdle. The exact sequence of transitions can be different, since it depends on
-the platform, the operating system, and the implementation. The only rule is to wait until
-all the resources are available.
+Now component A has all of the needed buffers, so it can perform the state transition to OMX_StateIdle. The exact sequence of transitions can be different, since it depends on the platform, the operating system, and the implementation. The only rule is to wait until all the resources are available.
 
-The IL client requests that component C change its state. Component C behaves like
-component B: Component C gives the buffers needed to component B, and then can
-change its state, since it does not need any other buffers.
+The IL client requests that component C change its state. Component C behaves like component B: Component C gives the buffers needed to component B, and then can change its state, since it does not need any other buffers.
 
-Finally, component B can change its state to OMX_StateIdle since it has obtained all of
-the needed buffers.
+Finally, component B can change its state to OMX_StateIdle since it has obtained all of the needed buffers.
 
 ###3.4.2 Data Flow
 OpenMAX defines two means of data communication:
 
-- Tunneled communication, where a port exchanges data directly with a port on another component
-- Non-tunneled communication, where a port exchanges data only with the IL client
+- Tunneled communication, where a port exchanges data directly with a port on another component - Non-tunneled communication, where a port exchanges data only with the IL client
 
 A port may implement data tunneling via proprietary communication, taking advantage of platform-specific features. The following sections describe the data flow inherent to each means of communication.
 
 ####3.4.2.1  Non-tunneled Data Flow
 An IL client that has a data buffer to deliver to a component input port shall issue an OMX_EmptyThisBuffer call.
 
-Conversely, for the component output port, the IL client shall initially provide one or
-more empty buffers into which the component can write output data; the
-OMX_FillThisBuffer call accomplishes this task. As soon as one buffer is available
-from the component output port, the component shall send an OMX_FillBufferDone
-callback. The component is aware of the callback entry point from the earlier SetBacks
-call.
+Conversely, for the component output port, the IL client shall initially provide one or more empty buffers into which the component can write output data; the OMX_FillThisBuffer call accomplishes this task. As soon as one buffer is available from the component output port, the component shall send an OMX_FillBufferDone callback. The component is aware of the callback entry point from the earlier SetBacks call.
 
-Note that the IL client is entirely responsible for moving data buffers among components
-if data tunneling is not used.
+Note that the IL client is entirely responsible for moving data buffers among components if data tunneling is not used.
 
 Figure 3-9 illustrates the dynamic behavior related to data flow.
 
@@ -2076,83 +2043,51 @@ Figure 3-9 illustrates the dynamic behavior related to data flow.
 **Figure 3-9. Data Flow Between Non-tunneled Components**
 
 ####3.4.2.2  Tunneled Data Flow
-In data tunneling, OpenMAX components directly pass data buffers among themselves
-without returning them to the IL client. This data flow uses a different convention from
-the situation where all data buffers are exchanged with the IL client.
+In data tunneling, OpenMAX components directly pass data buffers among themselves without returning them to the IL client. This data flow uses a different convention from the situation where all data buffers are exchanged with the IL client.
 
-If the buffer supplier is the output component, it shall call OMX_EmptyThisBuffer on
-the other tunneled component to pass the buffer that is to be emptied. When the input
-component has terminated the operation, it shall return the buffer to the output
-component by calling OMX_FillThisBuffer on it.
+If the buffer supplier is the output component, it shall call OMX_EmptyThisBuffer on the other tunneled component to pass the buffer that is to be emptied. When the input component has terminated the operation, it shall return the buffer to the output component by calling OMX_FillThisBuffer on it.
 
-If the buffer supplier is the input component, the communication mechanism is the same
-but is initiated by calling OMX_FillThisBuffer on the output component. Figure 3-
-10 illustrates this process.
+If the buffer supplier is the input component, the communication mechanism is the same but is initiated by calling OMX_FillThisBuffer on the output component. Figure 3-10 illustrates this process.
 
 ![](img/3_10.png)
 
 **Figure 3-10. Data Flow Between Tunneled Components**
 
 ####3.4.2.3  Proprietary Communication
-On some platforms data tunneling among components can be optimized by proprietary
-communication mechanisms, which can be based on specific hardware such as DMA or
-shared memory. Such resources are set up in a proprietary manner during the standard
-data tunneling setup phase. Although the IL client uses the standard
-OMX_SetupTunnel call, platform-specific optimizations can prepare optimized
-transport channels among components.
+On some platforms data tunneling among components can be optimized by proprietary communication mechanisms, which can be based on specific hardware such as DMA or shared memory. Such resources are set up in a proprietary manner during the standard data tunneling setup phase. Although the IL client uses the standard OMX_SetupTunnel call, platform-specific optimizations can prepare optimized transport channels among components.
 
-Assuming a chain of components A, B, and C that support proprietary communication,
-the resulting data flow would appear as illustrated in Figure 3-11.
+Assuming a chain of components A, B, and C that support proprietary communication, the resulting data flow would appear as illustrated in Figure 3-11.
 
 ![](img/3_11.png)
 
 **Figure 3-11. Data Flow with Proprietary Communication Between Components**
-Assuming that all components are in the OMX_StateExecuting state, the IL client sends
-two buffers to component A using the OMX_EmptyThisBuffer call (steps 1.0 and
-1.1). Given the data tunnel setup, the output of component A is sent to the input port of
-component B. The output of component B is sent to the input port of component C, which
-is the sink.
+Assuming that all components are in the OMX_StateExecuting state, the IL client sends two buffers to component A using the OMX_EmptyThisBuffer call (steps 1.0 and 1.1). Given the data tunnel setup, the output of component A is sent to the input port of component B. The output of component B is sent to the input port of component C, which is the sink.
 
-No callbacks will be invoked since the components will use their proprietary mechanisms
-to move data.
+No callbacks will be invoked since the components will use their proprietary mechanisms to move data.
 
-The OMX_EmptyBufferDone callback will be issued to the IL client only when
-component A has finished processing buffers.
+The OMX_EmptyBufferDone callback will be issued to the IL client only when component A has finished processing buffers.
 
-Even though buffer-related callbacks are not used in this use case, note that components
-may still generate events to the IL client using the OMX_EventHandler callback entry
-point.
+Even though buffer-related callbacks are not used in this use case, note that components may still generate events to the IL client using the OMX_EventHandler callback entry point.
 
 ###3.4.3 De-Initialization
 This section describes tunneled and non-tunneled component de-initialization.
 
 ####3.4.3.1  Non-tunneled De-initialization
-When the IL client decides to stop the execution and dispose of the components, it should
-first switch the components to the OMX_StateIdle state so that all buffers are returned to
-their suppliers.
+When the IL client decides to stop the execution and dispose of the components, it should first switch the components to the OMX_StateIdle state so that all buffers are returned to their suppliers.
 
-When the transition to OMX_StateIdle is completed, the IL client can request the
-component to change its state to OMX_StateLoaded. The IL client shall free all of the
-component’s buffers by calling OMX_FreeBuffer for each buffer. The
-OMX_FreeBuffer function requires that the component remove the specified buffer
-from the specified port. If the component allocated the buffer with an
-OMX_AllocateBuffer call, the component shall also free the buffer memory. If the
-IL client allocated the buffer and assigned it to the component with an OMX_UseBuffer call, then the IL client shall de-allocate the buffer memory after
-calling OMX_FreeBuffer.
+When the transition to OMX_StateIdle is completed, the IL client can request the component to change its state to OMX_StateLoaded. The IL client shall free all of the component’s buffers by calling OMX_FreeBuffer for each buffer. The
+OMX_FreeBuffer function requires that the component remove the specified buffer from the specified port. If the component allocated the buffer with an OMX_AllocateBuffer call, the component shall also free the buffer memory. If the
+IL client allocated the buffer and assigned it to the component with an OMX_UseBuffer call, then the IL client shall de-allocate the buffer memory after calling OMX_FreeBuffer.
 
-When all of the buffers have been freed, the component shall complete the state transition.
-Finally, the IL client calls the OMX_FreeHandle function that disposes of the
-component.
+When all of the buffers have been freed, the component shall complete the state transition. Finally, the IL client calls the OMX_FreeHandle function that disposes of the component.
 
-This procedure is performed for each non-tunneled port. Figure 3-12 illustrates non-
-tunneled de-initialization.
+This procedure is performed for each non-tunneled port. Figure 3-12 illustrates non-tunneled de-initialization.
 
 ![](img/3_12.png)
 
 **Figure 3-12. De-initialization of Non-tunneled Components**
 
-A port that is tunneled shall follow the component de-initialization procedure illustrated
-in section 3.4.3.2.
+A port that is tunneled shall follow the component de-initialization procedure illustrated in section 3.4.3.2.
 
 ####3.4.3.2  Tunneled De-Initialization
 Figure 3-13 illustrates the component de-initialization for a port that is tunneled.
@@ -2162,20 +2097,10 @@ Figure 3-13 illustrates the component de-initialization for a port that is tunne
 **Figure 3-13. De-initialization of Tunneled Components**
 
 ###3.4.4 Port Disablement and Enablement
-Disabling a port causes it to behave as if its component transitioned to the
-OMX_StateLoaded state. Thus, all of the port’s buffers are returned to their suppliers,
-and any buffers the disabled port allocated are freed. The act of enabling a port inverts
-this process, putting a port that is effectively in the OMX_StateLoaded state into the
-component’s state. Thus, if the component is in a state where its ports have buffers, then
-an enabled port will acquire buffers. Likewise, if the component is exchanging buffers, an
-enabled port will begin exchanging buffers.
+Disabling a port causes it to behave as if its component transitioned to the OMX_StateLoaded state. Thus, all of the port’s buffers are returned to their suppliers, and any buffers the disabled port allocated are freed. The act of enabling a port inverts this process, putting a port that is effectively in the OMX_StateLoaded state into the
+component’s state. Thus, if the component is in a state where its ports have buffers, then an enabled port will acquire buffers. Likewise, if the component is exchanging buffers, an enabled port will begin exchanging buffers.
 
-Note that if a port is disabled when the component is in the OMX_StateLoaded state, the
-port’s effective state is still made disjoint from the component’s state. Thus, when a
-component transitions from OMX_StateLoaded to OMX_StateIdle, any disabled port will
-not acquire buffers but, instead, will effectively remain in OMX_StateLoaded.
-The description of port disablement and enablement is divided into tunneling and non-
-tunneling cases.
+Note that if a port is disabled when the component is in the OMX_StateLoaded state, the port’s effective state is still made disjoint from the component’s state. Thus, when a component transitions from OMX_StateLoaded to OMX_StateIdle, any disabled port will not acquire buffers but, instead, will effectively remain in OMX_StateLoaded. The description of port disablement and enablement is divided into tunneling and non-tunneling cases.
 
 ####3.4.4.1  Tunneled Ports Disablement and Enablement
 Figure 3-14 illustrates the behavior of enabling and disabling tunneled ports.
@@ -2185,10 +2110,7 @@ Figure 3-14 illustrates the behavior of enabling and disabling tunneled ports.
 **Figure 3-14. Disablement and Enablement of Tunneled Ports**
 
 ####3.4.4.2  Non-tunneled Port Disablement and Enablement
-Figure 3-15 illustrates the case of the disablement and enablement procedure for a non-
-tunneled port. A detailed discussion of OMX_AllocateBuffer, OMX_UseBuffer,
-and OMX_FreeBuffer is omitted here; for more detailed descriptions of the use of
-these functions, see sections 3.3.15, 3.3.14, and 3.3.16, respectively.
+Figure 3-15 illustrates the case of the disablement and enablement procedure for a non-tunneled port. A detailed discussion of OMX_AllocateBuffer, OMX_UseBuffer, and OMX_FreeBuffer is omitted here; for more detailed descriptions of the use of these functions, see sections 3.3.15, 3.3.14, and 3.3.16, respectively.
 
 ![](img/3_15.png)
 
@@ -2202,62 +2124,35 @@ The following examples show where this functionality is typically needed:
 - A video decoder parses a sequence header and discovers the frame size of the output pictures, so buffers associated with its output ports shall be rearranged.
 - The parameters of an audio stream vary dynamically, and a decoder should change its port settings.
 
-Figure 3-16 shows how a video decoder and a video renderer, both of which exchange
-data through the IL client, should dynamically change their port settings.
+Figure 3-16 shows how a video decoder and a video renderer, both of which exchange data through the IL client, should dynamically change their port settings.
 
 ![](img/3_16.png)
 
 **Figure 3-16. Dynamic Port Reconfiguration**
 
-The sequence starts with the IL client putting a video renderer and a video decoder in the
-OMX_StateExecuting state (1.0 through 1.3). At this stage, the output port of the video
-decoder and the input port of the renderer are not yet configured, since the dimension of the output frame is unknown a priori. The decoder needs to start parsing the input bit
-stream to derive such information.
+The sequence starts with the IL client putting a video renderer and a video decoder in the OMX_StateExecuting state (1.0 through 1.3). At this stage, the output port of the video decoder and the input port of the renderer are not yet configured, since the dimension of the output frame is unknown a priori. The decoder needs to start parsing the input bit stream to derive such information.
 
-In fact, the IL client sends the first buffer to the decoder in step 1.4. Assuming that the
-video sequence header is included in that first buffer, the OpenMAX decoder component
-will parse it and change its output port settings accordingly.
-The OpenMAX decoder component shall then notify the IL client by generating the
-OMX_PortSettingsChanged event (step 1.5). As soon as the IL client receives this
-callback, it shall disable the output port of the video decoder and the input port of the
-video renderer (steps 1.6 through 1.11).
+In fact, the IL client sends the first buffer to the decoder in step 1.4. Assuming that the video sequence header is included in that first buffer, the OpenMAX decoder component will parse it and change its output port settings accordingly. The OpenMAX decoder component shall then notify the IL client by generating the OMX_PortSettingsChanged event (step 1.5). As soon as the IL client receives this callback, it shall disable the output port of the video decoder and the input port of the video renderer (steps 1.6 through 1.11).
 
-The IL client shall then read the new port settings with OMX_GetConfig and allocate
-one or more buffers with the right dimensions for the output port. Once the buffers are
-allocated, they will be also communicated to the video renderer using OMX_UseBuffer
-(1.17). The input port of the video renderer shall also be set up with OMX_SetConfig
-(1.18).
+The IL client shall then read the new port settings with OMX_GetConfig and allocate one or more buffers with the right dimensions for the output port. Once the buffers are allocated, they will be also communicated to the video renderer using OMX_UseBuffer (1.17). The input port of the video renderer shall also be set up with OMX_SetConfig (1.18).
 
 Finally, ports can be enabled and normal processing resumes.
 
 ###3.4.6 Resource Management
-This section describes the entry points for resource management. The interface between
-components and the resource manager are presented only as an example. Only the
-interface between the IL client and the components is part of the OpenMAX standard
-definition. An IL client may use the resource manager entry points.
+This section describes the entry points for resource management. The interface between components and the resource manager are presented only as an example. Only the interface between the IL client and the components is part of the OpenMAX standard definition. An IL client may use the resource manager entry points.
 
-Figure 3-17 proposes the behavior of an IL client that ignores the resource manager. The
-resource manager handles the component internally only, and the IL client has to take no
-special action.
+Figure 3-17 proposes the behavior of an IL client that ignores the resource manager. The resource manager handles the component internally only, and the IL client has to take no special action.
 
 ![](img/3_17.png)
 
 **Figure 3-17. Transition from Loaded to Idle with Resource Management**
 
-In Figure 3-17, the IL client is unaware of the existence of a resource manager. In the
-implementation of the OpenMAX component, an asynchronous call to the resource
-manager is implemented.
+In Figure 3-17, the IL client is unaware of the existence of a resource manager. In the implementation of the OpenMAX component, an asynchronous call to the resource manager is implemented.
 
 
-The OpenMAX component provides a callback to the resource manager, which receives
-the signal for the completion of the request.
+The OpenMAX component provides a callback to the resource manager, which receives the signal for the completion of the request.
 
-Figure 3-17 represents a possible implementation of a resource manager, and shows how
-it can be transparent to the client. The functions AcquireResourceRequest and
-AcquireResourceResponse are examples. This specification is concerned only
-about the interface between the IL client and the components. Details of the interactions
-between the components and the vendor/specific manager(s) are outside the scope of this
-specification.
+Figure 3-17 represents a possible implementation of a resource manager, and shows how it can be transparent to the client. The functions AcquireResourceRequest and AcquireResourceResponse are examples. This specification is concerned only about the interface between the IL client and the components. Details of the interactions between the components and the vendor/specific manager(s) are outside the scope of this specification.
 
 Figure 3-18 presents a more complex use case.
 
@@ -2266,63 +2161,31 @@ Figure 3-18 presents a more complex use case.
 
 **Figure 3-18. Busy Resource Management**
 
-In Figure 3-18, two different OpenMAX components, A and B, need the same resource to
-work, and they have different priorities. Here, as in the preceding example, the IL clients
-use the standard transition from Loaded to Idle to set up the component and allocate all of
-the required resources.
+In Figure 3-18, two different OpenMAX components, A and B, need the same resource to work, and they have different priorities. Here, as in the preceding example, the IL clients use the standard transition from Loaded to Idle to set up the component and allocate all of the required resources.
 
-The first component, component A, takes ownership of the resource, requesting it from
-the resource manager. Component A switches to the idle state and is ready to execute.
+The first component, component A, takes ownership of the resource, requesting it from the resource manager. Component A switches to the idle state and is ready to execute.
 
-The second component, component B, asks for the same resource, but in this case the
-resource manager denies it since a higher priority component, component A, has that
-resource. This event is reported to the IL client with an error message including the value
-OMX_ErrorInsufficientResources. If IL client Y decides that it needs to be
-notified when this resource becomes available again, it may direct component B to
-change state to OMX_StateWaitForResources. This action puts component B in a
-waiting queue until the resource X will become available. Alternatively, IL client Y may
-request component B to switch back to the Loaded state.
+The second component, component B, asks for the same resource, but in this case the resource manager denies it since a higher priority component, component A, has that resource. This event is reported to the IL client with an error message including the value OMX_ErrorInsufficientResources. If IL client Y decides that it needs to be notified when this resource becomes available again, it may direct component B to change state to OMX_StateWaitForResources. This action puts component B in a waiting queue until the resource X will become available. Alternatively, IL client Y may request component B to switch back to the Loaded state.
 
-Figure 3-18 also shows the behavior of components when resource X becomes available.
-Component A changes state to Loaded and releases all of the resources. The resource
-manager becomes aware of the available resource and calls Component B, which is
-already in the waiting queue.
+Figure 3-18 also shows the behavior of components when resource X becomes available. Component A changes state to Loaded and releases all of the resources. The resource manager becomes aware of the available resource and calls Component B, which is already in the waiting queue.
 
-When the resource manager provides the component with all the resources it is waiting
-on, the component informs the IL client that all resources needed are available with an
-OMX_EventResourcesAcquired event. The IL client shall now provide all of the
-needed buffers to the component. Then, the component can change state by itself to
-OMX_StateIdle and alert the client about the state change. This waiting queue represents
-a unique case of automatic state change.
+When the resource manager provides the component with all the resources it is waiting on, the component informs the IL client that all resources needed are available with an OMX_EventResourcesAcquired event. The IL client shall now provide all of the needed buffers to the component. Then, the component can change state by itself to OMX_StateIdle and alert the client about the state change. This waiting queue represents a unique case of automatic state change.
 
-In Figure 3-18, the priorities of components A and B are not compared within the IL
-layer, and no preemption mechanism is implemented or proposed; an external policy
-manager, which should communicate with the resource manager, should have this
-responsibility. The description of such a policy manager is outside the scope of this
-document and the OpenMAX standard in general.
+In Figure 3-18, the priorities of components A and B are not compared within the IL layer, and no preemption mechanism is implemented or proposed; an external policy manager, which should communicate with the resource manager, should have this responsibility. The description of such a policy manager is outside the scope of this document and the OpenMAX standard in general.
 
-Figure 3-19 presents an example of a client that actively uses the resource management
-API.
+Figure 3-19 presents an example of a client that actively uses the resource management API.
 
 ![](img/3_19.png)
 
 **Figure 3-19. State Change from Loaded to WaitForResources**
 
-The IL client may request a state change from OMX_StateLoaded to
-OMX_StateWaitForResources in case the IL client wants to be notified when the
-resource becomes available again. For an explanation of OMX_StateWaitForResources,
-see section 3.1.1.2.5.
+The IL client may request a state change from OMX_StateLoaded to OMX_StateWaitForResources in case the IL client wants to be notified when the resource becomes available again. For an explanation of OMX_StateWaitForResources, see section 3.1.1.2.5.
 
-In this case, the client puts the component into a waiting queue, handled by the resource
-manager; the change to the idle state happens effectively when the resource will become available or if it is available immediately. In any case, the client receives two different
-OMX_EventHandler callbacks that correspond to two different state changes.
+In this case, the client puts the component into a waiting queue, handled by the resource manager; the change to the idle state happens effectively when the resource will become available or if it is available immediately. In any case, the client receives two different OMX_EventHandler callbacks that correspond to two different state changes.
 
-The two functions WaitForResourceRequest and
-WaitForResourceResponse in Figure 3-19 are not defined in this specification but
-are examples of an interaction between components and the resource manager.
+The two functions WaitForResourceRequest and WaitForResourceResponse in Figure 3-19 are not defined in this specification but are examples of an interaction between components and the resource manager.
 
-The IL client may decide to stop waiting at a certain time. In this case, it shall request the
-component to change state back to Loaded, as shown in Figure 3-20.
+The IL client may decide to stop waiting at a certain time. In this case, it shall request the component to change state back to Loaded, as shown in Figure 3-20.
 
 ![](img/3_20.png)
 Figure 3-20. Remove Component from Waiting Status		
