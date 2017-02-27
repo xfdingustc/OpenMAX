@@ -2031,9 +2031,9 @@ OpenMAX定义了数据通信的两种方法：
 端口可以通过专有通信来实现数据管道，可以利用平台特定的功能。下面消极描述了每种通信方式所固有的数据流程。
 
 ####3.4.2.1  非管道数据流
-一个需要传递数据buffer给输入端口的IL客户端应该调用OMX_EmptyThisBuffer。
+一个需要传递数据buffer给输入端口的IL客户端应该调用`OMX_EmptyThisBuffer`。
 
-相反，对于组件的输出端口，IL客户端应首选给可写入输出数据的组件提供一个或多个空buffer，调用OMX_FillThisBuffer可以完成这个任务。但一个buffer在组件输出端口上可用是，组件应该发送OMX_FillBufferDone回调。之前调用SetBacks可以让组件知道回调函数的入口。
+相反，对于组件的输出端口，IL客户端应首选给可写入输出数据的组件提供一个或多个空buffer，调用`OMX_FillThisBuffer`可以完成这个任务。但一个buffer在组件输出端口上可用是，组件应该发送`OMX_FillBufferDone`回调。之前调用SetBacks可以让组件知道回调函数的入口。
 
 注意，如果不适用数据管道，IL客户端完全负责组件间的数据buffer移动。
 
@@ -2046,58 +2046,58 @@ OpenMAX定义了数据通信的两种方法：
 ####3.4.2.2  管道数据流
 在数据管道中，OpenMAX组件之间直接传递数据buffer而不是返回给IL客户端。此数据流使用的约定和所有buffer和IL客户端交换的情况不同。
 
-如果buffer提供者是输出组件，它应该在管道上的另外的管道调用OMX_EmptyThisBuffer传递待清空的buffer。当输入组件结束这个操作，它应该通过调用OMX_FillThisBuffer返回buffer给输出组件。
+如果buffer提供者是输出组件，它应该在管道上的另外的管道调用`OMX_EmptyThisBuffer`传递待清空的buffer。当输入组件结束这个操作，它应该通过调用`OMX_FillThisBuffer`返回buffer给输出组件。
 
-If the buffer supplier is the input component, the communication mechanism is the same but is initiated by calling OMX_FillThisBuffer on the output component. Figure 3-10 illustrates this process.
+如果buffer提供者是输入组件，通信机制是一样的，但是由在输出组件上调用OMX_FillThisBuffer发起的，图3-10描述了这一过程。
 
 ![](img/3_10.png)
 
-**Figure 3-10. Data Flow Between Tunneled Components**
+**图 3-10. 管道组件之间的数据流**
 
-####3.4.2.3  Proprietary Communication
-On some platforms data tunneling among components can be optimized by proprietary communication mechanisms, which can be based on specific hardware such as DMA or shared memory. Such resources are set up in a proprietary manner during the standard data tunneling setup phase. Although the IL client uses the standard OMX_SetupTunnel call, platform-specific optimizations can prepare optimized transport channels among components.
+####3.4.2.3  专有通信
+在一些平台上，组件之间数据管道可以通过专有通信机制进行优化，它可以基于一些特定的硬件例如DMA或共享内存。在标准数据管道设置阶段，这些自检以专有的方式进行设置。虽然IL客户端使用标准的OMX_SetupTunnel调用，平台特定的优化可以优化组件之间的传递通道。
 
-Assuming a chain of components A, B, and C that support proprietary communication, the resulting data flow would appear as illustrated in Figure 3-11.
+假设一个链组件A，B，C支持专有通信，数据流如图3-11所示。
 
 ![](img/3_11.png)
 
-**Figure 3-11. Data Flow with Proprietary Communication Between Components**
-Assuming that all components are in the OMX_StateExecuting state, the IL client sends two buffers to component A using the OMX_EmptyThisBuffer call (steps 1.0 and 1.1). Given the data tunnel setup, the output of component A is sent to the input port of component B. The output of component B is sent to the input port of component C, which is the sink.
+**图 3-11. 组件之间专有通信的数据流**
 
-No callbacks will be invoked since the components will use their proprietary mechanisms to move data.
 
-The OMX_EmptyBufferDone callback will be issued to the IL client only when component A has finished processing buffers.
+假设所有组件处于OMX_StateExecuting状态，IL客户端调用OMX_EmptyThisBuffer发送两个buffer给组件A（步骤1.0和1.1）。给定数据管道设置，组件A的输出被发送到组件B的输入端口。组件B的输出被发送到组件C的输入端口，这是接收器。
 
-Even though buffer-related callbacks are not used in this use case, note that components may still generate events to the IL client using the OMX_EventHandler callback entry point.
+没有回调会被调用，因为组件使用他们的专有机制类转移数据。
 
-###3.4.3 De-Initialization
-This section describes tunneled and non-tunneled component de-initialization.
+组件A完成处理buffer后，仅发送OMX_EmptyBufferDone回调给IL客户端。
 
-####3.4.3.1  Non-tunneled De-initialization
-When the IL client decides to stop the execution and dispose of the components, it should first switch the components to the OMX_StateIdle state so that all buffers are returned to their suppliers.
+尽管在这种情况下不使用buffer相关的回调，注意组件可能仍然使用OMX_EventHandler的回调入口产生事件给IL客户端。
 
-When the transition to OMX_StateIdle is completed, the IL client can request the component to change its state to OMX_StateLoaded. The IL client shall free all of the component’s buffers by calling OMX_FreeBuffer for each buffer. The
-OMX_FreeBuffer function requires that the component remove the specified buffer from the specified port. If the component allocated the buffer with an OMX_AllocateBuffer call, the component shall also free the buffer memory. If the
-IL client allocated the buffer and assigned it to the component with an OMX_UseBuffer call, then the IL client shall de-allocate the buffer memory after calling OMX_FreeBuffer.
+###3.4.3 反初始化
+本节介绍了管道和非管道组件的反初始化。
 
-When all of the buffers have been freed, the component shall complete the state transition. Finally, the IL client calls the OMX_FreeHandle function that disposes of the component.
+####3.4.3.1  非管道的反初始化
+当IL客户端决定停止执行和处理组件，它应该首先切换组件到OMX_StateIdle，这样所有的buffer会回到他们的提供者。
 
-This procedure is performed for each non-tunneled port. Figure 3-12 illustrates non-tunneled de-initialization.
+当切换到OMX_StateIdle完成后，IL客户端可以请求组件切换到OMX_StateLoaded组件。IL客户端应该通过调用OMX_FreeBuffer释放所有组件的buffer。OMX_FreeBuffer方法需要组件从指定的端口删除指定的buffer。如果组件通过调用OMX_AllocateBuffer分配buffer，组件也应该释放buffer内存。如果IL客户端分配内存并通过OMX_UseBuffer调用分配给组件，IL客户但应该在调用OMX_FreeBuffer后释放buffer内存。
+
+当所有的buffer被释放后，组件将完成状态转换。最后，IL客户端调用OMX_FreeHandle函数来处理组件。
+
+每一个非管道端口都会执行此程序。图3-12描述了非管道的反初始化。
 
 ![](img/3_12.png)
 
-**Figure 3-12. De-initialization of Non-tunneled Components**
+**图 3-12. 非管道组件的反初始化**
 
-A port that is tunneled shall follow the component de-initialization procedure illustrated in section 3.4.3.2.
+管道端口应该遵守组件反初始化程序，如3.4.3.2小节所述。
 
-####3.4.3.2  Tunneled De-Initialization
-Figure 3-13 illustrates the component de-initialization for a port that is tunneled.
+####3.4.3.2  管道反初始化
+图3-13描述了组件上管道端口的反初始化
 
 ![](img/3_13.png)
 
-**Figure 3-13. De-initialization of Tunneled Components**
+**图 3-13. 管道组件的反初始化**
 
-###3.4.4 Port Disablement and Enablement
+###3.4.4 端口禁用和启用
 Disabling a port causes it to behave as if its component transitioned to the OMX_StateLoaded state. Thus, all of the port’s buffers are returned to their suppliers, and any buffers the disabled port allocated are freed. The act of enabling a port inverts this process, putting a port that is effectively in the OMX_StateLoaded state into the
 component’s state. Thus, if the component is in a state where its ports have buffers, then an enabled port will acquire buffers. Likewise, if the component is exchanging buffers, an enabled port will begin exchanging buffers.
 
