@@ -2048,14 +2048,14 @@ OpenMAX定义了数据通信的两种方法：
 
 如果buffer提供者是输出组件，它应该在管道上的另外的管道调用`OMX_EmptyThisBuffer`传递待清空的buffer。当输入组件结束这个操作，它应该通过调用`OMX_FillThisBuffer`返回buffer给输出组件。
 
-如果buffer提供者是输入组件，通信机制是一样的，但是由在输出组件上调用OMX_FillThisBuffer发起的，图3-10描述了这一过程。
+如果buffer提供者是输入组件，通信机制是一样的，但是由在输出组件上调用`OMX_FillThisBuffer`发起的，图3-10描述了这一过程。
 
 ![](img/3_10.png)
 
 **图 3-10. 管道组件之间的数据流**
 
 ####3.4.2.3  专有通信
-在一些平台上，组件之间数据管道可以通过专有通信机制进行优化，它可以基于一些特定的硬件例如DMA或共享内存。在标准数据管道设置阶段，这些自检以专有的方式进行设置。虽然IL客户端使用标准的OMX_SetupTunnel调用，平台特定的优化可以优化组件之间的传递通道。
+在一些平台上，组件之间数据管道可以通过专有通信机制进行优化，它可以基于一些特定的硬件例如DMA或共享内存。在标准数据管道设置阶段，这些自检以专有的方式进行设置。虽然IL客户端使用标准的`OMX_SetupTunnel`调用，平台特定的优化可以优化组件之间的传递通道。
 
 假设一个链组件A，B，C支持专有通信，数据流如图3-11所示。
 
@@ -2064,23 +2064,23 @@ OpenMAX定义了数据通信的两种方法：
 **图 3-11. 组件之间专有通信的数据流**
 
 
-假设所有组件处于OMX_StateExecuting状态，IL客户端调用OMX_EmptyThisBuffer发送两个buffer给组件A（步骤1.0和1.1）。给定数据管道设置，组件A的输出被发送到组件B的输入端口。组件B的输出被发送到组件C的输入端口，这是接收器。
+假设所有组件处于`OMX_StateExecuting`状态，IL客户端调用`OMX_EmptyThisBuffer`发送两个buffer给组件A（步骤1.0和1.1）。给定数据管道设置，组件A的输出被发送到组件B的输入端口。组件B的输出被发送到组件C的输入端口，这是接收器。
 
 没有回调会被调用，因为组件使用他们的专有机制类转移数据。
 
-组件A完成处理buffer后，仅发送OMX_EmptyBufferDone回调给IL客户端。
+组件A完成处理buffer后，仅发送`OMX_EmptyBufferDone`回调给IL客户端。
 
-尽管在这种情况下不使用buffer相关的回调，注意组件可能仍然使用OMX_EventHandler的回调入口产生事件给IL客户端。
+尽管在这种情况下不使用buffer相关的回调，注意组件可能仍然使用`OMX_EventHandler`的回调入口产生事件给IL客户端。
 
 ###3.4.3 反初始化
 本节介绍了管道和非管道组件的反初始化。
 
 ####3.4.3.1  非管道的反初始化
-当IL客户端决定停止执行和处理组件，它应该首先切换组件到OMX_StateIdle，这样所有的buffer会回到他们的提供者。
+当IL客户端决定停止执行和处理组件，它应该首先切换组件到`OMX_StateIdle`，这样所有的buffer会回到他们的提供者。
 
-当切换到OMX_StateIdle完成后，IL客户端可以请求组件切换到OMX_StateLoaded组件。IL客户端应该通过调用OMX_FreeBuffer释放所有组件的buffer。OMX_FreeBuffer方法需要组件从指定的端口删除指定的buffer。如果组件通过调用OMX_AllocateBuffer分配buffer，组件也应该释放buffer内存。如果IL客户端分配内存并通过OMX_UseBuffer调用分配给组件，IL客户但应该在调用OMX_FreeBuffer后释放buffer内存。
+当切换到`OMX_StateIdle`完成后，IL客户端可以请求组件切换到`OMX_StateLoaded`组件。IL客户端应该通过调用`OMX_FreeBuffer`释放所有组件的buffer。`OMX_FreeBuffer`方法需要组件从指定的端口删除指定的buffer。如果组件通过调用`OMX_AllocateBuffer`分配buffer，组件也应该释放buffer内存。如果IL客户端分配内存并通过`OMX_UseBuffer`调用分配给组件，IL客户但应该在调用`OMX_FreeBuffer`后释放buffer内存。
 
-当所有的buffer被释放后，组件将完成状态转换。最后，IL客户端调用OMX_FreeHandle函数来处理组件。
+当所有的buffer被释放后，组件将完成状态转换。最后，IL客户端调用`OMX_FreeHandle`函数来处理组件。
 
 每一个非管道端口都会执行此程序。图3-12描述了非管道的反初始化。
 
@@ -2098,60 +2098,59 @@ OpenMAX定义了数据通信的两种方法：
 **图 3-13. 管道组件的反初始化**
 
 ###3.4.4 端口禁用和启用
-Disabling a port causes it to behave as if its component transitioned to the OMX_StateLoaded state. Thus, all of the port’s buffers are returned to their suppliers, and any buffers the disabled port allocated are freed. The act of enabling a port inverts this process, putting a port that is effectively in the OMX_StateLoaded state into the
-component’s state. Thus, if the component is in a state where its ports have buffers, then an enabled port will acquire buffers. Likewise, if the component is exchanging buffers, an enabled port will begin exchanging buffers.
+禁用端口会导致其行为和组件转移到OMX_StateLoaded一样。因此，所有端口的buffer会回到提供者，被禁端口上分配的所有buffer被释放。启用端口和这个过程相反，putting a port that is effectively in the OMX_StateLoaded state into the component’s state.因此，如果组件在端口有buffer的状态时，启用端口会获得buffer。同理，如果组件正在交换buffer，启用端口将开始交换buffer。
 
-Note that if a port is disabled when the component is in the OMX_StateLoaded state, the port’s effective state is still made disjoint from the component’s state. Thus, when a component transitions from OMX_StateLoaded to OMX_StateIdle, any disabled port will not acquire buffers but, instead, will effectively remain in OMX_StateLoaded. The description of port disablement and enablement is divided into tunneling and non-tunneling cases.
+注意，如果组件在OMX_StateLoaded状态时禁用端口，端口有效状态仍然和组件状态分离。因此，当组件从OMX_StateLoaded转移至OMX_StateIdle，任何禁用端口不会获得buffer，而是相反，保留在OMX_StateLoaded状态。端口禁用和启用的描述可分为管道和非管道两种情况。
 
-####3.4.4.1  Tunneled Ports Disablement and Enablement
-Figure 3-14 illustrates the behavior of enabling and disabling tunneled ports.
+####3.4.4.1  管道端口禁用和启用
+图3-14描述了管道端口的禁用和启用的行为。
 
 ![](img/3_14.png)
 
-**Figure 3-14. Disablement and Enablement of Tunneled Ports**
+**图 3-14. 管道端口的禁用和启用**
 
-####3.4.4.2  Non-tunneled Port Disablement and Enablement
-Figure 3-15 illustrates the case of the disablement and enablement procedure for a non-tunneled port. A detailed discussion of OMX_AllocateBuffer, OMX_UseBuffer, and OMX_FreeBuffer is omitted here; for more detailed descriptions of the use of these functions, see sections 3.3.15, 3.3.14, and 3.3.16, respectively.
+####3.4.4.2  非管道端口禁用和启用
+图3-15描述了非管道端口的禁用和启用程序。具体关于OMX_AllocateBuffer, OMX_UseBuffer, and OMX_FreeBuffer的讨论这里省略。关于这些函数更多细节描述可分别见3.3.15, 3.3.14, 和3.3.16小节,
 
 ![](img/3_15.png)
 
-Figure 3-15. Disablement and Enablement of Non-tunneled Ports
+**图 3-15. 非管道端口禁用和启用**
 
-###3.4.5 Dynamic Port Reconfiguration
-This section describes how a component may change its port settings dynamically.
+###3.4.5 端口动态重配置
+本小节描述一个组件如果动态的改变端口的设置。
 
-The following examples show where this functionality is typically needed:
+下面的例子展示了通常需要此功能的地方：
 
-- A video decoder parses a sequence header and discovers the frame size of the output pictures, so buffers associated with its output ports shall be rearranged.
-- The parameters of an audio stream vary dynamically, and a decoder should change its port settings.
+- 一个视频解码器解析了一个序列头并发现了输出图像的帧大小，因此其输出端口相关的buffer应该被重新安排。
+- 音频流的参数动态变化，解码器应该更改其端口设置。
 
-Figure 3-16 shows how a video decoder and a video renderer, both of which exchange data through the IL client, should dynamically change their port settings.
+图3-16展示了一个视频解码器和视频渲染器，两者都和IL客户端交换数据，可以动态的改变他们的端口设置。
 
 ![](img/3_16.png)
 
-**Figure 3-16. Dynamic Port Reconfiguration**
+**Figure 3-16. 端口动态重配置**
 
-The sequence starts with the IL client putting a video renderer and a video decoder in the OMX_StateExecuting state (1.0 through 1.3). At this stage, the output port of the video decoder and the input port of the renderer are not yet configured, since the dimension of the output frame is unknown a priori. The decoder needs to start parsing the input bit stream to derive such information.
+一开始IL客户端将视频解码器和渲染器都至于OMX_StateExecuting状态（1.0到1.3）。在这个阶段，视频解码器的输出端口和渲染器的输入端口没有配置，因为视频帧的尺寸未知。解码器需要开始解析输入bit流来获得这些信息。
 
-In fact, the IL client sends the first buffer to the decoder in step 1.4. Assuming that the video sequence header is included in that first buffer, the OpenMAX decoder component will parse it and change its output port settings accordingly. The OpenMAX decoder component shall then notify the IL client by generating the OMX_PortSettingsChanged event (step 1.5). As soon as the IL client receives this callback, it shall disable the output port of the video decoder and the input port of the video renderer (steps 1.6 through 1.11).
+事实上，IL客户端在步骤1.4中发送第一个buffer给解码器。假设第一块buffer中包含了视频序列头，OpenMAX解码组件会解析并改变相应的端口设置。然后OpenMAX解码组件应该产生OMX_PortSettingsChanged事件通知IL客户端（步骤1.5）。一旦IL客户端收到这个回调，他应该禁用视频解码器的的输出端口和渲染器的输入端口（步骤1.6到1.11）。
 
-The IL client shall then read the new port settings with OMX_GetConfig and allocate one or more buffers with the right dimensions for the output port. Once the buffers are allocated, they will be also communicated to the video renderer using OMX_UseBuffer (1.17). The input port of the video renderer shall also be set up with OMX_SetConfig (1.18).
+然后IL客户端用OMX_GetConfig读取新的端口设置并为输出端口用正确的尺寸分配一个或多个buffer。一旦buffer被分配，他也会使用OMX_UseBuffer和视频渲染器通信（1.17）。视频渲染器的输入端口应该也用OMX_SetConfig进行设置（1.18）。
 
-Finally, ports can be enabled and normal processing resumes.
+最后，端口可以被启用，正常的处理可以继续。
 
-###3.4.6 Resource Management
-This section describes the entry points for resource management. The interface between components and the resource manager are presented only as an example. Only the interface between the IL client and the components is part of the OpenMAX standard definition. An IL client may use the resource manager entry points.
+###3.4.6 资源管理器
+本小节买哦数了资源管理器的入口。组件和资源管理器的接口仅用一个实例展示。只有IL客户端可组件之间的接口是OpenMAX标准定义的一部分。IL客户端可以使用资源管理器的入口。
 
-Figure 3-17 proposes the behavior of an IL client that ignores the resource manager. The resource manager handles the component internally only, and the IL client has to take no special action.
+图3-17提出了IL客户端忽略资源管理器的行为。资源管理器只处理内部组件，且Il客户端没有采取任何特殊动作。
 
 ![](img/3_17.png)
 
-**Figure 3-17. Transition from Loaded to Idle with Resource Management**
+**图 3-17. 有资源管理器的情况下loaded到idle的状态转换**
 
-In Figure 3-17, the IL client is unaware of the existence of a resource manager. In the implementation of the OpenMAX component, an asynchronous call to the resource manager is implemented.
-
+在图3-17，IL客户端不知道资源管理器的存在。在OpenMAX组件的实现中，有一个对资源管理器的异步调用。
 
 The OpenMAX component provides a callback to the resource manager, which receives the signal for the completion of the request.
+
 
 Figure 3-17 represents a possible implementation of a resource manager, and shows how it can be transparent to the client. The functions AcquireResourceRequest and AcquireResourceResponse are examples. This specification is concerned only about the interface between the IL client and the components. Details of the interactions between the components and the vendor/specific manager(s) are outside the scope of this specification.
 
