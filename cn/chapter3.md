@@ -2149,43 +2149,41 @@ OpenMAX定义了数据通信的两种方法：
 
 在图3-17，IL客户端不知道资源管理器的存在。在OpenMAX组件的实现中，有一个对资源管理器的异步调用。
 
-The OpenMAX component provides a callback to the resource manager, which receives the signal for the completion of the request.
+OpenMAX组件提供了一个回调函数给资源管理器，将收到请求完成的信号。
 
+图3-17展示了资源管理器的一种可能的实现，并且显示了他是如何对客户端透明的。函数AcquireResourceRequest和AcquireResourceResponse是例子。本规范只关心IL客户端可组件之间的接口。组件和厂商/特定管理器之间的交互的详细信息超出本规范的范围。
 
-Figure 3-17 represents a possible implementation of a resource manager, and shows how it can be transparent to the client. The functions AcquireResourceRequest and AcquireResourceResponse are examples. This specification is concerned only about the interface between the IL client and the components. Details of the interactions between the components and the vendor/specific manager(s) are outside the scope of this specification.
-
-Figure 3-18 presents a more complex use case.
-
+图3-18提出一个更负责的用例。
 
 ![](img/3_18.png)
 
-**Figure 3-18. Busy Resource Management**
+**图 3-18. 繁忙的资源管理**
 
-In Figure 3-18, two different OpenMAX components, A and B, need the same resource to work, and they have different priorities. Here, as in the preceding example, the IL clients use the standard transition from Loaded to Idle to set up the component and allocate all of the required resources.
+在图3-18中，两个不同的OpenMAX组件，A和B，需要同一个资源来工作。他们有不同的优先级。这里，与前面的示例一样，IL客户端使用从loaded到idle的标准切换来设置组件并分配所需的所有资源。
 
-The first component, component A, takes ownership of the resource, requesting it from the resource manager. Component A switches to the idle state and is ready to execute.
+第一个组件A，拥有资源的所有权，从资源管理器获得。组件A切换到idle状态并且准备执行。
 
-The second component, component B, asks for the same resource, but in this case the resource manager denies it since a higher priority component, component A, has that resource. This event is reported to the IL client with an error message including the value OMX_ErrorInsufficientResources. If IL client Y decides that it needs to be notified when this resource becomes available again, it may direct component B to change state to OMX_StateWaitForResources. This action puts component B in a waiting queue until the resource X will become available. Alternatively, IL client Y may request component B to switch back to the Loaded state.
+第二个组件B，要求相同的资源，但在这种情况下资源管理器拒绝它应为一个更高优先级的组件A有该资源。这个事件会发送给IL客户端，包含了OMX_ErrorInsufficientResources值的错误。如果IL客户端Y决定需要当资源再次可用时收到消息，他可以直接让组件B切换到状态OMX_StateWaitForResources。这个操作将组件B置于等待队列中，知道资源x变得可用。或者，IL客户端Y可以请求组件B切换到loaded状态。
 
-Figure 3-18 also shows the behavior of components when resource X becomes available. Component A changes state to Loaded and releases all of the resources. The resource manager becomes aware of the available resource and calls Component B, which is already in the waiting queue.
+图3-18也显示了资源X变得可用时组件的行为。组件A改变状态到loaded并释放所有资源。资源管理器知道资源可用并调用已在等待队列的组件B。
 
-When the resource manager provides the component with all the resources it is waiting on, the component informs the IL client that all resources needed are available with an OMX_EventResourcesAcquired event. The IL client shall now provide all of the needed buffers to the component. Then, the component can change state by itself to OMX_StateIdle and alert the client about the state change. This waiting queue represents a unique case of automatic state change.
+当资源管理器提供了组件所等待的所有资源时，组件通过OMX_EventResourcesAcquired事件通知IL客户端所有资源已获得。IL客户端应该提供组件所有需要的buffer，组件可以改变自己的状态到OMX_StateIdle并通知客户端状态改变。该等待队列是状态自动改变的唯一例子。
 
-In Figure 3-18, the priorities of components A and B are not compared within the IL layer, and no preemption mechanism is implemented or proposed; an external policy manager, which should communicate with the resource manager, should have this responsibility. The description of such a policy manager is outside the scope of this document and the OpenMAX standard in general.
+在图3-18中，组件A和B的优先级不是在IL层进行比较的，并且没有实现或提出抢占机制。应该和资源管理器通信的外部策略管理器应该负有这个责任。关于这个策略管理器的描述超出了本文和OpenMAX标准的讨论范围。
 
-Figure 3-19 presents an example of a client that actively uses the resource management API.
+图3-19展示了一个例子，客户端主动使用资源管理器API。
 
 ![](img/3_19.png)
 
-**Figure 3-19. State Change from Loaded to WaitForResources**
+**图 3-19. 从Loaded到WaitForResources的状态切换**
 
-The IL client may request a state change from OMX_StateLoaded to OMX_StateWaitForResources in case the IL client wants to be notified when the resource becomes available again. For an explanation of OMX_StateWaitForResources, see section 3.1.1.2.5.
+当IL客户端希望在资源再次可用时收到通知，它可以请求状态由OMX_StateLoaded切换到OMX_StateWaitForResources。OMX_StateWaitForResources的解释可以看3.1.1.2.5小节。
 
-In this case, the client puts the component into a waiting queue, handled by the resource manager; the change to the idle state happens effectively when the resource will become available or if it is available immediately. In any case, the client receives two different OMX_EventHandler callbacks that correspond to two different state changes.
+在这种情况下，客户端将组件放入等待队列，有资源管理器处理。当资源可以或立即可用时，会有效的进行到idle状态的切换。在任何情况下，客户端收到两个不同的OMX_EventHandler回调对应两个不同的状态切换。
 
-The two functions WaitForResourceRequest and WaitForResourceResponse in Figure 3-19 are not defined in this specification but are examples of an interaction between components and the resource manager.
+WaitForResourceRequest和WaitForResourceResponse两个函数如图3-19所示，不再本协议中定义，但为组件和资源管理器交互的例子。
 
-The IL client may decide to stop waiting at a certain time. In this case, it shall request the component to change state back to Loaded, as shown in Figure 3-20.
+IL客户端可以决定在一个特定的时间停止等待。在这种情况下，它应该请求组件切换回loaded状态，如图3-20所示。
 
 ![](img/3_20.png)
-Figure 3-20. Remove Component from Waiting Status		
+**图 3-20. 从等待状态中移除组件**		
