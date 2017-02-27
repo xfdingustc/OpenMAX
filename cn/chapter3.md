@@ -2000,52 +2000,53 @@ IL客户端应该配置组件和它的端口。为此，IL core应该调用`OMX_
 
 **图3-7. 管道举例**
 
-Component A is tunneled with component B, and component B is the buffer supplier.
+组件A通过管道连接组件B，组件B为buffer提供者。
 
-Component B is tunneled with component C, and component C is the buffer supplier.
+组件B通过管道连接组件C，组件C为buffer提供者。
 
-Figure 3-8 illustrates the behavior of each tunneled component during the state transition.
+图3-8描述了在状态转换时每个管道上组件的行为。
 
 ![](img/3_8.png)
 
-**Figure 3-8. State Transition to Idle in the Case of Tunneled Component s**
+**图 3-8. 管道组件时状态转换到idle**
 
-Each supplier port on a component shall pass its buffers to the non-supplier port it is tunneling with via OMX_UseBuffer. After all of its supplier ports have passed buffers, the component waits until all of its non-supplier ports have received all of their buffers via OMX_UseBuffer.
+每一个组件上的供应端口应该通过`OMX_UseBuffer`传递他的buffer给它管道另一端的非供应端口。所有的提供端口传递buffer之后，组件会等待所有非供应端口接收到通过`OMX_UseBuffer`传递过来的buffer。
 
-In Figure 3-8, component A receives the state transition request from the IL client. Component A is tunneled with component B. The input port of B is set as buffer supplier for the tunnel. In this case, component A shall wait until its output port receives all of the needed buffers.
+在图3-8中，组件A接受到IL客户端的状态切换请求。组件A和组件B通过管道连接。B的输入端口是管道上的buffer提供者。在这种情况下，组件A应该等他的所有输出组件收到所学的buffer。
 
-Meanwhile, the IL client asks component B to change its state. In this case, component B has a port that is a buffer supplier, the input port, and it shall call UseBuffer on the output port of component A. Then, component B waits for all of the needed buffers on its output port.
+同时，IL客户端请求组件B改变他的状态。这种情况下，组件B有一个buffer提供端口，即输入端口，它应该在组件A的输出端口上调用`UseBuffer`。然后，组件B等待它输出端口上所有所需的buffer。
 
-Now component A has all of the needed buffers, so it can perform the state transition to OMX_StateIdle. The exact sequence of transitions can be different, since it depends on the platform, the operating system, and the implementation. The only rule is to wait until all the resources are available.
+现在组件A有了所有所学的buffer，因此他可以开始执行到`OMX_StateIdle`状态的切换。转换的确切顺序可以是不同的，因为它依赖平台，操作系统和具体实现。唯一的规则是等到所有的资源可用。
 
-The IL client requests that component C change its state. Component C behaves like component B: Component C gives the buffers needed to component B, and then can change its state, since it does not need any other buffers.
+IL客户端请求组件C切换状态。组件C的行为和B一样：组件C把所有所学的buffer给组件B，然后可以切换他的状态，因为他不需要其他任何的buffer。
 
-Finally, component B can change its state to OMX_StateIdle since it has obtained all of the needed buffers.
+最后，组件B可以切换状态到`OMX_StateIdle`因为它已获得所有所学的buffer。
 
-###3.4.2 Data Flow
-OpenMAX defines two means of data communication:
+###3.4.2 数据流
+OpenMAX定义了数据通信的两种方法：
 
-- Tunneled communication, where a port exchanges data directly with a port on another component - Non-tunneled communication, where a port exchanges data only with the IL client
+- 管道通信，端口直接和另一个组件上的端口交换数据。
+- 非管道通信，端口仅和IL客户端交换数据。
 
-A port may implement data tunneling via proprietary communication, taking advantage of platform-specific features. The following sections describe the data flow inherent to each means of communication.
+端口可以通过专有通信来实现数据管道，可以利用平台特定的功能。下面消极描述了每种通信方式所固有的数据流程。
 
-####3.4.2.1  Non-tunneled Data Flow
-An IL client that has a data buffer to deliver to a component input port shall issue an OMX_EmptyThisBuffer call.
+####3.4.2.1  非管道数据流
+一个需要传递数据buffer给输入端口的IL客户端应该调用OMX_EmptyThisBuffer。
 
-Conversely, for the component output port, the IL client shall initially provide one or more empty buffers into which the component can write output data; the OMX_FillThisBuffer call accomplishes this task. As soon as one buffer is available from the component output port, the component shall send an OMX_FillBufferDone callback. The component is aware of the callback entry point from the earlier SetBacks call.
+相反，对于组件的输出端口，IL客户端应首选给可写入输出数据的组件提供一个或多个空buffer，调用OMX_FillThisBuffer可以完成这个任务。但一个buffer在组件输出端口上可用是，组件应该发送OMX_FillBufferDone回调。之前调用SetBacks可以让组件知道回调函数的入口。
 
-Note that the IL client is entirely responsible for moving data buffers among components if data tunneling is not used.
+注意，如果不适用数据管道，IL客户端完全负责组件间的数据buffer移动。
 
-Figure 3-9 illustrates the dynamic behavior related to data flow.
+图3-9描绘了数据流相关的动态行为。
 
 ![](img/3_9.png)
 
-**Figure 3-9. Data Flow Between Non-tunneled Components**
+**图 3-9. 非管道组件之间的数据流**
 
-####3.4.2.2  Tunneled Data Flow
-In data tunneling, OpenMAX components directly pass data buffers among themselves without returning them to the IL client. This data flow uses a different convention from the situation where all data buffers are exchanged with the IL client.
+####3.4.2.2  管道数据流
+在数据管道中，OpenMAX组件之间直接传递数据buffer而不是返回给IL客户端。此数据流使用的约定和所有buffer和IL客户端交换的情况不同。
 
-If the buffer supplier is the output component, it shall call OMX_EmptyThisBuffer on the other tunneled component to pass the buffer that is to be emptied. When the input component has terminated the operation, it shall return the buffer to the output component by calling OMX_FillThisBuffer on it.
+如果buffer提供者是输出组件，它应该在管道上的另外的管道调用OMX_EmptyThisBuffer传递待清空的buffer。当输入组件结束这个操作，它应该通过调用OMX_FillThisBuffer返回buffer给输出组件。
 
 If the buffer supplier is the input component, the communication mechanism is the same but is initiated by calling OMX_FillThisBuffer on the output component. Figure 3-10 illustrates this process.
 
